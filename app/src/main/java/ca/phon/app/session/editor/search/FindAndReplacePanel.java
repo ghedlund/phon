@@ -133,7 +133,6 @@ public class FindAndReplacePanel extends JPanel {
 		init();
 	}
 
-	// region UI
 	private void init() {
 		setOpaque(true);
 		setBackground(UIManager.getColor("text"));
@@ -265,7 +264,7 @@ public class FindAndReplacePanel extends JPanel {
 		add(toggleReplaceStrip, BorderLayout.WEST);
 	}
 
-	private void clearResults() {
+	public void clearResults() {
 		getSelectionModel().clear();
 		this.resultsLabel.setText("0 results");
 		this.resultsLabel.setForeground(UIManager.getColor("textInactiveText"));
@@ -492,6 +491,14 @@ public class FindAndReplacePanel extends JPanel {
 	}
 
 	// region Getters/Setters
+	public SearchField getSearchField() {
+		return searchField;
+	}
+
+	public SearchField getReplaceField() {
+		return replaceField;
+	}
+
 	public FindManager getFindManager() {
 		return this.findManager;
 	}

@@ -152,9 +152,9 @@ public class TranscriptView extends EditorView {
         actionMap.put("decreaseFontSize", decreaseFontSizeAct);
 
         KeyStroke toggleFindReplaceKs = KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
-        inputMap.put(toggleFindReplaceKs, "toggleFindReplace");
-        PhonUIAction<Void> toggleFindReplaceAct = PhonUIAction.runnable(this::toggleFindAndReplace);
-        actionMap.put("toggleFindReplace", toggleFindReplaceAct);
+        inputMap.put(toggleFindReplaceKs, "showFind");
+        PhonUIAction<Void> toggleFindReplaceAct = PhonUIAction.runnable(this::showFind);
+        actionMap.put("showFind", toggleFindReplaceAct);
     }
 
     /**
@@ -1313,27 +1313,59 @@ public class TranscriptView extends EditorView {
         return findAndReplaceVisible;
     }
 
+    public FindAndReplacePanel getFindAndReplacePanel() {
+        if (findAndReplacePanel == null) {
+            this.findAndReplacePanel = new FindAndReplacePanel(
+                getEditor().getDataModel(),
+                getEditor().getSelectionModel(),
+                getEditor().getEventManager(),
+                getEditor().getViewModel(),
+                getEditor().getUndoSupport()
+            );
+            final PhonUIAction<Void> closeFindAct = PhonUIAction.runnable(() -> setFindAndReplaceVisible(false));
+            closeFindAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+            closeFindAct.putValue(FlatButton.ICON_NAME_PROP, "close");
+            closeFindAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
+            closeFindAct.putValue(Action.SHORT_DESCRIPTION, "Close find and replace");
+            final FlatButton closeButton = new FlatButton(closeFindAct);
+
+            final KeyStroke escapeKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+            final InputMap inputMap = closeButton.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            final ActionMap actionMap = closeButton.getActionMap();
+            inputMap.put(escapeKey, "close");
+            actionMap.put("close", closeFindAct);
+
+            final IconStrip rightStrip = new IconStrip(SwingConstants.VERTICAL);
+            rightStrip.add(closeButton, IconStrip.IconStripPosition.LEFT);
+
+            this.findAndReplacePanel.add(rightStrip, BorderLayout.EAST);
+        }
+        return findAndReplacePanel;
+    }
+
     public void setFindAndReplaceVisible(boolean findAndReplaceVisible) {
         var wasFindAndReplaceVisible = this.findAndReplaceVisible;
         this.findAndReplaceVisible = findAndReplaceVisible;
         if (findAndReplaceVisible) {
             var editor = getEditor();
-            findAndReplacePanel = new FindAndReplacePanel(
-                editor.getDataModel(),
-                editor.getSelectionModel(),
-                editor.getEventManager(),
-                editor.getViewModel(),
-                editor.getUndoSupport()
-            );
-            centerPanel.add(findAndReplacePanel, BorderLayout.NORTH);
+            centerPanel.add(getFindAndReplacePanel(), BorderLayout.NORTH);
+            SwingUtilities.invokeLater(() -> getFindAndReplacePanel().getSearchField().getTextField().requestFocusInWindow());
         }
         else {
-            centerPanel.remove(findAndReplacePanel);
-            findAndReplacePanel = null;
+            centerPanel.remove(getFindAndReplacePanel());
+            findAndReplacePanel.clearResults();
         }
         firePropertyChange("findAndReplaceVisible", wasFindAndReplaceVisible, findAndReplaceVisible);
         revalidate();
         repaint();
+    }
+
+    public void showFind() {
+        if(!isFindAndReplaceVisible()) {
+            setFindAndReplaceVisible(true);
+        } else {
+            getFindAndReplacePanel().getSearchField().getTextField().requestFocusInWindow();
+        }
     }
 
     public boolean toggleFindAndReplace() {
