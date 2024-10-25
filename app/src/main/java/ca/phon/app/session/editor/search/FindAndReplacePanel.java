@@ -42,6 +42,8 @@ import org.jdesktop.swingx.HorizontalLayout;
 import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Highlighter;
 import javax.swing.undo.UndoableEditSupport;
 import java.awt.*;
@@ -205,6 +207,21 @@ public class FindAndReplacePanel extends JPanel {
 		this.searchField.setAction(searchAct);
 		this.searchField.addPropertyChangeListener("text_cleared", (e) -> {
 			clearResults();
+		});
+		this.searchField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				onQuery();
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				onQuery();
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+			}
 		});
 		searchField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
