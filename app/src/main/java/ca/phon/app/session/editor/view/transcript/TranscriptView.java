@@ -1340,6 +1340,13 @@ public class TranscriptView extends EditorView {
             inputMap.put(escapeKey, "close");
             actionMap.put("close", closeFindAct);
 
+            final KeyStroke showReplaceKs = KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+            final PhonUIAction<Void> showReplaceAct = PhonUIAction.runnable(this::showReplace);
+            showReplaceAct.putValue(PhonUIAction.NAME, "Show replace");
+            showReplaceAct.putValue(PhonUIAction.ACCELERATOR_KEY, showReplaceKs);
+            findAndReplacePanel.getActionMap().put("showReplace", showReplaceAct);
+            findAndReplacePanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(showReplaceKs, "showReplace");
+
             final IconStrip rightStrip = new IconStrip(SwingConstants.VERTICAL);
             rightStrip.add(closeButton, IconStrip.IconStripPosition.LEFT);
 
@@ -1355,7 +1362,10 @@ public class TranscriptView extends EditorView {
             getFindAndReplacePanel().setReplaceOptionsVisible(replaceVisible);
             if(!wasFindAndReplaceVisible)
                 centerPanel.add(getFindAndReplacePanel(), BorderLayout.NORTH);
-            SwingUtilities.invokeLater(() -> getFindAndReplacePanel().getSearchField().getTextField().requestFocusInWindow());
+            if(replaceVisible)
+                getFindAndReplacePanel().getReplaceField().getTextField().requestFocusInWindow();
+            else
+                SwingUtilities.invokeLater(() -> getFindAndReplacePanel().getSearchField().getTextField().requestFocusInWindow());
         } else {
             centerPanel.remove(getFindAndReplacePanel());
             findAndReplacePanel.clearResults();
