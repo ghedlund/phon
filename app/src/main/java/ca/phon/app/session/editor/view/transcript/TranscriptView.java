@@ -1347,6 +1347,20 @@ public class TranscriptView extends EditorView {
             findAndReplacePanel.getActionMap().put("showReplace", showReplaceAct);
             findAndReplacePanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(showReplaceKs, "showReplace");
 
+            final KeyStroke findNextKs = KeyStroke.getKeyStroke(KeyEvent.VK_G, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+            final PhonUIAction<Void> findNextAct = PhonUIAction.runnable(() -> getFindAndReplacePanel().findNext());
+            findNextAct.putValue(PhonUIAction.NAME, "Find next");
+            findNextAct.putValue(PhonUIAction.ACCELERATOR_KEY, findNextKs);
+            findAndReplacePanel.getActionMap().put("findNext", findNextAct);
+            findAndReplacePanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(findNextKs, "findNext");
+
+            final KeyStroke findPrevKs = KeyStroke.getKeyStroke(KeyEvent.VK_G, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() | KeyEvent.SHIFT_DOWN_MASK);
+            final PhonUIAction<Void> findPrevAct = PhonUIAction.runnable(() -> getFindAndReplacePanel().findPrev());
+            findPrevAct.putValue(PhonUIAction.NAME, "Find previous");
+            findPrevAct.putValue(PhonUIAction.ACCELERATOR_KEY, findPrevKs);
+            findAndReplacePanel.getActionMap().put("findPrevious", findPrevAct);
+            findAndReplacePanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(findPrevKs, "findPrevious");
+
             final IconStrip rightStrip = new IconStrip(SwingConstants.VERTICAL);
             rightStrip.add(closeButton, IconStrip.IconStripPosition.LEFT);
 
