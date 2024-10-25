@@ -18,12 +18,17 @@ package ca.phon.app.session.editor.search;
 import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.search.FindManager.*;
 import ca.phon.app.session.editor.search.actions.*;
+import ca.phon.app.session.editor.undo.ChangeCommentEdit;
+import ca.phon.app.session.editor.undo.ChangeGemEdit;
+import ca.phon.app.session.editor.undo.TierEdit;
 import ca.phon.app.session.editor.view.common.*;
 import ca.phon.app.session.editor.view.transcript.BoxSelectHighlightPainter;
 import ca.phon.app.session.editor.view.transcript.TranscriptView;
+import ca.phon.extensions.UnvalidatedValue;
 import ca.phon.session.Record;
 import ca.phon.session.*;
 import ca.phon.session.position.*;
+import ca.phon.session.tierdata.TierData;
 import ca.phon.ui.FlatButton;
 import ca.phon.ui.IconStrip;
 import ca.phon.ui.action.PhonUIAction;
@@ -40,6 +45,7 @@ import javax.swing.*;
 import javax.swing.text.Highlighter;
 import javax.swing.undo.UndoableEditSupport;
 import java.awt.*;
+import java.text.ParseException;
 import java.util.List;
 import java.util.*;
 
@@ -425,12 +431,6 @@ public class FindAndReplacePanel extends JPanel {
 	}
 
 	public void onQuery() {
-		final String query = searchField.getText();
-		if(query.length() == 0) {
-			clearResults();
-			return;
-		}
-
 		getSelectionModel().clear();
 		updateFilterButton();
 		final String queryText = searchField.getText();
@@ -552,20 +552,70 @@ public class FindAndReplacePanel extends JPanel {
 
 	public void replaceAll() {
 		final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
+		getUndoSupport().beginUpdate();
 		final String replaceText = replaceField.getText();
+		for(int i = searchResults.size()-1; i >= 0; i--) {
+			final TranscriptElementRange range = searchResults.get(i);
 
-		for(TranscriptElementRange range:searchResults) {
 			final int replaceStart = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
 			final int replaceEnd = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.end());
 			if (replaceStart >= 0 && replaceEnd >= 0) {
 				transcriptView.getTranscriptEditor().setSelectionStart(replaceStart);
 				transcriptView.getTranscriptEditor().setSelectionEnd(replaceEnd);
 				transcriptView.getTranscriptEditor().replaceSelection(replaceText);
-				transcriptView.getTranscriptEditor().commitChanges(transcriptView.getTranscriptEditor().getCaretPosition());
+			}
+
+			int eleIdx = range.transcriptElementIndex();
+			if(eleIdx < 0) continue;
+			final Transcript.Element ele = getEditorDataModel().getSession().getTranscript().getElementAt(eleIdx);
+
+			if(ele.isRecord()) {
+				final Tier<?> tier = ele.asRecord().getTier(range.tier());
+				final String currentText = tier.toString();
+
+				final int startChar = range.start().charPosition();
+				final int endChar = range.end().charPosition();
+				final String newText = currentText.substring(0, startChar) + replaceText + currentText.substring(endChar);
+
+				final SessionFactory factory = SessionFactory.newFactory();
+				final Tier<?> dummyTier = factory.createTier("dummy", tier.getDeclaredType());
+				dummyTier.setText(newText);
+
+				final TierEdit edit = new TierEdit(getSession(), getEditorEventManager(), ele.asRecord(), tier, dummyTier.getValue());
+				getUndoSupport().postEdit(edit);
+			} else if (ele.isComment()) {
+				final Comment comment = ele.asComment();
+				final String currentText = comment.getValue().toString();
+
+				final int startChar = range.start().charPosition();
+				final int endChar = range.end().charPosition();
+				final String newText = currentText.substring(0, startChar) + replaceText + currentText.substring(endChar);
+
+				try {
+					final TierData newData = TierData.parseTierData(newText);
+					final ChangeCommentEdit edit = new ChangeCommentEdit(getSession(), getEditorEventManager(), comment, newData);
+					getUndoSupport().postEdit(edit);
+				} catch (ParseException pe) {
+					final TierData newData = new TierData();
+					newData.putExtension(UnvalidatedValue.class, new UnvalidatedValue(newText, pe));
+					final ChangeCommentEdit edit = new ChangeCommentEdit(getSession(), getEditorEventManager(), comment, newData);
+					getUndoSupport().postEdit(edit);
+				}
+			} else if (ele.isGem()) {
+				final Gem gem = ele.asGem();
+				final String currentText = gem.getLabel();
+
+				final int startChar = range.start().charPosition();
+				final int endChar = range.end().charPosition();
+				final String newText = currentText.substring(0, startChar) + replaceText + currentText.substring(endChar);
+
+				final ChangeGemEdit edit = new ChangeGemEdit(getSession(), getEditorEventManager(), gem, newText);
+				getUndoSupport().postEdit(edit);
 			}
 		}
+		getUndoSupport().endUpdate();
 		clearResults();
-		onQuery();
+//		onQuery();
 	}
 
 	private void removeCurrentSelection() {

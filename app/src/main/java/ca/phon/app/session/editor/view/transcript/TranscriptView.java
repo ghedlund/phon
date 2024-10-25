@@ -151,10 +151,15 @@ public class TranscriptView extends EditorView {
         });
         actionMap.put("decreaseFontSize", decreaseFontSizeAct);
 
-        KeyStroke toggleFindReplaceKs = KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
-        inputMap.put(toggleFindReplaceKs, "showFind");
-        PhonUIAction<Void> toggleFindReplaceAct = PhonUIAction.runnable(this::showFind);
-        actionMap.put("showFind", toggleFindReplaceAct);
+        KeyStroke showFindKs = KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+        inputMap.put(showFindKs, "showFind");
+        PhonUIAction<Void> showFindAct = PhonUIAction.runnable(this::showFind);
+        actionMap.put("showFind", showFindAct);
+
+        KeyStroke showReplaceKs = KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+        inputMap.put(showReplaceKs, "showReplace");
+        PhonUIAction<Void> showReplaceAct = PhonUIAction.runnable(this::showReplace);
+        actionMap.put("showReplace", showReplaceAct);
     }
 
     /**
@@ -1348,7 +1353,8 @@ public class TranscriptView extends EditorView {
         this.findAndReplaceVisible = findAndReplaceVisible;
         if (findAndReplaceVisible) {
             getFindAndReplacePanel().setReplaceOptionsVisible(replaceVisible);
-            centerPanel.add(getFindAndReplacePanel(), BorderLayout.NORTH);
+            if(!wasFindAndReplaceVisible)
+                centerPanel.add(getFindAndReplacePanel(), BorderLayout.NORTH);
             SwingUtilities.invokeLater(() -> getFindAndReplacePanel().getSearchField().getTextField().requestFocusInWindow());
         } else {
             centerPanel.remove(getFindAndReplacePanel());
@@ -1364,6 +1370,15 @@ public class TranscriptView extends EditorView {
             setFindAndReplaceVisible(true, false);
         } else {
             getFindAndReplacePanel().getSearchField().getTextField().requestFocusInWindow();
+        }
+    }
+
+    public void showReplace() {
+        if(!isFindAndReplaceVisible()) {
+            setFindAndReplaceVisible(true, true);
+        } else {
+            getFindAndReplacePanel().setReplaceOptionsVisible(true);
+            getFindAndReplacePanel().getReplaceField().getTextField().requestFocusInWindow();
         }
     }
 
