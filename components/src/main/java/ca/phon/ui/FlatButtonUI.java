@@ -25,6 +25,14 @@ public class FlatButtonUI extends ButtonUI {
         button = (FlatButton)c;
         button.addMouseListener(mouseHandler);
         button.addMouseMotionListener(mouseHandler);
+        button.addPropertyChangeListener("iconName", e -> button.repaint());
+        button.addPropertyChangeListener("iconFontName", e -> button.repaint());
+        button.addPropertyChangeListener("iconSize", e -> button.repaint());
+        button.addPropertyChangeListener("iconColor", e -> button.repaint());
+        button.addPropertyChangeListener("iconHoverColor", e -> button.repaint());
+        button.addPropertyChangeListener("iconPressedColor", e -> button.repaint());
+        button.addPropertyChangeListener("iconDisabledColor", e -> button.repaint());
+        button.addPropertyChangeListener("iconSelectedColor", e -> button.repaint());
         super.installUI(c);
     }
 

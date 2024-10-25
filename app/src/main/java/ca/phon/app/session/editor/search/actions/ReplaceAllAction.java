@@ -34,7 +34,7 @@ public class ReplaceAllAction extends FindAndReplaceAction {
 
 	@Override
 	public void hookableActionPerformed(ActionEvent e) {
-		getFindAndReplacePanel().replaceAll();
+//		getFindAndReplacePanel().replaceAll();
 	}
 
 }

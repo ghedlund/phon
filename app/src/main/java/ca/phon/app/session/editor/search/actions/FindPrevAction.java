@@ -35,7 +35,7 @@ public class FindPrevAction extends FindAndReplaceAction {
 
 	@Override
 	public void hookableActionPerformed(ActionEvent e) {
-		getFindAndReplacePanel().findPrev();
+//		getFindAndReplacePanel().findPrev();
 	}
 
 }

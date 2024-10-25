@@ -39,10 +39,10 @@ public class ReplaceAction extends FindAndReplaceAction {
 
 	@Override
 	public void hookableActionPerformed(ActionEvent e) {
-		getFindAndReplacePanel().replace();
-		if(andFind) {
-			getFindAndReplacePanel().findNext();
-		}
+//		getFindAndReplacePanel().replace();
+//		if(andFind) {
+//			getFindAndReplacePanel().findNext();
+//		}
 	}
 
 }

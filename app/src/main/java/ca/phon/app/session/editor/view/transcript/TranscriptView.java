@@ -1322,6 +1322,7 @@ public class TranscriptView extends EditorView {
                 editor.getDataModel(),
                 editor.getSelectionModel(),
                 editor.getEventManager(),
+                editor.getViewModel(),
                 editor.getUndoSupport()
             );
             centerPanel.add(findAndReplacePanel, BorderLayout.NORTH);

@@ -17,6 +17,7 @@ package ca.phon.ui.text;
 
 import ca.phon.ui.action.*;
 import ca.phon.ui.text.PromptedTextField.FieldState;
+import ca.phon.util.PrefHelper;
 import ca.phon.util.icons.IconSize;
 import com.jgoodies.forms.layout.*;
 
@@ -26,6 +27,8 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.beans.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A search field with optional context button.
@@ -36,6 +39,12 @@ import java.beans.*;
 public class SearchField extends JPanel {
 	
 	private static final long serialVersionUID = 839864308294242792L;
+
+	private final static String HISTORY_SEPARATOR = ";;";
+
+	private final String historyProperty;
+
+	private final List<String> history = new ArrayList<>();
 
 	/**
 	 * Search context button
@@ -51,23 +60,31 @@ public class SearchField extends JPanel {
 	 * 
 	 */
 //	private ImageIcon searchIcn = null;
-	
 	public SearchField() {
-		this("Search");
+		this(null);
+	}
+
+	public SearchField(String prompt) {
+		this(null, prompt);
 	}
 	
-	public SearchField(String prompt) {
+	public SearchField(String historyProperty, String prompt) {
 		super();
-		
+
 		setBackground(Color.white);
 		setOpaque(true);
 		setFocusable(true);
-		
+
 		queryField = new PromptedTextField(prompt);
 		queryField.setBackground(Color.white);
 		queryField.setOpaque(true);
 		queryField.addPropertyChangeListener(PromptedTextField.STATE_PROPERTY, fieldStateListener);
-		
+
+		this.historyProperty = historyProperty;
+		if(historyProperty != null) {
+			loadHistory();
+		}
+
 		updateUI();
 		init();
 	}
@@ -342,5 +359,50 @@ public class SearchField extends JPanel {
 		}
 		
 	}
-	
+
+	/**
+	 * Load history from preferences
+	 */
+	public void loadHistory() {
+		history.clear();
+		final String historyStr = PrefHelper.get(historyProperty, "");
+		final String[] historyArr = historyStr.split(HISTORY_SEPARATOR);
+		for (String h : historyArr) {
+			if (!h.isEmpty()) {
+				history.add(h);
+			}
+		}
+	}
+
+	/**
+	 * Append given text to history
+	 *
+	 * @param text
+	 * @return <code>true</code> if text was added to history, <code>false</code> otherwise
+	 */
+	public boolean appendToHistory(String text) {
+		if (text == null || text.isEmpty()) {
+			return false;
+		}
+		if (history.contains(text)) {
+			return false;
+		}
+		history.add(text);
+		return true;
+	}
+
+	/**
+	 * Save history to preferences
+	 *
+	 * @return <code>true</code> if history was saved, <code>false</code> otherwise
+	 */
+	public boolean saveHistory() {
+		final StringBuilder historyStr = new StringBuilder();
+		for (String h : history) {
+			historyStr.append(h).append(HISTORY_SEPARATOR);
+		}
+		PrefHelper.getUserPreferences().put(historyProperty, historyStr.toString());
+		return true;
+	}
+
 }
