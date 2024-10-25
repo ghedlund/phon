@@ -1322,7 +1322,7 @@ public class TranscriptView extends EditorView {
                 getEditor().getViewModel(),
                 getEditor().getUndoSupport()
             );
-            final PhonUIAction<Void> closeFindAct = PhonUIAction.runnable(() -> setFindAndReplaceVisible(false));
+            final PhonUIAction<Void> closeFindAct = PhonUIAction.runnable(() -> setFindAndReplaceVisible(false, false));
             closeFindAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
             closeFindAct.putValue(FlatButton.ICON_NAME_PROP, "close");
             closeFindAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
@@ -1343,15 +1343,14 @@ public class TranscriptView extends EditorView {
         return findAndReplacePanel;
     }
 
-    public void setFindAndReplaceVisible(boolean findAndReplaceVisible) {
+    public void setFindAndReplaceVisible(boolean findAndReplaceVisible, boolean replaceVisible) {
         var wasFindAndReplaceVisible = this.findAndReplaceVisible;
         this.findAndReplaceVisible = findAndReplaceVisible;
         if (findAndReplaceVisible) {
-            var editor = getEditor();
+            getFindAndReplacePanel().setReplaceOptionsVisible(replaceVisible);
             centerPanel.add(getFindAndReplacePanel(), BorderLayout.NORTH);
             SwingUtilities.invokeLater(() -> getFindAndReplacePanel().getSearchField().getTextField().requestFocusInWindow());
-        }
-        else {
+        } else {
             centerPanel.remove(getFindAndReplacePanel());
             findAndReplacePanel.clearResults();
         }
@@ -1362,15 +1361,10 @@ public class TranscriptView extends EditorView {
 
     public void showFind() {
         if(!isFindAndReplaceVisible()) {
-            setFindAndReplaceVisible(true);
+            setFindAndReplaceVisible(true, false);
         } else {
             getFindAndReplacePanel().getSearchField().getTextField().requestFocusInWindow();
         }
-    }
-
-    public boolean toggleFindAndReplace() {
-        setFindAndReplaceVisible(!isFindAndReplaceVisible());
-        return isFindAndReplaceVisible();
     }
 
     public boolean isValidationMode() {

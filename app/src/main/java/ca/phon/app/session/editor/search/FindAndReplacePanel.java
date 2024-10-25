@@ -243,6 +243,7 @@ public class FindAndReplacePanel extends JPanel {
 //		replaceAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
 		replaceAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Replace and move to next");
 		replaceButton = new JButton(replaceAct);
+		replaceButton.setFocusable(false);
 //		replaceButton.setIconColor(UIManager.getColor("textInactiveText"));
 		replaceOptionsButtonPanel.add(replaceButton, IconStrip.IconStripPosition.LEFT);
 
@@ -250,6 +251,7 @@ public class FindAndReplacePanel extends JPanel {
 		replaceAllAct.putValue(PhonUIAction.NAME, "Replace all");
 		replaceAllAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Replace all occurrences");
 		replaceAllButton = new JButton(replaceAllAct);
+		replaceAllButton.setFocusable(false);
 		replaceOptionsButtonPanel.add(replaceAllButton, IconStrip.IconStripPosition.LEFT);
 
 		final PhonUIAction<Void> toggleReplaceAct = PhonUIAction.runnable(this::toggleReplace);
@@ -407,14 +409,18 @@ public class FindAndReplacePanel extends JPanel {
 	}
 
 	public void toggleReplace() {
-		if(replaceField.isVisible()) {
-			replaceField.setVisible(false);
-			replaceOptionsButtonPanel.setVisible(false);
-			toggleReplaceOptionsButton.setIconName("unfold_more");
-		} else {
+		setReplaceOptionsVisible(!replaceField.isVisible());
+	}
+
+	public void setReplaceOptionsVisible(boolean visible) {
+		if(visible) {
 			replaceField.setVisible(true);
 			replaceOptionsButtonPanel.setVisible(true);
 			toggleReplaceOptionsButton.setIconName("unfold_less");
+		} else {
+			replaceField.setVisible(false);
+			replaceOptionsButtonPanel.setVisible(false);
+			toggleReplaceOptionsButton.setIconName("unfold_more");
 		}
 	}
 
@@ -525,11 +531,41 @@ public class FindAndReplacePanel extends JPanel {
 	// end region
 
 	public void replaceCurrent() {
+		if(currentSelection != null) {
 
+			final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
+
+			final int replaceStart = transcriptView.getTranscriptEditor().sessionLocationToCharPos(currentSelection.getTranscriptElementRange().start());
+			final int replaceEnd = transcriptView.getTranscriptEditor().sessionLocationToCharPos(currentSelection.getTranscriptElementRange().end());
+			removeCurrentSelection();
+			if(replaceStart >= 0 && replaceEnd >= 0) {
+				transcriptView.getTranscriptEditor().setSelectionStart(replaceStart);
+				transcriptView.getTranscriptEditor().setSelectionEnd(replaceEnd);
+				final String replaceText = replaceField.getText();
+				transcriptView.getTranscriptEditor().replaceSelection(replaceText);
+				transcriptView.getTranscriptEditor().commitChanges(transcriptView.getTranscriptEditor().getCaretPosition());
+
+				findNext();
+			}
+		}
 	}
 
 	public void replaceAll() {
+		final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
+		final String replaceText = replaceField.getText();
 
+		for(TranscriptElementRange range:searchResults) {
+			final int replaceStart = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
+			final int replaceEnd = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.end());
+			if (replaceStart >= 0 && replaceEnd >= 0) {
+				transcriptView.getTranscriptEditor().setSelectionStart(replaceStart);
+				transcriptView.getTranscriptEditor().setSelectionEnd(replaceEnd);
+				transcriptView.getTranscriptEditor().replaceSelection(replaceText);
+				transcriptView.getTranscriptEditor().commitChanges(transcriptView.getTranscriptEditor().getCaretPosition());
+			}
+		}
+		clearResults();
+		onQuery();
 	}
 
 	private void removeCurrentSelection() {
