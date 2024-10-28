@@ -1,7 +1,9 @@
 package ca.phon.app.session.editor.view.transcript;
 
+import ca.phon.app.log.LogUtil;
 import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.util.PrefHelper;
+import org.apache.commons.logging.Log;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -187,7 +189,7 @@ public class TranscriptViewFactory implements ViewFactory {
         public float getPreferredSpan(int axis) {
             float span = super.getPreferredSpan(axis);
             if(axis == View.X_AXIS) {
-                span = getLabelColumnWidth(getGraphics(), (TranscriptDocument) getElement().getDocument()) - labelEndWidth();
+                span = getLabelColumnWidth(getGraphics(), (TranscriptDocument) getElement().getDocument());
             }
             return span;
         }
@@ -207,13 +209,18 @@ public class TranscriptViewFactory implements ViewFactory {
             return View.BadBreakWeight;
         }
 
-        private int labelTextWidth() {
+        private float labelTextWidth() {
             int p0 = getStartOffset();
             int p1 = getEndOffset();
             Segment text = getText(p0, p1);
+            String str = text.toString();
             Font font = getFont();
-            Rectangle2D textBounds = getGraphics().getFontMetrics(font).getStringBounds(text.toString(), getGraphics());
-            return (int)textBounds.getWidth();
+            Graphics2D g2 = (Graphics2D)getGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            Rectangle2D textBounds = g2.getFontMetrics(font).getStringBounds(str, g2);
+            LogUtil.info(textBounds.toString());
+            return (float)textBounds.getWidth();
         }
 
         private int labelEndWidth() {
@@ -232,7 +239,7 @@ public class TranscriptViewFactory implements ViewFactory {
             return new TabExpander() {
                 @Override
                 public float nextTabStop(float x, int tabOffset) {
-                    return getLabelColumnWidth(getGraphics(), (TranscriptDocument) getElement().getDocument()) - labelTextWidth() - labelEndWidth();
+                    return getLabelColumnWidth(getGraphics(), (TranscriptDocument) getElement().getDocument()) - labelTextWidth();
                 }
             };
         }
@@ -247,30 +254,24 @@ public class TranscriptViewFactory implements ViewFactory {
 
         @Override
         public void paint(Graphics g, Shape a) {
+            Graphics2D g2 = (Graphics2D)g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+
+            int p0 = getStartOffset();
+            int p1 = getEndOffset();
+            Segment text = getText(p0, p1);
+            final String tierName = text.toString().trim();
+            final String labelText = tierName;
+            final Font font = getFont();
+            final FontMetrics fm = g.getFontMetrics(font);
+            final int x = a.getBounds().x + a.getBounds().width - fm.stringWidth(labelText);
+            final int y = a.getBounds().y + fm.getAscent();
+
             g.clearRect(a.getBounds().x, a.getBounds().y, a.getBounds().width, a.getBounds().height);
-            // XXX - this is a hack to get the background color to paint correctly, not working on windows
-//            final boolean isLabel = TranscriptStyleConstants.isLabel(getAttributes());
-//            g.setColor(Color.WHITE);
-//            if(isLabel) {
-//                g.setColor(UIManager.getColor(TranscriptEditorUIProps.LABEL_BACKGROUND));
-//            } else {
-//                final String elementType = TranscriptStyleConstants.getElementType(getAttributes());
-//                if (elementType != null) {
-//                    switch (elementType) {
-//                        case TranscriptStyleConstants.ELEMENT_TYPE_COMMENT -> {
-//                            g.setColor(UIManager.getColor(TranscriptEditorUIProps.COMMENT_BACKGROUND));
-//                        }
-//                        case TranscriptStyleConstants.ELEMENT_TYPE_GEM -> {
-//                            g.setColor(UIManager.getColor(TranscriptEditorUIProps.GEM_BACKGROUND));
-//                        }
-//                        case TranscriptStyleConstants.ELEMENT_TYPE_GENERIC -> {
-//                            g.setColor(UIManager.getColor(TranscriptEditorUIProps.GENERIC_BACKGROUND));
-//                        }
-//                    }
-//                }
-//            }
-//            g.fillRect(a.getBounds().x, a.getBounds().y, a.getBounds().width, a.getBounds().height);
-            super.paint(g, a);
+            g.setColor(getForeground());
+            g.setFont(font);
+            g.drawString(labelText, x, y);
         }
 
     }
