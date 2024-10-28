@@ -8,6 +8,8 @@ import ca.phon.app.session.editor.view.transcript.extensions.BlindTranscriptionE
 import ca.phon.session.Record;
 import ca.phon.session.Tier;
 import ca.phon.session.Transcriber;
+import ca.phon.session.Transcript;
+import ca.phon.session.position.TranscriptElementRange;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.util.PrefHelper;
@@ -75,9 +77,11 @@ public class TranscriptScrollPaneGutter extends JComponent {
 
         currentRecord = editor.getTranscriptDocument().getSingleRecordIndex();
         editor.getEventManager().registerActionForEvent(
-            EditorEventType.RecordChanged,
-            this::onRecordChanged,
-            EditorEventManager.RunOn.AWTEventDispatchThread
+                TranscriptEditor.transcriptLocationChanged,
+                (e) -> {
+                    repaint();
+                },
+                EditorEventManager.RunOn.AWTEventDispatchThread
         );
         editor.getTranscriptDocument().addDocumentPropertyChangeListener("processBatch", (e) -> {
             SwingUtilities.invokeLater(() -> {
@@ -227,24 +231,61 @@ public class TranscriptScrollPaneGutter extends JComponent {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 
-        Rectangle drawHere = g.getClipBounds();
-
-        // Fill clipping area with dirty brown/orange.
+        Rectangle clipBounds = g.getClipBounds();
         g.setColor(UIManager.getColor("Button.background"));
-        g.fillRect(drawHere.x, drawHere.y, drawHere.width, drawHere.height);
+        g.fillRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
+
+        // draw background of current record (if any) and current tier (if any)
+        final var transcriptElementLocation = editor.getTranscriptEditorCaret().getTranscriptLocation();
+        if(transcriptElementLocation.valid()) {
+            final int elementIndex = transcriptElementLocation.transcriptElementIndex();
+            final var range = editor.getTranscriptDocument().getRangeForSessionElementIndex(elementIndex);
+            if(range.valid()) {
+                try {
+                    final var startRect = editor.modelToView2D(range.start());
+                    final var endRect = editor.modelToView2D(range.end());
+                    final var rect = new Rectangle2D.Double(
+                            startRect.getX(),
+                            startRect.getY(),
+                            clipBounds.width,
+                            endRect.getY() - startRect.getY()
+                    );
+                    g2.setColor(UIManager.getColor("textHighlight"));
+                    g2.fill(rect);
+                } catch (BadLocationException e) {
+                    LogUtil.warning(e);
+                }
+            }
+
+            final var characterElement = editor.getTranscriptDocument().getCharacterElement(editor.getTranscriptEditorCaret().getDot());
+            // get paragraph element
+            final var paragraphElement = editor.getTranscriptDocument().getParagraphElement(characterElement.getStartOffset());
+            // draw box around paragraph element
+            try {
+                final var paragraphRect = editor.modelToView2D(paragraphElement.getStartOffset());
+                final var rect = new Rectangle2D.Double(
+                        paragraphRect.getX(),
+                        paragraphRect.getY(),
+                        clipBounds.width,
+                        paragraphRect.getHeight()
+                );
+                g2.setColor(Color.yellow);
+                g2.fill(rect);
+            } catch (BadLocationException e) {
+                LogUtil.warning(e);
+            }
+        }
+
         g.setColor(Color.BLACK);
 
         Font font = g.getFont();
         font = font.deriveFont((float)font.getSize() + (int) PrefHelper.getUserPreferences().getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0));
 
         var doc = editor.getTranscriptDocument();
-
         var root = doc.getDefaultRootElement();
 
         int currentSepHeight = -1;
-
         iconRects.clear();
-
         for (int i = 0; i < root.getElementCount(); i++) {
             var elem = root.getElement(i);
             if(elem.getElementCount() == 0) continue;
@@ -354,8 +395,6 @@ public class TranscriptScrollPaneGutter extends JComponent {
                         icon.paintIcon(this, g, x, y);
                         FontMetrics fontMetrics = getFontMetrics(g.getFont());
                         Rectangle hoverRect = new Rectangle(x, y, iconWidth, iconHeight);
-//                            g.setColor(Color.BLUE);
-//                            g.fillRect(hoverRect.x, hoverRect.y, hoverRect.width, hoverRect.height);
 
                         iconRects.put(
                                 hoverRect,
@@ -366,91 +405,6 @@ public class TranscriptScrollPaneGutter extends JComponent {
                 }
             }
 
-//            for (int j = 0; j < elem.getElementCount(); j++) {
-//                try {
-//                    var innerElem = elem.getElement(j);
-//                    var innerElemAttrs = innerElem.getAttributes();
-//                    var elemRect = editor.modelToView2D(innerElem.getStartOffset());
-//                    if (elemRect == null) continue;
-//
-//                    if (innerElemAttrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_SEPARATOR) != null) {
-//                        Record record = (Record) innerElem.getAttributes().getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD);
-//                        if (showRecordNumbers && record != null) {
-//                            int recordNumber = editor.getSession().getRecordPosition(record);
-//
-//                            var sepRect = editor.modelToView2D(innerElem.getStartOffset());
-//
-//                            String recordNumberText = String.valueOf(recordNumber + 1);
-//
-//                            var fontMetrics = g.getFontMetrics();
-//                            int stringWidth = fontMetrics.stringWidth(recordNumberText);
-//                            int stringBaselineHeight = (int)(sepRect.getCenterY() + 0.8f * (fontMetrics.getFont().getSize() / 2.0f));
-//
-//                            if (stringBaselineHeight <= currentSepHeight) continue;
-//
-//                            if (recordNumber == currentRecord) {
-//                                g.setFont(font.deriveFont(Font.BOLD));
-//                            }
-//
-//                            g.drawString(recordNumberText, getWidth() - stringWidth - PADDING, stringBaselineHeight);
-//                            currentSepHeight = stringBaselineHeight;
-//
-//                            if (recordNumber == currentRecord) {
-//                                g.setFont(font);
-//                            }
-//                        }
-//
-//                    }
-//
-//                    FontMetrics fontMetrics = getFontMetrics(g.getFont());
-//
-//                    Tier<?> tier = (Tier<?>) innerElemAttrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_TIER);
-//                    if (tier != null) {
-////                        boolean locked = innerElemAttrs.getAttribute("locked") != null;
-////                        if (locked) {
-////                            var lockIcon = IconManager.getInstance().getIcon("actions/lock", IconSize.XSMALL);
-////                            Image lockImage = lockIcon.getImage();
-////                            g.drawImage(lockImage, getWidth() - 16, (int) elemRect.getMinY() + 1, null);
-////                        }
-//
-//                        if (tier.isUnvalidated()) {
-//                            Rectangle hoverRect = new Rectangle(getWidth() - 32, (int) elemRect.getCenterY() - fontMetrics.getHeight() / 2, fontMetrics.stringWidth("O"), fontMetrics.getHeight() / 2);
-////                            g.setColor(Color.BLUE);
-////                            g.fillRect(hoverRect.x, hoverRect.y, hoverRect.width, hoverRect.height);
-//                            g.setColor(Color.RED);
-//                            g.drawString("O", getWidth() - 32, (int) elemRect.getCenterY());
-//                            g.setColor(Color.BLACK);
-//                            iconRects.put(
-//                                hoverRect,
-//                                new TierAndIconType(tier, IconType.ERROR)
-//                            );
-//                        }
-//
-//                        if (tier.isBlind()) {
-//                            int x = getWidth() - 48;
-//                            g.setColor(Color.BLUE);
-//                            g.drawString("I", x, (int) elemRect.getCenterY());
-//                            g.setColor(Color.BLACK);
-//                            if (editor.isTranscriberValidator()) {
-//                                Rectangle hoverRect = new Rectangle(
-//                                    x,
-//                                    (int) elemRect.getCenterY() - fontMetrics.getHeight() / 2,
-//                                    fontMetrics.stringWidth("I"),
-//                                    fontMetrics.getHeight() / 2
-//                                );
-//                                iconRects.put(
-//                                    hoverRect,
-//                                    new TierAndIconType(tier, IconType.BLIND)
-//                                );
-//                            }
-//
-//                        }
-//                    }
-//                }
-//                catch (Exception e) {
-//                    LogUtil.severe(e);
-//                }
-//            }
         }
     }
 
@@ -466,15 +420,6 @@ public class TranscriptScrollPaneGutter extends JComponent {
         int newWidth = show ? DEFAULT_WIDTH + PADDING + RECORD_NUMBER_WIDTH + PADDING : DEFAULT_WIDTH + PADDING;
         setPreferredSize(new Dimension(newWidth, getPreferredSize().height));
         revalidate();
-        repaint();
-    }
-
-    /**
-     * Runs when the current record is changed.
-     * Repaints the gutter with the new current record.
-     * */
-    public void onRecordChanged(EditorEvent<EditorEventType.RecordChangedData> event) {
-        currentRecord = event.data().recordIndex();
         repaint();
     }
 

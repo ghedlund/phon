@@ -404,12 +404,12 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
      */
     public StartEnd getRangeForSessionElementIndex(int sessionElementIndex) {
         int eleIdx = findParagraphElementIndexForSessionElementIndex(sessionElementIndex);
-        if(eleIdx == -1) {
+        if(eleIdx < 0) {
             return new StartEnd(-1, -1);
         }
         Element ele = getDefaultRootElement().getElement(eleIdx);
         Element endEle = ele;
-        if(ele.getAttributes().getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD) != null) {
+        if(ele.getAttributes().getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD) != null || sessionElementIndex == -1) {
             for(int i = eleIdx + 1; i < getDefaultRootElement().getElementCount(); i++) {
                 Element e = getDefaultRootElement().getElement(i);
                 if(getTranscriptElementIndex(e) == sessionElementIndex)
