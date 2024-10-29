@@ -756,7 +756,7 @@ public class TranscriptBatchBuilder {
             }
 
             if (i == 0) {
-                TranscriptStyleConstants.setBorder(recordAttrs, BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Button.background")));
+                TranscriptStyleConstants.setBorder(recordAttrs, BorderFactory.createMatteBorder(2, 0, 0, 0, UIManager.getColor("Button.background")));
             } else {
                 TranscriptStyleConstants.setBorder(recordAttrs, BorderFactory.createEmptyBorder());
             }

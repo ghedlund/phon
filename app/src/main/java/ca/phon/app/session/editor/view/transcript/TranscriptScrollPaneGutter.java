@@ -43,9 +43,8 @@ public class TranscriptScrollPaneGutter extends JComponent {
     /**
      * The width of the record numbers (in pixels)
      * */
-    private final int RECORD_NUMBER_WIDTH = 24;
+    private final int RECORD_NUMBER_WIDTH = 36;
     private final int PADDING = 4;
-    private int currentRecord;
 
     /**
      * A map of rectangles in screen-space to tuples of tiers and {@link IconType}
@@ -75,7 +74,6 @@ public class TranscriptScrollPaneGutter extends JComponent {
         Font font = FontPreferences.getTierFont();
         setFont(font);
 
-        currentRecord = editor.getTranscriptDocument().getSingleRecordIndex();
         editor.getEventManager().registerActionForEvent(
                 TranscriptEditor.transcriptLocationChanged,
                 (e) -> {
@@ -235,6 +233,8 @@ public class TranscriptScrollPaneGutter extends JComponent {
         g.setColor(UIManager.getColor("Button.background"));
         g.fillRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 
+        int currentRecord = -1;
+
         // draw background of current record (if any) and current tier (if any)
         final var transcriptElementLocation = editor.getTranscriptEditorCaret().getTranscriptLocation();
         if(transcriptElementLocation.valid()) {
@@ -254,6 +254,13 @@ public class TranscriptScrollPaneGutter extends JComponent {
                     g2.fill(rect);
                 } catch (BadLocationException e) {
                     LogUtil.warning(e);
+                }
+
+                if(elementIndex >= 0) {
+                    final Transcript.Element trEle = editor.getSession().getTranscript().getElementAt(elementIndex);
+                    if(trEle.isRecord()) {
+                        currentRecord = editor.getSession().getTranscript().getRecordIndex(elementIndex);
+                    }
                 }
             }
 
@@ -331,6 +338,7 @@ public class TranscriptScrollPaneGutter extends JComponent {
                 final String firstTier = editor.getSession().getTierView().get(0).getTierName();
                 final Tier<?> tier = TranscriptStyleConstants.getTier(attrs);
                 final Record record = TranscriptStyleConstants.getRecord(attrs);
+
                 if(record != null && tier != null) {
                     if(tier.getName().equals(firstTier)) {
                         final int recordNumber = editor.getSession().getRecordPosition(record);
@@ -346,14 +354,12 @@ public class TranscriptScrollPaneGutter extends JComponent {
                         if (recordNumber == currentRecord) {
                             g.setFont(font.deriveFont(Font.BOLD));
                             g.setColor(Color.BLACK);
+                        } else {
+                            g.setFont(font);
                         }
 
                         g.drawString(recordNumberText, PADDING, stringBaselineHeight);
                         currentSepHeight = stringBaselineHeight;
-
-                        if (recordNumber == currentRecord) {
-                            g.setFont(font);
-                        }
                     }
 
                     boolean isBlindMode = editor.getDataModel().getTranscriber() != Transcriber.VALIDATOR;
