@@ -26,6 +26,8 @@ public class PhonWorkerGroup {
 	/** The queue of tasks to complete */
 	private ConcurrentLinkedQueue<Runnable> tasks;
 
+	private Runnable finalTask = null;
+
 	/** The array of running tasks */
 	private PhonWorker[] runningTasks;
 	
@@ -53,6 +55,9 @@ public class PhonWorkerGroup {
 				if(e.getNewValue() == null) {
 					completedTasks++;
 					if(totalTasks > 0 && completedTasks == totalTasks) {
+						if(finalTask != null) {
+							finalTask.run();
+						}
 						shutdown();
 					}
 				}
@@ -100,7 +105,7 @@ public class PhonWorkerGroup {
 	}
 
 	public void setFinalTask(Runnable finalTask) {
-		getThreads()[0].setFinalTask(finalTask);
+		this.finalTask = finalTask;
 	}
 
 }

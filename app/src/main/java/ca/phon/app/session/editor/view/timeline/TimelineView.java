@@ -54,7 +54,7 @@ import java.util.*;
 import java.util.function.*;
 
 /**
- * View for displaying session records in a timeline along with the audio waveform if available.
+ * View for displaying session records along a timeline with the audio waveform if available.
  *
  */
 public final class TimelineView extends EditorView {
@@ -71,7 +71,7 @@ public final class TimelineView extends EditorView {
 	private final float DEFAULT_PLAYBACK_FPS = 30.0f;
 	private float playbackMarkerFps = PrefHelper.getFloat(PLABACK_FPS, DEFAULT_PLAYBACK_FPS);
 	
-	private JToolBar toolbar;
+	private IconStrip toolbar;
 	
 	private DropDownButton playButton;
 	private DropDownButton exportButton;
@@ -265,7 +265,7 @@ public final class TimelineView extends EditorView {
 
 	public Timebar getTimebar() { return this.timebar; }
 	
-	public JToolBar getToolbar() {
+	public IconStrip getToolbar() {
 		return this.toolbar;
 	}
 	
@@ -281,14 +281,15 @@ public final class TimelineView extends EditorView {
 		return this.recordGrid;
 	}
 	
-	private JToolBar setupToolbar() {
-		JToolBar toolbar = new JToolBar();
-		toolbar.setFloatable(false);
-		
+	private IconStrip setupToolbar() {
+		IconStrip toolbar = new IconStrip(SwingConstants.HORIZONTAL);
+
 		PhonUIAction<Void> segmentationAction = PhonUIAction.runnable(this::toggleSegmentation);
+		segmentationAction.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+		segmentationAction.putValue(FlatButton.ICON_NAME_PROP, "splitscreen_vertical_add");
+		segmentationAction.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
 		segmentationAction.putValue(PhonUIAction.NAME, "Start Segmentation");
-		segmentationAction.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/segmentation", IconSize.SMALL));
-		segmentationButton = new JButton(segmentationAction);
+		segmentationButton = new FlatButton(segmentationAction);
 		
 		speakerMenu = new JPopupMenu();
 		speakerMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -330,12 +331,15 @@ public final class TimelineView extends EditorView {
 		final PhonUIAction<Void> playAct = PhonUIAction.runnable(this::playPause);
 		playAct.putValue(PhonUIAction.NAME, "Play segment");
 		playAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Play selection/segment");
-		playAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/media-playback-start", IconSize.SMALL));
+		final ImageIcon playIcon =
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "play_arrow", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
+		playAct.putValue(PhonUIAction.SMALL_ICON, playIcon);
 		playAct.putValue(DropDownButton.BUTTON_POPUP, playMenu);
 		playButton = new DropDownButton(playAct);
 		playButton.setFocusable(false);
 		playButton.setEnabled(false);
-		
+		playButton.setBorderPainted(false);
+
 		final JPopupMenu saveMenu = new JPopupMenu();
 		saveMenu.addPopupMenuListener(new PopupMenuListener() {
 			
@@ -358,7 +362,9 @@ public final class TimelineView extends EditorView {
 		});
 		
 		final PhonUIAction<Void> exportAct = PhonUIAction.runnable(this::onExportSelectionOrSegment);
-		exportAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/document-save-as", IconSize.SMALL));
+		final ImageIcon exportIcon =
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "file_export", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
+		exportAct.putValue(PhonUIAction.SMALL_ICON, exportIcon);
 		exportAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Export selection/segment (audio only)");
 		exportAct.putValue(PhonUIAction.NAME, "Export segment...");
 		exportAct.putValue(DropDownButton.BUTTON_POPUP, saveMenu);
@@ -366,17 +372,22 @@ public final class TimelineView extends EditorView {
 		exportButton = new DropDownButton(exportAct);
 		exportButton.setFocusable(false);
 		exportButton.setEnabled(false);
+		exportButton.setBorderPainted(false);
 		
 		final PhonUIAction<Void> speakerVisibilityAct = PhonUIAction.runnable(() -> {});
 		speakerVisibilityAct.putValue(PhonUIAction.NAME, "Participants");
 		speakerVisibilityAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Show participant visibility menu");
-		speakerVisibilityAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("apps/system-users", IconSize.SMALL));
+		final ImageIcon userIcon =
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "group", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
+		speakerVisibilityAct.putValue(PhonUIAction.SMALL_ICON, userIcon);
 		speakerVisibilityAct.putValue(DropDownButton.BUTTON_POPUP, speakerMenu);
 		speakerVisibilityAct.putValue(DropDownButton.ARROW_ICON_POSITION, SwingUtilities.BOTTOM);
 		speakerVisibilityAct.putValue(DropDownButton.ARROW_ICON_GAP, 2);
 		
 		speakerButton = new DropDownButton(speakerVisibilityAct);
 		speakerButton.setOnlyPopup(true);
+		speakerButton.setFocusable(false);
+		speakerButton.setBorderPainted(false);
 		
 		tierVisibilityMenu = new JPopupMenu();
 		tierVisibilityMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -400,13 +411,17 @@ public final class TimelineView extends EditorView {
 		final PhonUIAction<Void> tierVisibilityAct = PhonUIAction.runnable(() -> {});
 		tierVisibilityAct.putValue(PhonUIAction.NAME, "Tiers");
 		tierVisibilityAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Show tier visibility menu");
-		tierVisibilityAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("misc/record", IconSize.SMALL));
+		final ImageIcon tierIcon =
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "view_list", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
+		tierVisibilityAct.putValue(PhonUIAction.SMALL_ICON, tierIcon);
 		tierVisibilityAct.putValue(DropDownButton.BUTTON_POPUP, tierVisibilityMenu);
 		tierVisibilityAct.putValue(DropDownButton.ARROW_ICON_POSITION, SwingConstants.BOTTOM);
 		tierVisibilityAct.putValue(DropDownButton.ARROW_ICON_GAP, 2);
 		
 		tierVisiblityButton = new DropDownButton(tierVisibilityAct);
 		tierVisiblityButton.setOnlyPopup(true);
+		tierVisiblityButton.setFocusable(false);
+		tierVisiblityButton.setBorderPainted(false);
 
 		fontSizeMenu = new JPopupMenu();
 		fontSizeMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -462,32 +477,44 @@ public final class TimelineView extends EditorView {
 		final PhonUIAction<Void> fontSizeAct = PhonUIAction.runnable(() -> {});
 		fontSizeAct.putValue(PhonUIAction.NAME, "Font size");
 		fontSizeAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Show font size menu");
-		fontSizeAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("apps/preferences-desktop-font", IconSize.SMALL));
+		final ImageIcon fontIcon =
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "format_size", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
+		fontSizeAct.putValue(PhonUIAction.SMALL_ICON, fontIcon);
 		fontSizeAct.putValue(DropDownButton.BUTTON_POPUP, fontSizeMenu);
 		fontSizeAct.putValue(DropDownButton.ARROW_ICON_POSITION, SwingConstants.BOTTOM);
 		fontSizeAct.putValue(DropDownButton.ARROW_ICON_GAP, 2);
 
 		fontSizeButton = new DropDownButton(fontSizeAct);
 		fontSizeButton.setOnlyPopup(true);
-		
-		zoomOutButton = new JButton(new ZoomAction(this, false));
-		zoomInButton = new JButton(new ZoomAction(this, true));
-		
+		fontSizeButton.setFocusable(false);
+		fontSizeButton.setBorderPainted(false);
+		fontSizeButton.setText("");
+
+		final ZoomAction zoomInAct = new ZoomAction(this, true);
+		zoomInAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+		zoomInAct.putValue(FlatButton.ICON_NAME_PROP, "zoom_in");
+		zoomInAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
+		zoomInButton = new FlatButton(zoomInAct);
+		zoomInButton.setText("");
+
+		final ZoomAction zoomOutAct = new ZoomAction(this, false);
+		zoomOutAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+		zoomOutAct.putValue(FlatButton.ICON_NAME_PROP, "zoom_out");
+		zoomOutAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
+		zoomOutButton = new FlatButton(zoomOutAct);
+		zoomOutButton.setText("");
+
 //		SplitRecordAction splitRecordAct = new SplitRecordAction(this);
 //		JButton splitRecordButton = new JButton(splitRecordAct);
 		
-		toolbar.add(segmentationButton);
-		toolbar.addSeparator();
-		toolbar.add(playButton);
-		toolbar.add(exportButton);
-		toolbar.addSeparator();
-		toolbar.add(speakerButton);
-		toolbar.add(tierVisiblityButton);
-		toolbar.add(fontSizeButton);
-//		toolbar.add(splitRecordButton);
-		toolbar.addSeparator();
-		toolbar.add(zoomInButton);
-		toolbar.add(zoomOutButton);
+		toolbar.add(segmentationButton, IconStrip.IconStripPosition.LEFT);
+		toolbar.add(playButton, IconStrip.IconStripPosition.LEFT);
+		toolbar.add(exportButton, IconStrip.IconStripPosition.LEFT);
+		toolbar.add(speakerButton, IconStrip.IconStripPosition.LEFT);
+		toolbar.add(tierVisiblityButton, IconStrip.IconStripPosition.LEFT);
+		toolbar.add(fontSizeButton, IconStrip.IconStripPosition.RIGHT);
+		toolbar.add(zoomInButton, IconStrip.IconStripPosition.RIGHT);
+		toolbar.add(zoomOutButton, IconStrip.IconStripPosition.RIGHT);
 		
 		return toolbar;
 	}

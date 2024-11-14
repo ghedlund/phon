@@ -58,6 +58,12 @@ public class IconStrip extends JPanel {
         return retVal;
     }
 
+    public void addSeparator(IconStripPosition position) {
+        final int orientation = ((LayoutManager)getLayout()).layout;
+        final JSeparator separator = new JSeparator(orientation);
+        add(separator, position);
+    }
+
     /**
      * Custom layout manager for icon strip
      */
@@ -96,6 +102,7 @@ public class IconStrip extends JPanel {
                 int maxWidth = insetWidth;
                 int maxHeight = insetHeight;
                 for(Component comp:componentMap.keySet()) {
+                    if(!comp.isVisible()) continue;
                     final Dimension prefSize = comp.getPreferredSize();
                     if(layout == SwingConstants.HORIZONTAL) {
                         maxWidth += prefSize.width;
@@ -150,6 +157,7 @@ public class IconStrip extends JPanel {
                 int prefWidth = 0;
                 int prefHeight = 0;
                 for(Component comp:componentMap.keySet()) {
+                    if(!comp.isVisible()) continue;
                     final Dimension prefSize = comp.getPreferredSize();
                     if(layout == SwingConstants.HORIZONTAL) {
                         prefWidth += prefSize.width;
@@ -174,6 +182,7 @@ public class IconStrip extends JPanel {
                 int prefWidth = 0;
                 int prefHeight = 0;
                 for(Component comp:componentMap.keySet()) {
+                    if(!comp.isVisible()) continue;
                     final Dimension prefSize = comp.getPreferredSize();
                     if(layout == SwingConstants.HORIZONTAL) {
                         prefWidth += prefSize.width;
@@ -199,6 +208,7 @@ public class IconStrip extends JPanel {
                 int currentY = insets.top;
                 // layout left/top components
                 for(Component comp:componentMap.keySet()) {
+                    if(!comp.isVisible()) continue;
                     final IconStripPosition position = componentMap.get(comp);
                     if(position == IconStripPosition.LEFT) {
                         final Dimension prefSize = comp.getPreferredSize();
@@ -223,6 +233,7 @@ public class IconStrip extends JPanel {
                     currentY = size.height/2;
                 }
                 for(Component comp:componentMap.keySet()) {
+                    if(!comp.isVisible()) continue;
                     final IconStripPosition position = componentMap.get(comp);
                     if(position == IconStripPosition.CENTER) {
                         final Dimension prefSize = comp.getPreferredSize();
@@ -235,6 +246,7 @@ public class IconStrip extends JPanel {
                 }
 
                 for(Component comp:componentMap.keySet()) {
+                    if(!comp.isVisible()) continue;
                     final IconStripPosition position = componentMap.get(comp);
                     if(position == IconStripPosition.CENTER) {
                         final Dimension prefSize = comp.getPreferredSize();
@@ -259,6 +271,7 @@ public class IconStrip extends JPanel {
                     currentY = size.height - insets.bottom;
                 }
                 for(Component comp:componentMap.keySet()) {
+                    if(!comp.isVisible()) continue;
                     final IconStripPosition position = componentMap.get(comp);
                     if(position == IconStripPosition.RIGHT) {
                         final Dimension prefSize = comp.getPreferredSize();
@@ -271,6 +284,7 @@ public class IconStrip extends JPanel {
                 }
 
                 for(Component comp:componentMap.keySet()) {
+                    if(!comp.isVisible()) continue;
                     final IconStripPosition position = componentMap.get(comp);
                     if(position == IconStripPosition.RIGHT) {
                         final Dimension prefSize = comp.getPreferredSize();
@@ -290,6 +304,6 @@ public class IconStrip extends JPanel {
             }
 
         }
-
     }
+
 }

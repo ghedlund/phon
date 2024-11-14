@@ -133,7 +133,7 @@ public class DefaultRecordGridUI extends RecordGridUI {
 	
 	private int getSpeakerLabelHeight() {
 		renderer.setFont(recordGrid.getFont().deriveFont(Font.BOLD));
-		renderer.setIcon(IconManager.getInstance().getIcon("apps/system-users", IconSize.SMALL));
+		renderer.setIcon(IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "person", IconSize.SMALL, UIManager.getColor("Label.foreground")));
 		renderer.setText("Testy McTester");
 		
 		return renderer.getPreferredSize().height;
@@ -185,7 +185,7 @@ public class DefaultRecordGridUI extends RecordGridUI {
 	 */
 	private Rectangle getSpeakerLabelRect(Participant speaker) {
 		renderer.setFont(recordGrid.getFont().deriveFont(Font.BOLD));
-		renderer.setIcon(IconManager.getInstance().getIcon("apps/system-users", IconSize.SMALL));
+		renderer.setIcon(IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "person", IconSize.SMALL, UIManager.getColor("Label.foreground")));
 		renderer.setText(speaker.getName());
 		
 		int y = TOP_BOTTOM_MARGIN + 
@@ -480,12 +480,7 @@ public class DefaultRecordGridUI extends RecordGridUI {
 			msgBuilder.append(")");
 		}
 
-		StockIcon stockIcon = (OSInfo.isMacOs() ? MacOSStockIcon.AlertNoteIcon
-				: WindowsStockIcon.INFO);
-		Icon icon = (recordList.size() > 0
-				? IconManager.getInstance().getIcon("emblems/flag-red", IconSize.XSMALL)
-				: IconManager.getInstance().getSystemStockIcon(stockIcon, IconSize.XSMALL));
-
+		final ImageIcon icon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "more", IconSize.SMALL, UIManager.getColor("Label.foreground"));
 		DropDownIcon dropDownIcon = new DropDownIcon(icon, 0, SwingConstants.BOTTOM);
 		renderer.setHorizontalTextPosition(SwingConstants.LEFT);
 		renderer.setIcon(dropDownIcon);
@@ -651,7 +646,7 @@ public class DefaultRecordGridUI extends RecordGridUI {
 		Rectangle speakerLabelRect = getSpeakerLabelRect(speaker);
 		speakerLabelRect.x += recordGrid.getVisibleRect().x;
 
-		DropDownIcon dropDownIcon = new DropDownIcon(IconManager.getInstance().getIcon("apps/system-users", IconSize.SMALL),
+		DropDownIcon dropDownIcon = new DropDownIcon(IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "person", IconSize.SMALL, UIManager.getColor("Label.foreground")),
 			0, SwingConstants.BOTTOM);
 
 		renderer.setHorizontalTextPosition(SwingConstants.RIGHT);
@@ -746,7 +741,7 @@ public class DefaultRecordGridUI extends RecordGridUI {
 				warnings = "Overlapping segments ("
 						+ overlappingRecordsList.stream().map(rIdx-> String.format("#%d", rIdx+1)).collect(Collectors.joining(","))
 						+ ")";
-				recordIcon = IconManager.getInstance().getIcon("emblems/flag-red", IconSize.XSMALL);
+				recordIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "flag", IconSize.SMALL, Color.red);
 			}
 		}
 		
@@ -754,7 +749,7 @@ public class DefaultRecordGridUI extends RecordGridUI {
 		float recordEndTime = recordGrid.timeAtX(segmentRect.getMaxX());
 		if(recordGrid.getTimeModel().getMediaEndTime() > 0.0f && recordEndTime > recordGrid.getTimeModel().getMediaEndTime()) {
 			warnings = (warnings != null ? warnings + "\n" : "" ) + "Segment out of bounds";
-			recordIcon = IconManager.getInstance().getIcon("emblems/flag-red", IconSize.XSMALL);
+			recordIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "flag", IconSize.SMALL, Color.red);
 		}
 		
 		if(recordIndex >= 0) {	
@@ -773,7 +768,7 @@ public class DefaultRecordGridUI extends RecordGridUI {
 			recordLblColor = Color.blue;
 			Rectangle2D lblRect = paintRecordNumberLabel(g2, recordNum-1, recordIcon, recordLblColor, segmentRect);
 			
-			ImageIcon acceptIcon = IconManager.getInstance().getIcon("actions/list-add", IconSize.XSMALL);
+			ImageIcon acceptIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "check", IconSize.SMALL, UIManager.getColor("Label.foreground"));
 			Rectangle2D acceptRect = new Rectangle2D.Double(lblRect.getMaxX() + 2, lblRect.getY(),
 					acceptIcon.getIconWidth(), acceptIcon.getIconHeight());
 			g2.drawImage(acceptIcon.getImage(), (int)acceptRect.getX(), (int)acceptRect.getY(), recordGrid);
@@ -783,7 +778,7 @@ public class DefaultRecordGridUI extends RecordGridUI {
 			actionsTree = actionsTree.add(acceptAct, acceptRect2);
 			messageTree = messageTree.add("Accept split", acceptRect2);
 			
-			ImageIcon cancelIcon = IconManager.getInstance().getIcon("actions/button_cancel", IconSize.XSMALL);
+			ImageIcon cancelIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "close", IconSize.SMALL, UIManager.getColor("Label.foreground"));
 			Rectangle2D cancelRect = new Rectangle2D.Double(acceptRect.getMaxX() + 2, acceptRect.getY(),
 					cancelIcon.getIconWidth(), cancelIcon.getIconHeight());
 			g2.drawImage(cancelIcon.getImage(), (int)cancelRect.getX(), (int)cancelRect.getY(), recordGrid);

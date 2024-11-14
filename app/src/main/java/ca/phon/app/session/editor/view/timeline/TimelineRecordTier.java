@@ -32,6 +32,8 @@ import ca.phon.query.db.ResultSet;
 import ca.phon.query.script.*;
 import ca.phon.session.Record;
 import ca.phon.session.*;
+import ca.phon.ui.FlatButton;
+import ca.phon.ui.IconStrip;
 import ca.phon.ui.action.*;
 import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.ui.layout.ButtonBarBuilder;
@@ -123,13 +125,16 @@ public class TimelineRecordTier extends TimelineTier implements ClipboardOwner {
 	}
 
 	private void addToolbarButtons() {
-		JToolBar toolbar = getParentView().getToolbar();
+		IconStrip toolbar = getParentView().getToolbar();
 		
-		toolbar.addSeparator();
+		toolbar.addSeparator(IconStrip.IconStripPosition.LEFT);
 		
 		SplitRecordAction splitAct = new SplitRecordAction(getParentView());
-		splitButton = new JButton(splitAct);
-		toolbar.add(splitButton);
+		splitAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+		splitAct.putValue(FlatButton.ICON_NAME_PROP, "split_scene");
+		splitAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
+		splitButton = new FlatButton(splitAct);
+		toolbar.add(splitButton, IconStrip.IconStripPosition.LEFT);
 		splitButton.addActionListener( (e) -> {
 			splitButton.setVisible(false);
 			cancelSplitButton.setVisible(true);
@@ -139,30 +144,33 @@ public class TimelineRecordTier extends TimelineTier implements ClipboardOwner {
 		final PhonUIAction<Boolean> endSplitModeAct = PhonUIAction.eventConsumer(this::onEndSplitRecord, false);
 		endSplitModeAct.putValue(PhonUIAction.NAME, "Exit split record");
 		endSplitModeAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Exit split record mode without accepting split");
-		endSplitModeAct.putValue(PhonUIAction.SMALL_ICON,
-				IconManager.getInstance().getIcon("actions/button_cancel", IconSize.SMALL));
-		cancelSplitButton = new JButton(endSplitModeAct);
+		endSplitModeAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+		endSplitModeAct.putValue(FlatButton.ICON_NAME_PROP, "close");
+		endSplitModeAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
+		cancelSplitButton = new FlatButton(endSplitModeAct);
 		cancelSplitButton.setVisible(false);
-		toolbar.add(cancelSplitButton);
+		toolbar.add(cancelSplitButton, IconStrip.IconStripPosition.LEFT);
 		
 		final PhonUIAction<Boolean> acceptSplitAct = PhonUIAction.eventConsumer(this::onEndSplitRecord, true);
 		acceptSplitAct.putValue(PhonUIAction.NAME, "Accept record split");
 		acceptSplitAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "");
-		acceptSplitAct.putValue(PhonUIAction.SMALL_ICON,
-				IconManager.getInstance().getIcon("actions/list-add", IconSize.SMALL));
-		acceptSplitButton = new JButton(acceptSplitAct);
+		acceptSplitAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+		acceptSplitAct.putValue(FlatButton.ICON_NAME_PROP, "check");
+		acceptSplitAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
+		acceptSplitButton = new FlatButton(acceptSplitAct);
 		acceptSplitButton.setVisible(false);
-		toolbar.add(acceptSplitButton);
+		toolbar.add(acceptSplitButton, IconStrip.IconStripPosition.LEFT);
 
-		toolbar.addSeparator();
+		toolbar.addSeparator(IconStrip.IconStripPosition.LEFT);
 
 		final PhonUIAction<Void> moveSegmentsAct = PhonUIAction.eventConsumer(this::onMoveSegments);
 		moveSegmentsAct.putValue(PhonUIAction.NAME, "Move records");
 		moveSegmentsAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Move selected records a specified amount of time");
-		moveSegmentsAct.putValue(PhonUIAction.SMALL_ICON,
-				IconManager.getInstance().getIcon("actions/transform-move", IconSize.SMALL));
-		moveSegmentsButton = new JButton(moveSegmentsAct);
-		toolbar.add(moveSegmentsButton);
+		moveSegmentsAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+		moveSegmentsAct.putValue(FlatButton.ICON_NAME_PROP, "arrows_outward");
+		moveSegmentsAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
+		moveSegmentsButton = new FlatButton(moveSegmentsAct);
+		toolbar.add(moveSegmentsButton, IconStrip.IconStripPosition.LEFT);
 
 		addComponentListener(new ComponentListener() {
 			@Override
@@ -1071,7 +1079,9 @@ public class TimelineRecordTier extends TimelineTier implements ClipboardOwner {
 
 		// change speaker menu
 		JMenu changeSpeakerMenu = builder.addMenu(".", "Change participant");
-		changeSpeakerMenu.setIcon(IconManager.getInstance().getIcon("apps/system-users", IconSize.SMALL));
+		final ImageIcon speakerIcon =
+				IconManager.getInstance().buildFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "person", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
+		changeSpeakerMenu.setIcon(speakerIcon);
 		int speakerNum = 1;
 		for (Participant speaker : recordGrid.getSpeakers()) {
 			KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_0 + speakerNum,
@@ -1147,7 +1157,7 @@ public class TimelineRecordTier extends TimelineTier implements ClipboardOwner {
 			acceptSplitAct.putValue(PhonUIAction.NAME, "Accept record split");
 			acceptSplitAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "");
 			acceptSplitAct.putValue(PhonUIAction.SMALL_ICON,
-					IconManager.getInstance().getIcon("actions/list-add", IconSize.SMALL));
+					IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "check", IconSize.SMALL, UIManager.getColor("Button.foreground")));
 			if (includeAccel)
 				acceptSplitAct.putValue(PhonUIAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
 			builder.addItem(".", acceptSplitAct);
@@ -1156,7 +1166,7 @@ public class TimelineRecordTier extends TimelineTier implements ClipboardOwner {
 			endSplitModeAct.putValue(PhonUIAction.NAME, "Exit split record");
 			endSplitModeAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Exit split record mode without accepting split");
 			endSplitModeAct.putValue(PhonUIAction.SMALL_ICON,
-					IconManager.getInstance().getIcon("actions/button_cancel", IconSize.SMALL));
+					IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "close", IconSize.SMALL, UIManager.getColor("Button.foreground")));
 			if (includeAccel)
 				endSplitModeAct.putValue(PhonUIAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
 			builder.addItem(".", endSplitModeAct);

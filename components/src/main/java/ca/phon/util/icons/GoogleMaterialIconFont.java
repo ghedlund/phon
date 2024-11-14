@@ -97,6 +97,10 @@ public class GoogleMaterialIconFont implements IconFont {
             }
         }
         final Font iconFont = font.deriveFont(size);
+        final var codepoint = codepoints.get(name.toLowerCase());
+        if(codepoint == null) {
+            throw new IllegalArgumentException("No icon with name " + name);
+        }
         final BufferedImage img = buildImage(Character.toString(codepoints.get(name.toLowerCase())), iconFont, color);
         final ImageIcon icon = new ImageIcon(img);
         return icon;

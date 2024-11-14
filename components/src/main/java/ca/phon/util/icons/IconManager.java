@@ -489,7 +489,11 @@ public class IconManager {
 			final GoogleMaterialFonts googleMaterialStaticFont = GoogleMaterialFonts.fromString(fontName);
 			if(googleMaterialStaticFont != null) {
 				GoogleMaterialIconFont iconFont = GoogleMaterialIconFont.getIconFont(googleMaterialStaticFont);
-				icon = iconFont.buildIcon(iconName, (float)size.getWidth() * 2, color);
+				try {
+					icon = iconFont.buildIcon(iconName, (float) size.getWidth() * 2, color);
+				} catch (Exception e) {
+					icon = null;
+				}
 			}
 		}
 		if(icon == null) {
