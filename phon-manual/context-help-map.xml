@@ -43,7 +43,7 @@
                path="session_editor/inter_transcriber_reliability.html"/>
    <appContext helpID="editor_keystrokes" path="session_editor/editor_keystrokes.html"/>
    <appContext helpID="conceptId" path="tools/ipamap.html"/>
-   <appContext helpID="phonshell" path="tools/PhonShell.html"/>
+   <appContext helpID="phonshell" path="tools/phonshell.html"/>
    <appContext helpID="iso-language-codes" path="tools/iso_langauge_codes.html"/>
    <appContext helpID="record_data" path="transcription/record_data.html"/>
    <appContext helpID="conceptId" path="session_editor/blind_transcription.html"/>
