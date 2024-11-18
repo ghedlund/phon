@@ -173,6 +173,9 @@ public class FlatButtonUI extends ButtonUI {
             }
 
             g2.setColor(button.isRolloverEnabled() && button.getModel().isRollover() ? button.getTextHoverColor() : button.getForeground());
+            if(isDisabled) {
+                g2.setColor(UIManager.getColor("Button.disabledText"));
+            }
             g2.drawString(text, textX, textY + fm.getAscent());
         }
 

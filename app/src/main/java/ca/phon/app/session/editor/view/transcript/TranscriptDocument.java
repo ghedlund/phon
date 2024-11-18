@@ -1820,7 +1820,6 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
             publish(new ArrayList<>(batchBuilder.getBatch()));
             totalElements += batchBuilder.clear();
 
-//            SimpleAttributeSet newLineAttrs;
             for (var hook : insertionHooks) {
                 batchBuilder.appendAll(hook.startTranscript());
             }
