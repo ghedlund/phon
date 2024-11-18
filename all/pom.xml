@@ -55,7 +55,7 @@
 		<ca.phon.phon-groovy-plugin.version>8</ca.phon.phon-groovy-plugin.version>
 		<ca.phon.phon-praat-plugin.version>71-SNAPSHOT</ca.phon.phon-praat-plugin.version>
 		<ca.phon.phon-version-triggers.version>11</ca.phon.phon-version-triggers.version>
-		<ca.phon.phontalk.version>4.0.0-3.0.1-SNAPSHOT</ca.phon.phontalk.version>
+		<ca.phon.phontalk.version>4.0.0-3.0.3-SNAPSHOT</ca.phon.phontalk.version>
 	</properties>
 
 	<dependencies>
