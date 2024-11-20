@@ -34,10 +34,10 @@ public class ZoomAction extends TimelineAction {
 	private final static String CMD_NAME_ZOOMOUT = "Zoom out";
 	
 	private final static ImageIcon ZOOMIN_ICON = 
-			IconManager.getInstance().getIcon("actions/zoom-in-3", IconSize.SMALL);
+			IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "zoom_in", IconSize.SMALL, UIManager.getColor("Button.foreground"));
 	
 	private final static ImageIcon ZOOMOUT_ICON =
-			IconManager.getInstance().getIcon("actions/zoom-out-3", IconSize.SMALL);
+			IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "zoom_out", IconSize.SMALL, UIManager.getColor("Button.foreground"));
 	
 	private final static String ZOOM_AMOUNT_PROP = 
 			TimelineView.class.getName() + ".zoomAmount";

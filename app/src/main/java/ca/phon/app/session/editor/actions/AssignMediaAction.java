@@ -33,8 +33,8 @@ public class AssignMediaAction extends SessionEditorAction {
 	
 	private final static String DESC = "Select media file for session using filesystem browser";
 	
-	private final static ImageIcon ICON = 
-			IconManager.getInstance().getIcon("actions/film-link", IconSize.SMALL);
+	private final static ImageIcon ICON =
+			IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "media_link", IconSize.SMALL, UIManager.getColor("Button.foreground"));
 
 	public AssignMediaAction(SessionEditor editor) {
 		super(editor);

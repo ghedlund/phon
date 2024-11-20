@@ -85,7 +85,7 @@ public final class TimelineView extends EditorView {
 	private FlatButton speakerButton;
 	private JPopupMenu speakerMenu;
 	
-	private FlatButton tierVisiblityButton;
+	private FlatButton tierVisibilityButton;
 	private JPopupMenu tierVisibilityMenu;
 
 	private FlatButton fontSizeButton;
@@ -288,8 +288,10 @@ public final class TimelineView extends EditorView {
 		segmentationAction.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
 		segmentationAction.putValue(FlatButton.ICON_NAME_PROP, "splitscreen_vertical_add");
 		segmentationAction.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
-		segmentationAction.putValue(PhonUIAction.NAME, "Start Segmentation");
+		segmentationAction.putValue(PhonUIAction.NAME, "Start Segmentation...");
 		segmentationButton = new FlatButton(segmentationAction);
+		segmentationButton.setFocusable(false);
+		segmentationButton.setEnabled(false);
 		
 		speakerMenu = new JPopupMenu();
 		speakerMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -416,7 +418,7 @@ public final class TimelineView extends EditorView {
 		});
 		
 		final PhonUIAction<Void> tierVisibilityAct = PhonUIAction.runnable(() -> {
-			tierVisibilityMenu.show(tierVisiblityButton, 0, tierVisiblityButton.getHeight());
+			tierVisibilityMenu.show(tierVisibilityButton, 0, tierVisibilityButton.getHeight());
 		});
 		tierVisibilityAct.putValue(PhonUIAction.NAME, "Tiers");
 		tierVisibilityAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Show tier visibility menu");
@@ -424,15 +426,15 @@ public final class TimelineView extends EditorView {
 //				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "view_list", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 //		tierVisibilityAct.putValue(PhonUIAction.SMALL_ICON, tierIcon);
 		tierVisibilityAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
-		tierVisibilityAct.putValue(FlatButton.ICON_NAME_PROP, "view_list");
+		tierVisibilityAct.putValue(FlatButton.ICON_NAME_PROP, "data_table");
 		tierVisibilityAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
 		tierVisibilityAct.putValue(DropDownButton.BUTTON_POPUP, tierVisibilityMenu);
 		tierVisibilityAct.putValue(DropDownButton.ARROW_ICON_POSITION, SwingConstants.BOTTOM);
 		tierVisibilityAct.putValue(DropDownButton.ARROW_ICON_GAP, 2);
 		
-		tierVisiblityButton = new FlatButton(tierVisibilityAct);
-		tierVisiblityButton.setFocusable(false);
-		tierVisiblityButton.setBorderPainted(false);
+		tierVisibilityButton = new FlatButton(tierVisibilityAct);
+		tierVisibilityButton.setFocusable(false);
+		tierVisibilityButton.setBorderPainted(false);
 
 		fontSizeMenu = new JPopupMenu();
 		fontSizeMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -525,7 +527,7 @@ public final class TimelineView extends EditorView {
 		toolbar.add(playButton, IconStrip.IconStripPosition.LEFT);
 		toolbar.add(exportButton, IconStrip.IconStripPosition.LEFT);
 		toolbar.add(speakerButton, IconStrip.IconStripPosition.LEFT);
-		toolbar.add(tierVisiblityButton, IconStrip.IconStripPosition.LEFT);
+		toolbar.add(tierVisibilityButton, IconStrip.IconStripPosition.LEFT);
 		toolbar.add(fontSizeButton, IconStrip.IconStripPosition.RIGHT);
 		toolbar.add(zoomInButton, IconStrip.IconStripPosition.RIGHT);
 		toolbar.add(zoomOutButton, IconStrip.IconStripPosition.RIGHT);
@@ -628,7 +630,9 @@ public final class TimelineView extends EditorView {
 			//timeModel.setEndTime(ls.length());
 			wavTier.getWaveformDisplay().setEndTime(ls.length());
 			wavTier.getWaveformDisplay().setLongSound(ls);
-			
+
+			segmentationButton.setEnabled(mediaModel.isSessionMediaAvailable());
+
 			PlaySegment playSeg = ls.getExtension(PlaySegment.class);
 			playButton.setEnabled( playSeg != null );
 			
@@ -713,13 +717,11 @@ public final class TimelineView extends EditorView {
 		final PhonUIAction<Void> exportSelectionAct = PhonUIAction.runnable(this::exportSelection);
 		exportSelectionAct.putValue(PhonUIAction.NAME, "Export selection...");
 		exportSelectionAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Export selection (audio only)");
-		exportSelectionAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/document-save-as", IconSize.SMALL));
-		
+
 		final PhonUIAction<Void> exportSegmentAct = PhonUIAction.runnable(this::exportSegment);
 		exportSegmentAct.putValue(PhonUIAction.NAME, "Export record segment...");
 		exportSegmentAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Export record segment (audio only)");
-		exportSegmentAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/document-save-as", IconSize.SMALL));
-		
+
 		builder.addItem(".", exportSelectionAct).setEnabled(getWaveformTier().getSelection() != null);
 		builder.addItem(".", exportSegmentAct).setEnabled(getRecordTier().currentRecordInterval() != null);
 		builder.addSeparator(".", "s1");
@@ -761,8 +763,9 @@ public final class TimelineView extends EditorView {
 			final PhonUIAction<Void> stopAct = PhonUIAction.runnable(TimelineView.this::stopPlaying);
 			stopAct.putValue(PhonUIAction.NAME, "Stop playback");
 			stopAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Stop segment playback");
-			stopAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/media-playback-stop", IconSize.SMALL));
-			
+			final ImageIcon stopIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "stop", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+			stopAct.putValue(PhonUIAction.SMALL_ICON, stopIcon);
+
 			builder.addItem(".", stopAct);
 			builder.addSeparator(".", "stop");
 		}
@@ -770,14 +773,16 @@ public final class TimelineView extends EditorView {
 		final PhonUIAction<Void> playSelectionAct = PhonUIAction.runnable(TimelineView.this::playSelection);
 		playSelectionAct.putValue(PhonUIAction.NAME, "Play selection");
 		playSelectionAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Play current selection");
-		playSelectionAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/media-playback-start", IconSize.SMALL));
+		final ImageIcon playIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "play_arrow", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+		playSelectionAct.putValue(PhonUIAction.SMALL_ICON, playIcon);
 		final JMenuItem playSelectionItem = new JMenuItem(playSelectionAct);
 		playSelectionItem.setEnabled( getWaveformTier().getSelection() != null );
 		
 		final PhonUIAction<Void> playSegmentAct = PhonUIAction.runnable(TimelineView.this::playSegment);
 		playSegmentAct.putValue(PhonUIAction.NAME, "Play record segment");
 		playSegmentAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Play current record segment");
-		playSegmentAct.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/media-playback-start", IconSize.SMALL));
+		final ImageIcon playSegmentIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "play_arrow", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+		playSegmentAct.putValue(PhonUIAction.SMALL_ICON, playSegmentIcon);
 		final JMenuItem playSegmentItem = new JMenuItem(playSegmentAct);
 		playSegmentItem.setEnabled( getRecordTier().currentRecordInterval() != null );
 		
@@ -902,7 +907,8 @@ public final class TimelineView extends EditorView {
 	
 	private void onSegmentationStarted(EditorEvent<SegmentationHandler> ee) {
 		segmentationButton.setText("Stop Segmentation");
-		segmentationButton.setIcon(IconManager.getInstance().getIcon("actions/media-playback-stop", IconSize.SMALL));
+		final ImageIcon stopIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "stop", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
+		segmentationButton.setIcon(stopIcon);
 		
 		if(mediaPlayerPlaybackMarker != null)
 			timeModel.removeMarker(mediaPlayerPlaybackMarker);
@@ -910,8 +916,9 @@ public final class TimelineView extends EditorView {
 	
 	private void onSegmentationEnded(EditorEvent<SegmentationHandler> ee) {
 		segmentationButton.setText("Start Segmentation");
-		segmentationButton.setIcon(IconManager.getInstance().getIcon("actions/segmentation", IconSize.SMALL));
-		
+		final ImageIcon segmentationIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "splitscreen_vertical_add", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
+		segmentationButton.setIcon(segmentationIcon);
+
 		getEditor().putExtension(SegmentationHandler.class, null);
 
 		repaint();
@@ -1034,21 +1041,25 @@ public final class TimelineView extends EditorView {
 		PhonUIAction<Void> segmentationAction = PhonUIAction.runnable(this::toggleSegmentation);
 		if(getEditor().getExtension(SegmentationHandler.class) != null) {
 			segmentationAction.putValue(PhonUIAction.NAME, "Stop Segmentation");
-			segmentationAction.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/media-playback-stop", IconSize.SMALL));
+			final ImageIcon stopIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "stop", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+			segmentationAction.putValue(PhonUIAction.SMALL_ICON, stopIcon);
 		} else {
 			segmentationAction.putValue(PhonUIAction.NAME, "Start Segmentation");
-			segmentationAction.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/segmentation", IconSize.SMALL));
+			final ImageIcon segmentationIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "splitscreen_vertical_add", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+			segmentationAction.putValue(PhonUIAction.SMALL_ICON, segmentationIcon);
 		}
 		builder.addItem(".", segmentationAction);
 		
 		builder.addSeparator(".", "visiblity");
 
 		JMenu participantMenu = builder.addMenu(".", "Participants");
-		participantMenu.setIcon(IconManager.getInstance().getIcon("apps/system-users", IconSize.SMALL));
+		final ImageIcon usersIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "group", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+		participantMenu.setIcon(usersIcon);
 		recordGrid.setupSpeakerMenu(new MenuBuilder(participantMenu));
 
 		JMenu tierMenu = builder.addMenu(".", "Tiers");
-		tierMenu.setIcon(IconManager.getInstance().getIcon("misc/record", IconSize.SMALL));
+		final ImageIcon tierIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "data_table", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+		tierMenu.setIcon(tierIcon);
 		recordGrid.setupTierMenu(new MenuBuilder(tierMenu));
 		
 		builder.addSeparator(".", "zoom");
@@ -1078,21 +1089,25 @@ public final class TimelineView extends EditorView {
 		PhonUIAction<Void> segmentationAction = PhonUIAction.runnable(this::toggleSegmentation);
 		if(getEditor().getExtension(SegmentationHandler.class) != null) {
 			segmentationAction.putValue(PhonUIAction.NAME, "Stop Segmentation");
-			segmentationAction.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/media-playback-stop-7", IconSize.SMALL));
+			final ImageIcon stopIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "stop", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+			segmentationAction.putValue(PhonUIAction.SMALL_ICON, stopIcon);
 		} else {
 			segmentationAction.putValue(PhonUIAction.NAME, "Start Segmentation");
-			segmentationAction.putValue(PhonUIAction.SMALL_ICON, IconManager.getInstance().getIcon("actions/segmentation", IconSize.SMALL));
+			final ImageIcon segmentationIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "splitscreen_vertical_add", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+			segmentationAction.putValue(PhonUIAction.SMALL_ICON, segmentationIcon);
 		}
 		builder.addItem(".", segmentationAction);
 		
 		builder.addSeparator(".", "visiblity");
 
 		JMenu participantMenu = builder.addMenu(".", "Participants");
-		participantMenu.setIcon(IconManager.getInstance().getIcon("apps/system-users", IconSize.SMALL));
+		final ImageIcon usersIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "group", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+		participantMenu.setIcon(usersIcon);
 		recordGrid.setupSpeakerMenu(new MenuBuilder(participantMenu));
 
 		JMenu tierMenu = builder.addMenu(".", "Tiers");
-		tierMenu.setIcon(IconManager.getInstance().getIcon("misc/record", IconSize.SMALL));
+		final ImageIcon tierIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "data_table", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+		tierMenu.setIcon(tierIcon);
 		recordGrid.setupTierMenu(new MenuBuilder(tierMenu));
 		
 		builder.addSeparator(".", "zoom");
@@ -1187,8 +1202,9 @@ public final class TimelineView extends EditorView {
 					if(mediaPlayerPlaybackMarker != null) {
 						timeModel.removeMarker(mediaPlayerPlaybackMarker);
 					}
-					
-					playButton.setIcon(IconManager.getInstance().getIcon("actions/media-playback-stop", IconSize.SMALL));
+
+					final ImageIcon stopIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "stop", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+					playButton.setIcon(stopIcon);
 					playButton.setText("Stop playback");
 				} else {
 					if(segmentPlaybackMarker != null)
@@ -1197,8 +1213,9 @@ public final class TimelineView extends EditorView {
 
 					if(mediaPlayerPlaybackMarker != null)
 						timeModel.addMarker(mediaPlayerPlaybackMarker);
-					
-					playButton.setIcon(IconManager.getInstance().getIcon("actions/media-playback-start", IconSize.SMALL));
+
+					final ImageIcon playIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "play_arrow", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+					playButton.setIcon(playIcon);
 					playButton.setText("Play segment");
 				}
 			} else if(SegmentPlayback.TIME_PROP.contentEquals(evt.getPropertyName())) {

@@ -41,8 +41,8 @@ public class GenerateSessionAudioAction extends SessionEditorAction {
 	
 	private final static String DESC = "Generate or re-encode session audio file";
 	
-	public final static ImageIcon ICON = 
-			IconManager.getInstance().getIcon("misc/oscilloscope", IconSize.SMALL);
+//	public final static ImageIcon ICON =
+//			IconManager.getInstance().getIcon("misc/oscilloscope", IconSize.SMALL);
 	
 	private final static String ORIGINAL_FILE_SUFFIX = "-orig";
 	
@@ -55,7 +55,7 @@ public class GenerateSessionAudioAction extends SessionEditorAction {
 		
 		putValue(NAME, TXT);
 		putValue(SHORT_DESCRIPTION, DESC);
-		putValue(SMALL_ICON, ICON);
+//		putValue(SMALL_ICON, ICON);
 	}
 	
 	public void addTaskListener(PhonTaskListener listener) {

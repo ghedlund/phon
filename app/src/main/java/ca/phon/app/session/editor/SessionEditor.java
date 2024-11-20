@@ -272,7 +272,7 @@ public class SessionEditor extends JPanel implements IExtendable, ClipboardOwner
 			@Override
 			protected void initButtons() {
 				add(saveButton, IconStripPosition.LEFT);
-				add(new JToolBar.Separator(new Dimension(IconSize.MEDIUM_LARGE.getWidth() + 6, 10)), IconStripPosition.LEFT);
+				add(new JToolBar.Separator(new Dimension(IconSize.MEDIUM_LARGE.getWidth(), 10)), IconStripPosition.LEFT);
 				super.initButtons();
 			}
 		};
