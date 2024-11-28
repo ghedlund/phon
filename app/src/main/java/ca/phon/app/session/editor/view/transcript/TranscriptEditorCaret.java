@@ -3,6 +3,7 @@ package ca.phon.app.session.editor.view.transcript;
 import ca.phon.app.log.LogUtil;
 import ca.phon.session.position.TranscriptElementLocation;
 import ca.phon.util.PrefHelper;
+import org.apache.logging.log4j.Level;
 
 import javax.swing.*;
 import javax.swing.plaf.TextUI;
@@ -138,7 +139,7 @@ public class TranscriptEditorCaret extends DefaultCaret {
         if(oldVal != freezeCaret) {
             fireStateChanged();
             if(PrefHelper.getBoolean("phon.debug", false)) {
-                LogUtil.info("Transcript Editor caret freeze: " + freezeCaret);
+                LogUtil.log(Level.TRACE, "Transcript Editor caret freeze: " + freezeCaret);
             }
         }
     }
