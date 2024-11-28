@@ -599,6 +599,7 @@ public class FindAndReplacePanel extends JPanel {
 				dummyTier.setText(newText);
 
 				final TierEdit edit = new TierEdit(getSession(), getEditorEventManager(), ele.asRecord(), tier, dummyTier.getValue());
+				edit.setValueAdjusting(false);
 				getUndoSupport().postEdit(edit);
 			} else if (ele.isComment()) {
 				final Comment comment = ele.asComment();
