@@ -6,10 +6,15 @@ import ca.phon.app.session.editor.undo.*;
 import ca.phon.extensions.ExtensionSupport;
 import ca.phon.extensions.IExtendable;
 import ca.phon.extensions.UnvalidatedValue;
+import ca.phon.ipamap2.IPAMap;
+import ca.phon.ipamap2.IPAMapGrid;
+import ca.phon.ipamap2.IPAMapGridContainer;
 import ca.phon.session.Record;
 import ca.phon.session.*;
 import ca.phon.session.position.TranscriptElementLocation;
 import ca.phon.session.tierdata.TierData;
+import ca.phon.ui.CalloutWindow;
+import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.action.PhonActionEvent;
 import ca.phon.ui.action.PhonUIAction;
 
@@ -335,6 +340,13 @@ public class TranscriptEditor extends JEditorPane implements IExtendable {
             }
         });
         actionMap.put("deleteElement", deleteAct);
+
+        // show ipa character map
+        KeyStroke ipaMap = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
+        inputMap.put(ipaMap, "showIpaMap");
+
+        PhonUIAction<Void> showIpaMapAct = PhonUIAction.runnable(this::showIpaMapCallout);
+        actionMap.put("showIpaMap", showIpaMapAct);
     }
 
     /**
@@ -1050,6 +1062,27 @@ public class TranscriptEditor extends JEditorPane implements IExtendable {
             edit.setValueAdjusting(false);
             undoSupport.postEdit(edit);
         });
+    }
+
+    /**
+     * Show ipa input map as a callout pointing at current cursor location
+     *
+     */
+    private void showIpaMapCallout() {
+        final IPAMapGridContainer ipaMap = new IPAMapGridContainer();
+        ipaMap.addDefaultGrids();
+        ipaMap.setPreferredSize(new Dimension(ipaMap.getPreferredSize().width, 300));
+        try {
+            final Rectangle2D caretRect = modelToView2D(getCaretPosition());
+            final Point caretPoint = new Point((int)caretRect.getCenterX(), (int)caretRect.getMaxY());
+            SwingUtilities.convertPointToScreen(caretPoint, this);
+            final JScrollPane scrollPane = new JScrollPane(ipaMap);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), scrollPane, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
+        } catch (BadLocationException e) {
+            LogUtil.warning(e);
+        }
+
     }
 
     /**

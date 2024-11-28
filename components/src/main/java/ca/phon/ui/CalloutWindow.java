@@ -102,7 +102,7 @@ public class CalloutWindow extends JDialog {
         setLayout(new BorderLayout());
 
         JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setSize(d);
+//        contentPanel.setSize(d);
         contentPanel.setBorder(new EmptyBorder(
             0,
             leftOfRect,
@@ -154,9 +154,9 @@ public class CalloutWindow extends JDialog {
     public static CalloutWindow showCallout(JFrame owner, boolean modal, JComponent content, int sideOfWindow, int topMiddleBottom, Point pointAtPos) {
         // Create a custom JDialog
         CalloutWindow dialog = new CalloutWindow(owner, content, sideOfWindow, topMiddleBottom, pointAtPos);
-        dialog.setModal(modal);
         dialog.pack();
         dialog.setVisible(true);
+        dialog.setModal(modal);
 
         return dialog;
     }
