@@ -20,6 +20,7 @@ import ca.phon.app.session.editor.search.FindManager.*;
 import ca.phon.app.session.editor.search.actions.*;
 import ca.phon.app.session.editor.undo.ChangeCommentEdit;
 import ca.phon.app.session.editor.undo.ChangeGemEdit;
+import ca.phon.app.session.editor.undo.SessionEditUndoSupport;
 import ca.phon.app.session.editor.undo.TierEdit;
 import ca.phon.app.session.editor.view.common.*;
 import ca.phon.app.session.editor.view.transcript.BoxSelectHighlightPainter;
@@ -106,7 +107,7 @@ public class FindAndReplacePanel extends JPanel {
 	private final EditorDataModel editorDataModel;
 	private final EditorSelectionModel selectionModel;
 	private final EditorEventManager editorEventManager;
-	private final UndoableEditSupport undoableEditSupport;
+	private final SessionEditUndoSupport undoableEditSupport;
 
 	private List<TranscriptElementRange> searchResults = new ArrayList<>();
 	private int currentResultIdx = -1;
@@ -128,7 +129,7 @@ public class FindAndReplacePanel extends JPanel {
 	 * @param selectionModel
 	 * @param eventManager
 	 */
-	public FindAndReplacePanel(EditorDataModel editorDataModel, EditorSelectionModel selectionModel, EditorEventManager eventManager, EditorViewModel editorViewModel, UndoableEditSupport undoSupport) {
+	public FindAndReplacePanel(EditorDataModel editorDataModel, EditorSelectionModel selectionModel, EditorEventManager eventManager, EditorViewModel editorViewModel, SessionEditUndoSupport undoSupport) {
 		super();
 
 		this.editorDataModel = editorDataModel;
@@ -542,7 +543,7 @@ public class FindAndReplacePanel extends JPanel {
 		return selectionModel;
 	}
 
-	public UndoableEditSupport getUndoSupport() {
+	public SessionEditUndoSupport getUndoSupport() {
 		return undoableEditSupport;
 	}
 	// end region
@@ -569,8 +570,8 @@ public class FindAndReplacePanel extends JPanel {
 
 	public void replaceAll() {
 		final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
-		getUndoSupport().beginUpdate();
 		final String replaceText = replaceField.getText();
+		getUndoSupport().beginUpdate("replace all occurrences of '" + searchField.getText() + "' with '" + replaceText + "'");
 		for(int i = searchResults.size()-1; i >= 0; i--) {
 			final TranscriptElementRange range = searchResults.get(i);
 
@@ -658,8 +659,10 @@ public class FindAndReplacePanel extends JPanel {
 			if(charPos >= 0)
 				transcriptView.getTranscriptEditor().setCaretPosition(charPos);
 		} else {
-			Toolkit.getDefaultToolkit().beep();
 			currentResultIdx = -1;
+			if(searchResults.size() > 0) {
+				findNext();
+			}
 		}
 	}
 
@@ -678,8 +681,10 @@ public class FindAndReplacePanel extends JPanel {
 			if (charPos >= 0)
 				transcriptView.getTranscriptEditor().setCaretPosition(charPos);
 		} else {
-			Toolkit.getDefaultToolkit().beep();
 			currentResultIdx = searchResults.size();
+			if(searchResults.size() > 0) {
+				findPrev();
+			}
 		}
 	}
 

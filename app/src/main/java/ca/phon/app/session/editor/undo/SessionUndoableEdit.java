@@ -90,10 +90,9 @@ public abstract class SessionUndoableEdit extends AbstractUndoableEdit implement
 		this.source = source;
 	}
 
-	// TODO - this logic needs to go into session editor somehow
-//	@Override
-//	public void redo() {
-//		final Component oldSource = getSource();
+	@Override
+	public void redo() {
+		final Component oldSource = getSource();
 //		if(getEditor() != null) {
 //			setSource(getEditor());
 //			final Integer recordIdx = getExtension(Integer.class);
@@ -101,9 +100,9 @@ public abstract class SessionUndoableEdit extends AbstractUndoableEdit implement
 //				getEditor().setCurrentRecordIndex(recordIdx.intValue());
 //			}
 //		}
-//		doIt();
-//		setSource(oldSource);
-//	}
+		doIt();
+		setSource(oldSource);
+	}
 	
 //	@Override
 //	public void undo() {

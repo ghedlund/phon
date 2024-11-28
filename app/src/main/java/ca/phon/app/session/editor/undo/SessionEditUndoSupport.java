@@ -25,6 +25,8 @@ import java.lang.ref.WeakReference;
  *
  */
 public class SessionEditUndoSupport extends UndoableEditSupport {
+
+	private String presentationName = "";
 	
 	public SessionEditUndoSupport() {
 	}
@@ -36,5 +38,55 @@ public class SessionEditUndoSupport extends UndoableEditSupport {
 		}
 		super.postEdit(e);
 	}
-	
+
+	@Override
+	protected CompoundEdit createCompoundEdit() {
+		return new SessionCompoundEdit(presentationName);
+	}
+
+	public void beginUpdate(String presentationName) {
+		this.presentationName = presentationName;
+		super.beginUpdate();
+		this.presentationName = "";
+	}
+
+	public void endUpdate() {
+		super.endUpdate();
+	}
+
+	private static class SessionCompoundEdit extends CompoundEdit {
+
+		private String presentationName = "";
+
+		public SessionCompoundEdit(String presentationName) {
+			super();
+			this.presentationName = presentationName;
+		}
+
+		@Override
+		public String getPresentationName() {
+			return presentationName;
+		}
+
+		@Override
+		public String getUndoPresentationName() {
+			return "Undo " + presentationName;
+		}
+
+		@Override
+		public String getRedoPresentationName() {
+			return "Redo " + presentationName;
+		}
+
+		@Override
+		public void undo() throws CannotUndoException {
+			super.undo();
+		}
+
+		@Override
+		public void redo() throws CannotRedoException {
+			super.redo();
+		}
+	}
+
 }
