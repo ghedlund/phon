@@ -91,7 +91,7 @@ public class CalloutWindow extends JDialog {
             topMiddleBottom
         );
         setUndecorated(true);
-        setResizable(true);
+        setResizable(false);
         setLocationRelativeTo(null);
         setShape(shape);
         setSize(

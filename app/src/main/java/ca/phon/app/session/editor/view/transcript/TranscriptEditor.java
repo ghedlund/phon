@@ -9,6 +9,7 @@ import ca.phon.extensions.UnvalidatedValue;
 import ca.phon.ipamap2.IPAMap;
 import ca.phon.ipamap2.IPAMapGrid;
 import ca.phon.ipamap2.IPAMapGridContainer;
+import ca.phon.ipamap2.IPAMapGridMouseListener;
 import ca.phon.session.Record;
 import ca.phon.session.*;
 import ca.phon.session.position.TranscriptElementLocation;
@@ -17,6 +18,7 @@ import ca.phon.ui.CalloutWindow;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.action.PhonActionEvent;
 import ca.phon.ui.action.PhonUIAction;
+import ca.phon.ui.ipamap.io.Cell;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -24,10 +26,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -40,7 +39,7 @@ import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-public class TranscriptEditor extends JEditorPane implements IExtendable {
+public class TranscriptEditor extends JEditorPane implements IExtendable, ClipboardOwner {
 
     public final static EditorEventType<Void> transcriptDocumentPopulated = new EditorEventType<>("transcriptDocumentPopulated", Void.class);
 
@@ -1071,14 +1070,54 @@ public class TranscriptEditor extends JEditorPane implements IExtendable {
     private void showIpaMapCallout() {
         final IPAMapGridContainer ipaMap = new IPAMapGridContainer();
         ipaMap.addDefaultGrids();
-        ipaMap.setPreferredSize(new Dimension(ipaMap.getPreferredSize().width, 300));
+        ipaMap.addCellMouseListener(new IPAMapGridMouseListener() {
+            @Override
+            public void mousePressed(Cell cell, MouseEvent me) {
+
+            }
+
+            @Override
+            public void mouseReleased(Cell cell, MouseEvent me) {
+
+            }
+
+            @Override
+            public void mouseClicked(Cell cell, MouseEvent me) {
+                // insert ipa character
+                final String ipaChar = cell.getText().replaceAll("◌", "");
+
+                // copy into system clipboard
+                final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                final Transferable currentContents = clipboard.getContents(TranscriptEditor.this);
+                clipboard.setContents(new StringSelection(ipaChar), TranscriptEditor.this);
+
+                // insert into document
+                TranscriptEditor.this.paste();
+
+                clipboard.setContents(currentContents, TranscriptEditor.this);
+            }
+
+            @Override
+            public void mouseEntered(Cell cell, MouseEvent me) {
+
+            }
+
+            @Override
+            public void mouseExited(Cell cell, MouseEvent me) {
+
+            }
+        });
+//        ipaMap.setPreferredSize(new Dimension(ipaMap.getPreferredSize().width, 300));
         try {
             final Rectangle2D caretRect = modelToView2D(getCaretPosition());
             final Point caretPoint = new Point((int)caretRect.getCenterX(), (int)caretRect.getMaxY());
             SwingUtilities.convertPointToScreen(caretPoint, this);
+            final JPanel p = new JPanel(new BorderLayout());
             final JScrollPane scrollPane = new JScrollPane(ipaMap);
+            p.add(scrollPane, BorderLayout.CENTER);
+            p.setPreferredSize(new Dimension(p.getPreferredSize().width, 300));
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), scrollPane, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
+            CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), p, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
         } catch (BadLocationException e) {
             LogUtil.warning(e);
         }
@@ -2303,6 +2342,11 @@ public class TranscriptEditor extends JEditorPane implements IExtendable {
     @Override
     public <T> T removeExtension(Class<T> cap) {
         return extensionSupport.removeExtension(cap);
+    }
+
+    @Override
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+
     }
 
     /**
