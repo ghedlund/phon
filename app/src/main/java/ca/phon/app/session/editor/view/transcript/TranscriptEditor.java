@@ -1089,6 +1089,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             @Override
             public void mouseClicked(Cell cell, MouseEvent me) {
                 // insert ipa character
+                final boolean isDiacritic = cell.getText().contains("◌");
                 final String ipaChar = cell.getText().replaceAll("◌", "");
 
                 // copy into system clipboard
@@ -1098,6 +1099,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
                 // insert into document
                 TranscriptEditor.this.paste();
+                TranscriptEditor.this.commitChanges(TranscriptEditor.this.getCaretPosition());
 
                 clipboard.setContents(currentContents, TranscriptEditor.this);
             }
@@ -1112,7 +1114,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
             }
         });
-//        ipaMap.setPreferredSize(new Dimension(ipaMap.getPreferredSize().width, 300));
         try {
             final Rectangle2D caretRect = modelToView2D(getCaretPosition());
             final Point caretPoint = new Point((int)caretRect.getCenterX(), (int)caretRect.getMaxY());
@@ -1122,11 +1123,67 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             p.add(scrollPane, BorderLayout.CENTER);
             p.setPreferredSize(new Dimension(p.getPreferredSize().width, 500));
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-            CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), p, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
+            final CalloutWindow window =
+                    CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), p, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
+            window.setAlwaysOnTop(true);
+
+            // escape closes window
+            final PhonUIAction<Void> closeAct = PhonUIAction.runnable(() -> {
+                window.setVisible(false);
+                window.dispose();
+
+            });
+            final AWTEventListener escListener = new AWTEventListener() {
+                @Override
+                public void eventDispatched(AWTEvent event) {
+                    if(event instanceof KeyEvent) {
+                        final KeyEvent ke = (KeyEvent)event;
+                        if(ke.getID() == KeyEvent.KEY_PRESSED && ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                            closeAct.actionPerformed(null);
+                        }
+                    }
+                }
+            };
+            Toolkit.getDefaultToolkit().addAWTEventListener(escListener, AWTEvent.KEY_EVENT_MASK);
+
+            window.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    Toolkit.getDefaultToolkit().removeAWTEventListener(escListener);
+                }
+            });
+
+            // hide window when caret moves to a different tier
+            TranscriptEditor.this.addPropertyChangeListener("currentSessionLocation", new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent e) {
+                    if(window.isVisible()) {
+                        // if tier had changed
+                        final TranscriptElementLocation oldLoc = (TranscriptElementLocation)e.getOldValue();
+                        final TranscriptElementLocation newLoc = (TranscriptElementLocation)e.getNewValue();
+                        if(oldLoc != null && newLoc != null && oldLoc.tier() != newLoc.tier()) {
+                            window.setVisible(false);
+                            window.dispose();
+                            TranscriptEditor.this.removePropertyChangeListener("currentSessionLocation", this);
+                        } else {
+                            // move window to new caret position
+                            final Rectangle2D caretRect;
+                            try {
+                                caretRect = modelToView2D(getCaretPosition());
+                            } catch (BadLocationException ex) {
+                                return;
+                            }
+                            final Point caretPoint = new Point((int)caretRect.getCenterX(), (int)caretRect.getMaxY());
+                            SwingUtilities.convertPointToScreen(caretPoint, TranscriptEditor.this);
+                            final Point arrowPoint = window.getRelativeArrowPoint();
+                            window.setLocation(caretPoint.x - arrowPoint.x, caretPoint.y - arrowPoint.y);
+                        }
+                    }
+                }
+            });
         } catch (BadLocationException e) {
             LogUtil.warning(e);
         }
-
     }
 
     /**
@@ -1204,7 +1261,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
     }
 
     public void setCurrentSessionLocation(TranscriptElementLocation currentTranscriptLocation) {
+        TranscriptElementLocation oldLoc = this.currentTranscriptLocation;
         this.currentTranscriptLocation = currentTranscriptLocation;
+        firePropertyChange("currentSessionLocation", oldLoc, currentTranscriptLocation);
     }
 
     /**

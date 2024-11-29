@@ -172,6 +172,10 @@ public class CalloutWindow extends JDialog {
         return dialog;
     }
 
+    public Point getRelativeArrowPoint() {
+        return relativeArrowPoint;
+    }
+
     private Shape createShape(int width, int height, int triangleBase, int triangleHeight, int cornerRadius, int sideOfWindow, int topMiddleBottom) {
         // Create a Path2D object
         Path2D.Double shape = new Path2D.Double();
@@ -199,44 +203,10 @@ public class CalloutWindow extends JDialog {
 
         // Top
         if (sideOfWindow == SwingConstants.NORTH) {
-            System.out.println("Top");
-
             // Prev corner to start of arrow curve
             Point startArrowCurveStart = new Point(horiOffset + ((width - triangleBase) / 2), topOfRect);
             shape.lineTo(startArrowCurveStart.getX(), startArrowCurveStart.getY());
 
-            /*double inverseAngleToArrow = Math.atan(-TRIANGLE_BASE / (2.0 * TRIANGLE_HEIGHT));
-
-            Point startArrowCurveEnd = new Point(
-                (int) (arrowCornerRadius * Math.cos(inverseAngleToArrow)) + startArrowCurveStart.x,
-                (int) (arrowCornerRadius * Math.sin(inverseAngleToArrow)) + startArrowCurveStart.y + arrowCornerRadius
-            );
-
-            Point startArrowCurveControlPoint1 = new Point(
-                (int) (startArrowCurveStart.x + (arrowCornerRadius * dist)),
-                startArrowCurveStart.y
-            );
-
-            Point startArrowCurveControlPoint2 = new Point(
-                (int) (startArrowCurveEnd.x - (Math.cos(angleToArrow) * dist)),
-                (int) (startArrowCurveEnd.y - (Math.sin(angleToArrow) * dist))
-            );
-
-            System.out.println("Point: " + startArrowCurveEnd);
-
-
-
-
-
-            // Start of arrow curve
-            shape.curveTo(
-                startArrowCurveControlPoint1.x,
-                startArrowCurveControlPoint1.y,
-                startArrowCurveControlPoint2.x,
-                startArrowCurveControlPoint2.y,
-                startArrowCurveEnd.x,
-                startArrowCurveEnd.y
-            );*/
             // Start of arrow curve to point
             shape.lineTo(horiOffset + (width / 2), 0);
             relativeArrowPoint = new Point(horiOffset + (width / 2), 0);
@@ -252,7 +222,6 @@ public class CalloutWindow extends JDialog {
 
         // Right
         if (sideOfWindow == SwingConstants.EAST) {
-            System.out.println("Right");
             shape.lineTo(width, vertOffset + (height - triangleBase) / 2);
             shape.lineTo(width + triangleHeight, vertOffset + height / 2);
             relativeArrowPoint = new Point(width + triangleHeight, vertOffset + height / 2);
@@ -265,7 +234,6 @@ public class CalloutWindow extends JDialog {
 
         // Bottom
         if (sideOfWindow == SwingConstants.SOUTH) {
-            System.out.println("Bottom");
             shape.lineTo(leftOfRect + horiOffset + (width + triangleBase) / 2, height);
             shape.lineTo(leftOfRect + horiOffset + (width / 2), height + triangleHeight);
             relativeArrowPoint = new Point(leftOfRect + horiOffset + (width / 2), height + triangleHeight);
