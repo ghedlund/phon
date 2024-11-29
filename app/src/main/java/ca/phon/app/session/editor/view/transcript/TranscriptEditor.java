@@ -18,7 +18,9 @@ import ca.phon.ui.CalloutWindow;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.action.PhonActionEvent;
 import ca.phon.ui.action.PhonUIAction;
+import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.ui.ipamap.io.Cell;
+import ca.phon.util.PrefHelper;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -1070,6 +1072,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
     private void showIpaMapCallout() {
         final IPAMapGridContainer ipaMap = new IPAMapGridContainer();
         ipaMap.addDefaultGrids();
+        final Font ipaFont = FontPreferences.getTierFont().deriveFont(FontPreferences.getDefaultFontSize() +
+                PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f));
+        ipaMap.setFont(ipaFont);
         ipaMap.addCellMouseListener(new IPAMapGridMouseListener() {
             @Override
             public void mousePressed(Cell cell, MouseEvent me) {
@@ -1115,7 +1120,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             final JPanel p = new JPanel(new BorderLayout());
             final JScrollPane scrollPane = new JScrollPane(ipaMap);
             p.add(scrollPane, BorderLayout.CENTER);
-            p.setPreferredSize(new Dimension(p.getPreferredSize().width, 300));
+            p.setPreferredSize(new Dimension(p.getPreferredSize().width, 500));
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), p, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
         } catch (BadLocationException e) {
