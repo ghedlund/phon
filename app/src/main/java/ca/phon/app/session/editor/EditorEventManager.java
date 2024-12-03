@@ -129,7 +129,7 @@ public class EditorEventManager {
 				final Optional<EditorEventHandler<?>> selectedHandler =
 						handlers.stream().filter((h) -> h.action() == action).findAny();
 				if(selectedHandler.isPresent())
-					handlers.remove(selectedHandler);
+					handlers.remove(selectedHandler.get());
 			}
 		}
 	}
@@ -142,12 +142,14 @@ public class EditorEventManager {
 	 * @return list of handlers for the event
 	 */
 	private List<EditorEventHandler<?>> getHandlersForEvent(EditorEventType<?> eventName) {
-		List<EditorEventHandler<?>> retVal = actionMap.get(eventName);
-		if(retVal == null)
-			retVal = new ArrayList<>();
-		else
-			retVal = Collections.unmodifiableList(retVal);
-		return retVal;			
+		synchronized (actionMap) {
+			List<EditorEventHandler<?>> retVal = actionMap.get(eventName);
+			if(retVal == null)
+				retVal = new ArrayList<>();
+			else
+				retVal = Collections.unmodifiableList(retVal);
+			return retVal;
+		}
 	}
 
 	/**
@@ -171,7 +173,7 @@ public class EditorEventManager {
 				}
 
 				if(event != null) {
-					synchronized (actionMap) {
+//					synchronized (actionMap) {
 						if(PrefHelper.getBoolean("phon.debug", false)) {
 							LogUtil.log(Level.TRACE, "Dispatching event: " + event.eventType());
 							if(event.getData().isPresent())
@@ -180,7 +182,7 @@ public class EditorEventManager {
 						for (EditorEventHandler<?> action : getHandlersForEvent(event.eventType())) {
 							action.handleEvent(event);
 						}
-					}
+//					}
 				}
 			}
 

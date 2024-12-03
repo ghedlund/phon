@@ -6,10 +6,7 @@ import ca.phon.app.session.editor.undo.*;
 import ca.phon.extensions.ExtensionSupport;
 import ca.phon.extensions.IExtendable;
 import ca.phon.extensions.UnvalidatedValue;
-import ca.phon.ipamap2.IPAMap;
-import ca.phon.ipamap2.IPAMapGrid;
-import ca.phon.ipamap2.IPAMapGridContainer;
-import ca.phon.ipamap2.IPAMapGridMouseListener;
+import ca.phon.ipamap2.*;
 import ca.phon.session.Record;
 import ca.phon.session.*;
 import ca.phon.session.position.TranscriptElementLocation;
@@ -20,6 +17,7 @@ import ca.phon.ui.action.PhonActionEvent;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.ui.ipamap.io.Cell;
+import ca.phon.ui.ipamap.io.CellProp;
 import ca.phon.util.PrefHelper;
 
 import javax.swing.*;
@@ -1070,12 +1068,20 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      *
      */
     private void showIpaMapCallout() {
+        final IPAMapGridContainer chatMap = new IPAMapGridContainer();
+        for(var ipaGrid: ChatGrids.getInstance().loadGrids().getGrid()) {
+            chatMap.addGrid(ipaGrid);
+        }
+        chatMap.setFont(FontPreferences.getTierFont().deriveFont(FontPreferences.getDefaultFontSize() +
+                PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f)));
+
         final IPAMapGridContainer ipaMap = new IPAMapGridContainer();
         ipaMap.addDefaultGrids();
         final Font ipaFont = FontPreferences.getTierFont().deriveFont(FontPreferences.getDefaultFontSize() +
                 PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f));
         ipaMap.setFont(ipaFont);
-        ipaMap.addCellMouseListener(new IPAMapGridMouseListener() {
+
+        final IPAMapGridMouseListener gridMouseListener = new IPAMapGridMouseListener() {
             @Override
             public void mousePressed(Cell cell, MouseEvent me) {
 
@@ -1088,19 +1094,57 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
             @Override
             public void mouseClicked(Cell cell, MouseEvent me) {
-                // insert ipa character
-                final boolean isDiacritic = cell.getText().contains("◌");
-                final String ipaChar = cell.getText().replaceAll("◌", "");
+                final String text = cell.getText().replaceAll("◌", "");
+                final CellProp insertProp =
+                        cell.getProperty().stream().filter(p -> p.getName().equals("insert")).findFirst().orElse(null);
+                final String insertText = (insertProp != null ? insertProp.getContent() : "");
+
+                final List<Integer> markers = new ArrayList<>();
+                final StringBuilder sb = new StringBuilder();
+                if(insertText != null) {
+                    for(int i = 0; i < insertText.length(); i++) {
+                        final char c = insertText.charAt(i);
+                        if(c == '$' && (i+1 < insertText.length() && insertText.charAt(i+1) == '$')) {
+                            markers.add(sb.length());
+                            i++;
+                        } else {
+                            sb.append(c);
+                        }
+                    }
+                } else {
+                    sb.append(text);
+                }
 
                 // copy into system clipboard
                 final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 final Transferable currentContents = clipboard.getContents(TranscriptEditor.this);
-                clipboard.setContents(new StringSelection(ipaChar), TranscriptEditor.this);
+                clipboard.setContents(new StringSelection(sb.toString()), TranscriptEditor.this);
+
+                final TranscriptElementLocation currentLocation = TranscriptEditor.this.getTranscriptEditorCaret().getTranscriptLocation();
+                if(!currentLocation.valid()) return;
 
                 // insert into document
                 TranscriptEditor.this.paste();
+                final EditorAction<EditorEventType.TierChangeData> act = new EditorAction<>() {
+                    @Override
+                    public void eventOccurred(EditorEvent<EditorEventType.TierChangeData> ee) {
+                        if(ee.data().valueAdjusting()) return;
+                        if(markers.size() == 1) {
+                            // set caret position to first marker
+                            final int markerPos = TranscriptEditor.this.getCaretPosition() - sb.length() + markers.get(0);
+                        } else if(markers.size() == 2) {
+                            // set selection to markers
+                            final int start = TranscriptEditor.this.getCaretPosition() - sb.length() + markers.get(0);
+                            final int end = TranscriptEditor.this.getCaretPosition() - sb.length() + markers.get(1);
+                            TranscriptEditor.this.setSelectionStart(start);
+                            TranscriptEditor.this.setSelectionEnd(end);
+                        }
+                        TranscriptEditor.this.getEventManager().removeActionForEvent(EditorEventType.TierChange, this);
+                    }
+                };
+                TranscriptEditor.this.getEventManager().registerActionForEvent(
+                        EditorEventType.TierChange, act, EditorEventManager.RunOn.AWTEventDispatchThread);
                 TranscriptEditor.this.commitChanges(TranscriptEditor.this.getCaretPosition());
-
                 clipboard.setContents(currentContents, TranscriptEditor.this);
             }
 
@@ -1113,18 +1157,25 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             public void mouseExited(Cell cell, MouseEvent me) {
 
             }
-        });
+        };
+
+        chatMap.addCellMouseListener(gridMouseListener);
+        ipaMap.addCellMouseListener(gridMouseListener);
+
         try {
             final Rectangle2D caretRect = modelToView2D(getCaretPosition());
             final Point caretPoint = new Point((int)caretRect.getCenterX(), (int)caretRect.getMaxY());
             SwingUtilities.convertPointToScreen(caretPoint, this);
-            final JPanel p = new JPanel(new BorderLayout());
+//            final JPanel p = new JPanel(new BorderLayout());
+            final JTabbedPane tabbedPane = new JTabbedPane();
+            final JScrollPane chatScrollPane = new JScrollPane(chatMap);
+            tabbedPane.addTab("CHAT", chatScrollPane);
             final JScrollPane scrollPane = new JScrollPane(ipaMap);
-            p.add(scrollPane, BorderLayout.CENTER);
-            p.setPreferredSize(new Dimension(p.getPreferredSize().width, 500));
+            tabbedPane.addTab("IPA", scrollPane);
+            tabbedPane.setPreferredSize(new Dimension(tabbedPane.getPreferredSize().width, 500));
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             final CalloutWindow window =
-                    CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), p, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
+                    CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), tabbedPane, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
             window.setAlwaysOnTop(true);
 
             // escape closes window
@@ -1161,7 +1212,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                         // if tier had changed
                         final TranscriptElementLocation oldLoc = (TranscriptElementLocation)e.getOldValue();
                         final TranscriptElementLocation newLoc = (TranscriptElementLocation)e.getNewValue();
-                        if(oldLoc != null && newLoc != null && oldLoc.tier() != newLoc.tier()) {
+                        if(oldLoc != null && newLoc != null && (oldLoc.tier() != newLoc.tier() || oldLoc.transcriptElementIndex() != newLoc.transcriptElementIndex())) {
                             window.setVisible(false);
                             window.dispose();
                             TranscriptEditor.this.removePropertyChangeListener("currentSessionLocation", this);
@@ -1283,11 +1334,11 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         if (tier.getDeclaredType() == MediaSegment.class) return;
         if (doc.getTierText(tier, transcriber).equals(doc.getTierText(dummy, transcriber))) return;
 
-        SwingUtilities.invokeLater(() -> {
+//        SwingUtilities.invokeLater(() -> {
             TierEdit<?> edit = new TierEdit(getSession(), eventManager, dataModel.getTranscriber(), record, tier, dummy.getValue());
             edit.setValueAdjusting(false);
             getUndoSupport().postEdit(edit);
-        });
+//        });
     }
 
     /**
@@ -1303,10 +1354,10 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         String transcriber = dataModel.getTranscriber().getUsername();
         if (comment.getValue().toString().equals(getTranscriptDocument().getTierText(dummy, transcriber))) return;
 
-        SwingUtilities.invokeLater(() -> {
+//        SwingUtilities.invokeLater(() -> {
             ChangeCommentEdit edit = new ChangeCommentEdit(getSession(), eventManager, comment, dummy.getValue());
             getUndoSupport().postEdit(edit);
-        });
+//        });
     }
 
     /**
@@ -1319,10 +1370,10 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
         if (gem.getLabel().equals(newData)) return;
 
-        SwingUtilities.invokeLater(() -> {
+//        SwingUtilities.invokeLater(() -> {
             ChangeGemEdit edit = new ChangeGemEdit(getSession(), eventManager, gem, newData);
             getUndoSupport().postEdit(edit);
-        });
+//        });
     }
 
     public SessionEditUndoSupport getUndoSupport() {

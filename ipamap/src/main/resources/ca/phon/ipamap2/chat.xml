@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+   Phon - An open source tool for research in phonology.
+   Copyright (C) 2018 Gregory Hedlund & Yvan Rose
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<ipaGrids xmlns="http://phon.ling.mun.ca/ns/ipamap">
+     <grid rows="4" cols="20" name="Word Prefix">
+         <cell x="0" y="0" w="10" h="2">
+             <text>0 - omission</text>
+             <property name="insert">0$$word$$</property>
+             <property name="Name">omission</property>
+         </cell>
+         <cell x="10" y="0" w="2" h="2">
+             <text>&amp;~</text>
+             <property name="Name">non word</property>
+        </cell>
+         <cell x="0" y="2" w="2" h="2">
+             <text>&amp;-</text>
+             <property name="Name">filler</property>
+         </cell>
+         <cell x="2" y="2" w="2" h="2">
+            <text>&amp;+</text>
+            <property name="Name">fragment</property>
+         </cell>
+     </grid>
+
+    <grid rows="4" cols="20" name="Word Suffix">
+        <cell x="0" y="0" w="4" h="2">
+            <text></text>
+            <property name="Name">fragment</property>
+        </cell>
+        <cell x="0" y="2" w="4" h="2">
+            <text>+&amp;</text>
+            <property name="Name"></property>
+        </cell>
+    </grid>
+</ipaGrids>
