@@ -16,34 +16,249 @@
    limitations under the License.
 -->
 <ipaGrids xmlns="http://phon.ling.mun.ca/ns/ipamap">
-     <grid rows="4" cols="20" name="Word Prefix">
-         <cell x="0" y="0" w="10" h="2">
-             <text>0 - omission</text>
+     <grid rows="2" cols="44" name="Word type">
+         <cell x="0" y="0" w="4" h="2">
+             <text>0</text>
              <property name="insert">0$$word$$</property>
              <property name="Name">omission</property>
          </cell>
-         <cell x="10" y="0" w="2" h="2">
+         <cell x="4" y="0" w="4" h="2">
              <text>&amp;~</text>
+             <property name="insert">&amp;~$$word$$</property>
              <property name="Name">non word</property>
         </cell>
-         <cell x="0" y="2" w="2" h="2">
+         <cell x="8" y="0" w="4" h="2">
              <text>&amp;-</text>
+             <property name="insert">&amp;-$$word$$</property>
              <property name="Name">filler</property>
          </cell>
-         <cell x="2" y="2" w="2" h="2">
+         <cell x="12" y="0" w="4" h="2">
             <text>&amp;+</text>
+            <property name="insert">&amp;+$$word$$</property>
             <property name="Name">fragment</property>
          </cell>
      </grid>
 
-    <grid rows="4" cols="20" name="Word Suffix">
+    <grid rows="6" cols="44" name="Special form markers">
         <cell x="0" y="0" w="4" h="2">
-            <text></text>
-            <property name="Name">fragment</property>
+            <text>#</text>
+            <property name="insert">$$word$$#</property>
+            <property name="Name">separated prefix</property>
+        </cell>
+        <cell x="4" y="0" w="4" h="2">
+            <text>@a</text>
+            <property name="insert">$$word$$@a</property>
+            <property name="Name">addition</property>
+        </cell>
+        <cell x="8" y="0" w="4" h="2">
+            <text>@b</text>
+            <property name="insert">$$word$$@b</property>
+            <property name="Name">babbling</property>
+        </cell>
+        <cell x="12" y="0" w="4" h="2">
+            <text>@c</text>
+            <property name="insert">$$word$$@c</property>
+            <property name="Name">child-invented form</property>
+        </cell>
+        <cell x="16" y="0" w="4" h="2">
+            <text>@d</text>
+            <property name="insert">$$word$$@d</property>
+            <property name="Name">dialect form</property>
+        </cell>
+        <cell x="20" y="0" w="4" h="2">
+            <text>@e</text>
+            <property name="insert">$$word$$@e</property>
+            <property name="Name">echolalia</property>
+        </cell>
+        <cell x="24" y="0" w="4" h="2">
+            <text>@f</text>
+            <property name="insert">$$word$$@f</property>
+            <property name="Name">family specific form</property>
+        </cell>
+        <cell x="28" y="0" w="4" h="2">
+            <text>@fp</text>
+            <property name="insert">$$word$$@fp</property>
+            <property name="Name">filled pause</property>
+        </cell>
+        <cell x="32" y="0" w="4" h="2">
+            <text>@g</text>
+            <property name="insert">$$word$$@g</property>
+            <property name="Name">general special form</property>
+        </cell>
+        <cell x="36" y="0" w="4" h="2">
+            <text>@i</text>
+            <property name="insert">$$word$$@i</property>
+            <property name="Name">interjection, interaction</property>
+        </cell>
+        <cell x="40" y="0" w="4" h="2">
+            <text>@k</text>
+            <property name="insert">$$word$$@k</property>
+            <property name="Name">multiple letters</property>
         </cell>
         <cell x="0" y="2" w="4" h="2">
-            <text>+&amp;</text>
-            <property name="Name"></property>
+            <text>@l</text>
+            <property name="insert">$$word$$@l</property>
+            <property name="Name">letter</property>
+        </cell>
+        <cell x="4" y="2" w="4" h="2">
+            <text>@n</text>
+            <property name="insert">$$word$$@n</property>
+            <property name="Name">neologism</property>
+        </cell>
+        <cell x="8" y="2" w="4" h="2">
+            <text>@nv</text>
+            <property name="insert">$$word$$@nv</property>
+            <property name="Name">no voice</property>
+        </cell>
+        <cell x="12" y="2" w="4" h="2">
+            <text>@o</text>
+            <property name="insert">$$word$$@o</property>
+            <property name="Name">onomatopoeia</property>
+        </cell>
+        <cell x="16" y="2" w="4" h="2">
+            <text>@p</text>
+            <property name="insert">$$word$$@p</property>
+            <property name="Name">phonology consistent form</property>
+        </cell>
+        <cell x="20" y="2" w="4" h="2">
+            <text>@q</text>
+            <property name="insert">$$word$$@q</property>
+            <property name="Name">quoted metareference</property>
+        </cell>
+        <cell x="24" y="2" w="4" h="2">
+            <text>@s:*</text>
+            <property name="insert">$$word$$@s:*</property>
+            <property name="Name">second-language form</property>
+        </cell>
+        <cell x="28" y="2" w="4" h="2">
+            <text>@s$n</text>
+            <property name="insert">$$word$$@s$n</property>
+            <property name="Name">second language noun</property>
+        </cell>
+        <cell x="32" y="2" w="4" h="2">
+            <text>@si</text>
+            <property name="insert">$$word$$@si</property>
+            <property name="Name">singing</property>
+        </cell>
+        <cell x="36" y="2" w="4" h="2">
+            <text>@sl</text>
+            <property name="insert">$$word$$@sl</property>
+            <property name="Name">signed language</property>
+        </cell>
+        <cell x="40" y="2" w="4" h="2">
+            <text>@sas</text>
+            <property name="insert">$$word$$@sas</property>
+            <property name="Name">sign and speech</property>
+        </cell>
+        <cell x="0" y="4" w="4" h="2">
+            <text>@t</text>
+            <property name="insert">$$word$$@t</property>
+            <property name="Name">test form</property>
+        </cell>
+        <cell x="4" y="4" w="4" h="2">
+            <text>@u</text>
+            <property name="insert">$$word$$@u</property>
+            <property name="Name">Unibet transcription</property>
+        </cell>
+        <cell x="8" y="4" w="4" h="2">
+            <text>@wp</text>
+            <property name="insert">$$word$$@wp</property>
+            <property name="Name">word play</property>
+        </cell>
+        <cell x="12" y="4" w="4" h="2">
+            <text>@x</text>
+            <property name="insert">$$word$$@x</property>
+            <property name="Name">excluded words</property>
+        </cell>
+
+        <cell x="16" y="4" w="4" h="2">
+            <text>@z:*</text>
+            <property name="insert">$$word$$@z:xxx</property>
+            <property name="Name">user-defined code</property>
+        </cell>
+    </grid>
+
+    <grid cols="44" rows="4" name="Terminators">
+        <cell x="0" y="0" w="4" h="2">
+            <text>.</text>
+            <property name="insert">.</property>
+            <property name="Name">sentence terminator</property>
+        </cell>
+        <cell x="4" y="0" w="4" h="2">
+            <text>!</text>
+            <property name="insert">!</property>
+            <property name="Name">exclamation</property>
+        </cell>
+        <cell x="8" y="0" w="4" h="2">
+            <text>?</text>
+            <property name="insert">?</property>
+            <property name="Name">question</property>
+        </cell>
+        <cell x="12" y="0" w="4" h="2">
+            <text>+.</text>
+            <property name="insert">+.</property>
+            <property name="Name">broken for coding</property>
+        </cell>
+        <cell x="16" y="0" w="4" h="2">
+            <text>+...</text>
+            <property name="insert">+...</property>
+            <property name="Name">trail off</property>
+        </cell>
+        <cell x="20" y="0" w="4" h="2">
+            <text>+..?</text>
+            <property name="insert">+..?</property>
+            <property name="Name">trail off question</property>
+        </cell>
+        <cell x="24" y="0" w="4" h="2">
+            <text>+!?</text>
+            <property name="insert">+!?</property>
+            <property name="Name">question exclamation</property>
+        </cell>
+        <cell x="28" y="0" w="4" h="2">
+            <text>+!.</text>
+            <property name="insert">+!.</property>
+            <property name="Name">exclamation sentence</property>
+        </cell>
+        <cell x="32" y="0" w="4" h="2">
+            <text>+/.</text>
+            <property name="insert">+/.</property>
+            <property name="Name">interruption</property>
+        </cell>
+        <cell x="36" y="0" w="4" h="2">
+            <text>+/?</text>
+            <property name="insert">+/?</property>
+            <property name="Name">interruption question</property>
+        </cell>
+        <cell x="40" y="0" w="4" h="2">
+            <text>+//.</text>
+            <property name="insert">+//.</property>
+            <property name="Name">self interruption</property>
+        </cell>
+
+        <cell x="0" y="2" w="4" h="2">
+            <text>+//?</text>
+            <property name="insert">+//?</property>
+            <property name="Name">self interruption question</property>
+        </cell>
+        <cell x="4" y="2" w="4" h="2">
+            <text>+"/.</text>
+            <property name="insert">+"/.</property>
+            <property name="Name">quotation next line</property>
+        </cell>
+        <cell x="8" y="2" w="4" h="2">
+            <text>+".</text>
+            <property name="insert">+"/?</property>
+            <property name="Name">quotation precedes</property>
+        </cell>
+        <cell x="12" y="2" w="4" h="2">
+            <text>&#x224B;</text>
+            <property name="insert">&#x224B;</property>
+            <property name="Name">technical break TCU continuation</property>
+        </cell>
+        <cell x="16" y="2" w="4" h="2">
+            <text>&#x2248;</text>
+            <property name="insert">&#x2248;</property>
+            <property name="Name">no break TCU continuation</property>
         </cell>
     </grid>
 </ipaGrids>

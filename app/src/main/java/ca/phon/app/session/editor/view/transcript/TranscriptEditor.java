@@ -1101,7 +1101,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
                 final List<Integer> markers = new ArrayList<>();
                 final StringBuilder sb = new StringBuilder();
-                if(insertText != null) {
+                if(insertText != null && !insertText.isBlank()) {
                     for(int i = 0; i < insertText.length(); i++) {
                         final char c = insertText.charAt(i);
                         if(c == '$' && (i+1 < insertText.length() && insertText.charAt(i+1) == '$')) {
