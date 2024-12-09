@@ -344,7 +344,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         KeyStroke ipaMap = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
         inputMap.put(ipaMap, "showIpaMap");
 
-        PhonUIAction<Void> showIpaMapAct = PhonUIAction.runnable(this::showIpaMapCallout);
+        PhonUIAction<Void> showIpaMapAct = PhonUIAction.runnable(this::showInputCallout);
         actionMap.put("showIpaMap", showIpaMapAct);
     }
 
@@ -1067,7 +1067,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      * Show ipa input map as a callout pointing at current cursor location
      *
      */
-    private void showIpaMapCallout() {
+    private void showInputCallout() {
         final IPAMapGridContainer chatMap = new IPAMapGridContainer();
         for(var ipaGrid: ChatGrids.getInstance().loadGrids().getGrid()) {
             chatMap.addGrid(ipaGrid);
@@ -1113,6 +1113,19 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                     }
                 } else {
                     sb.append(text);
+                }
+
+                final String selectedText = TranscriptEditor.this.getSelectedText();
+                if(selectedText != null && !selectedText.isBlank()) {
+                    if(markers.size() == 1) {
+                        // insert selected text at marker
+                        sb.insert(markers.get(0), selectedText);
+                    } else if(markers.size() == 2) {
+                        // replace selected text between markers
+                        final int start = markers.get(0);
+                        final int end = markers.get(1);
+                        sb.replace(start, end, selectedText);
+                    }
                 }
 
                 // copy into system clipboard
