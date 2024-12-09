@@ -131,7 +131,7 @@
         </cell>
         <cell x="8" y="2" w="4" h="2">
             <text>+".</text>
-            <property name="insert">+"/?</property>
+            <property name="insert">+".</property>
             <property name="Name">quotation precedes</property>
         </cell>
         <cell x="12" y="2" w="4" h="2">

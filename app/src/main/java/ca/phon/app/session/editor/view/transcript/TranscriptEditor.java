@@ -34,9 +34,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 public class TranscriptEditor extends JEditorPane implements IExtendable, ClipboardOwner {
@@ -1081,6 +1085,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                 PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f));
         ipaMap.setFont(ipaFont);
 
+        final AtomicReference<URL> currentDocUrl = new AtomicReference<>();
         final IPAMapGridMouseListener gridMouseListener = new IPAMapGridMouseListener() {
             @Override
             public void mousePressed(Cell cell, MouseEvent me) {
@@ -1163,12 +1168,28 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
             @Override
             public void mouseEntered(Cell cell, MouseEvent me) {
+                final StringBuilder sb = new StringBuilder();
                 final CellProp nameProp = cell.getProperty().stream().filter(p -> p.getName().equalsIgnoreCase("name")).findFirst().orElse(null);
                 if(nameProp != null) {
-                    ((JComponent)me.getSource()).setToolTipText(nameProp.getContent());
-                } else {
-                    ((JComponent)me.getSource()).setToolTipText("");
+                    sb.append(nameProp.getContent());
                 }
+
+                final CellProp docProp = cell.getProperty().stream().filter(p -> p.getName().equalsIgnoreCase("doc")).findFirst().orElse(null);
+                if(docProp != null) {
+                    final String docUri = docProp.getContent();
+                    if(docUri != null && !docUri.isBlank()) {
+                        try {
+                            final URL docUrl = new URL(docUri);
+                            currentDocUrl.set(docUrl);
+
+                            sb.append(" (F1 for more info)");
+                        } catch (MalformedURLException e) {
+                            LogUtil.warning(e);
+                        }
+                    }
+                }
+
+                ((JComponent)me.getSource()).setToolTipText(sb.toString());
             }
 
             @Override
@@ -1209,6 +1230,14 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                         final KeyEvent ke = (KeyEvent)event;
                         if(ke.getID() == KeyEvent.KEY_PRESSED && ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                             closeAct.actionPerformed(null);
+                        } else if(ke.getID() == KeyEvent.KEY_PRESSED && ke.getKeyCode() == KeyEvent.VK_F1) {
+                            if(currentDocUrl.get() != null) {
+                                try {
+                                    Desktop.getDesktop().browse(currentDocUrl.get().toURI());
+                                } catch (IOException | URISyntaxException e) {
+                                    LogUtil.warning(e);
+                                }
+                            }
                         }
                     }
                 }
