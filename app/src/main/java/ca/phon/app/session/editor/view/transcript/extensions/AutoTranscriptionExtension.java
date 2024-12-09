@@ -344,7 +344,6 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
                         CommonModuleFrame.getCurrentFrame(),
                         optionsContent,
                         SwingConstants.NORTH,
-                        SwingConstants.CENTER,
                         p
                 );
                 calloutWindowRef.set(calloutWindow);

@@ -534,7 +534,7 @@ public class HeaderTierExtension extends DefaultInsertionHook implements Transcr
                 final var pt = new Point((int)pos.getX(), (int)pos.getMaxY());
                 SwingUtilities.convertPointToScreen(pt, editor);
                 CalloutWindow.showCallout(CommonModuleFrame.getCurrentFrame(), true, calloutPanel,
-                        SwingUtilities.NORTH, SwingConstants.CENTER, pt);
+                        SwingUtilities.NORTH, pt);
             } catch (BadLocationException e) {
                 LogUtil.warning(e);
             }

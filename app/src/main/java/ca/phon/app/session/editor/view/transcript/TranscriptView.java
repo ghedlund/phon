@@ -498,7 +498,6 @@ public class TranscriptView extends EditorView {
             true,
             fontScaleMenu,
             SwingConstants.TOP,
-            SwingConstants.CENTER,
             point
         );
     }

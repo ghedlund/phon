@@ -187,7 +187,6 @@ public class MediaSegmentExtension implements TranscriptEditorExtension {
                 true,
                 segmentEditor,
                 SwingConstants.NORTH,
-                SwingConstants.CENTER,
                 point
             );
         }

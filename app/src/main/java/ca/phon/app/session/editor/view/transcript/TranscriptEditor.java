@@ -1150,7 +1150,12 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
             @Override
             public void mouseEntered(Cell cell, MouseEvent me) {
-
+                final CellProp nameProp = cell.getProperty().stream().filter(p -> p.getName().equalsIgnoreCase("name")).findFirst().orElse(null);
+                if(nameProp != null) {
+                    ((JComponent)me.getSource()).setToolTipText(nameProp.getContent());
+                } else {
+                    ((JComponent)me.getSource()).setToolTipText("");
+                }
             }
 
             @Override
@@ -1175,7 +1180,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             tabbedPane.setPreferredSize(new Dimension(tabbedPane.getPreferredSize().width, 500));
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             final CalloutWindow window =
-                    CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), tabbedPane, SwingConstants.TOP, SwingConstants.CENTER, caretPoint);
+                    CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), tabbedPane, SwingConstants.TOP, caretPoint);
             window.setAlwaysOnTop(true);
 
             // escape closes window
