@@ -16,7 +16,143 @@
    limitations under the License.
 -->
 <ipaGrids xmlns="http://phon.ling.mun.ca/ns/ipamap">
-     <grid rows="2" cols="44" name="Word type">
+
+    <grid rows="2" cols="44" name="Utterance linkers">
+        <cell x="0" y="0" w="4" h="2">
+            <text>+"</text>
+            <property name="insert">+"</property>
+            <property name="Name">Quoted utterance next</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#QuotedUtterance_Linker</property>
+        </cell>
+        <cell x="4" y="0" w="4" h="2">
+            <text>+^</text>
+            <property name="insert">+^</property>
+            <property name="Name">Quick uptake</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#QuickUptake_Linker</property>
+        </cell>
+        <cell x="8" y="0" w="4" h="2">
+            <text>+&lt;</text>
+            <property name="insert">+&lt;</property>
+            <property name="Name">Lazy overlap mark</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#LazyOverlap_Linker</property>
+        </cell>
+        <cell x="12" y="0" w="4" h="2">
+            <text>+,</text>
+            <property name="insert">+,</property>
+            <property name="Name">Self completion</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#SelfCompletion_Linker</property>
+        </cell>
+        <cell x="16" y="0" w="4" h="2">
+            <text>++</text>
+            <property name="insert">++</property>
+            <property name="Name">Other completion</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#OtherCompletion_Linker</property>
+        </cell>
+        <cell x="20" y="0" w="4" h="2">
+            <text>+&#x224B;</text>
+            <property name="insert">+&#x224B;</property>
+            <property name="Name">Technical break TCU continuation</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#TechnicalBreakTCUCompletion_Linker</property>
+        </cell>
+        <cell x="24" y="0" w="4" h="2">
+            <text>+&#x2248;</text>
+            <property name="insert">+&#x2248;</property>
+            <property name="Name">No break TCU continuation</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#NoBreakTCUCompletion_Linker</property>
+        </cell>
+    </grid>
+
+    <grid cols="44" rows="4" name="Utterance terminators">
+        <cell x="0" y="0" w="4" h="2">
+            <text>.</text>
+            <property name="insert">.</property>
+            <property name="Name">sentence terminator</property>
+        </cell>
+        <cell x="4" y="0" w="4" h="2">
+            <text>!</text>
+            <property name="insert">!</property>
+            <property name="Name">exclamation</property>
+        </cell>
+        <cell x="8" y="0" w="4" h="2">
+            <text>?</text>
+            <property name="insert">?</property>
+            <property name="Name">question</property>
+        </cell>
+        <cell x="12" y="0" w="4" h="2">
+            <text>+.</text>
+            <property name="insert">+.</property>
+            <property name="Name">broken for coding</property>
+        </cell>
+        <cell x="16" y="0" w="4" h="2">
+            <text>+...</text>
+            <property name="insert">+...</property>
+            <property name="Name">trail off</property>
+        </cell>
+        <cell x="20" y="0" w="4" h="2">
+            <text>+..?</text>
+            <property name="insert">+..?</property>
+            <property name="Name">trail off question</property>
+        </cell>
+        <cell x="24" y="0" w="4" h="2">
+            <text>+!?</text>
+            <property name="insert">+!?</property>
+            <property name="Name">question exclamation</property>
+        </cell>
+        <cell x="28" y="0" w="4" h="2">
+            <text>+!.</text>
+            <property name="insert">+!.</property>
+            <property name="Name">exclamation sentence</property>
+        </cell>
+        <cell x="32" y="0" w="4" h="2">
+            <text>+/.</text>
+            <property name="insert">+/.</property>
+            <property name="Name">interruption</property>
+        </cell>
+        <cell x="36" y="0" w="4" h="2">
+            <text>+/?</text>
+            <property name="insert">+/?</property>
+            <property name="Name">interruption question</property>
+        </cell>
+        <cell x="40" y="0" w="4" h="2">
+            <text>+//.</text>
+            <property name="insert">+//.</property>
+            <property name="Name">self interruption</property>
+        </cell>
+
+        <cell x="0" y="2" w="4" h="2">
+            <text>+//?</text>
+            <property name="insert">+//?</property>
+            <property name="Name">self interruption question</property>
+        </cell>
+        <cell x="4" y="2" w="4" h="2">
+            <text>+"/.</text>
+            <property name="insert">+"/.</property>
+            <property name="Name">quotation next line</property>
+        </cell>
+        <cell x="8" y="2" w="4" h="2">
+            <text>+".</text>
+            <property name="insert">+"/?</property>
+            <property name="Name">quotation precedes</property>
+        </cell>
+        <cell x="12" y="2" w="4" h="2">
+            <text>&#x224B;</text>
+            <property name="insert">&#x224B;</property>
+            <property name="Name">technical break TCU continuation</property>
+        </cell>
+        <cell x="16" y="2" w="4" h="2">
+            <text>&#x2248;</text>
+            <property name="insert">&#x2248;</property>
+            <property name="Name">no break TCU continuation</property>
+        </cell>
+        <cell x="20" y="2" w="4" h="2">
+            <text>[+ ]</text>
+            <property name="insert">[+ $$text$$]</property>
+            <property name="Name">Postcode</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Postcodes</property>
+        </cell>
+    </grid>
+
+     <grid rows="2" cols="44" name="Word prefix">
          <cell x="0" y="0" w="4" h="2">
              <text>0</text>
              <property name="insert">0$$word$$</property>
@@ -39,7 +175,7 @@
          </cell>
      </grid>
 
-    <grid rows="6" cols="44" name="Special form markers">
+    <grid rows="6" cols="44" name="Word suffix">
         <cell x="0" y="0" w="4" h="2">
             <text>#</text>
             <property name="insert">$$word$$#</property>
@@ -178,87 +314,166 @@
         </cell>
     </grid>
 
-    <grid cols="44" rows="4" name="Terminators">
+
+
+    <grid cols="44" rows="2" name="Grouping">
         <cell x="0" y="0" w="4" h="2">
-            <text>.</text>
-            <property name="insert">.</property>
-            <property name="Name">sentence terminator</property>
+            <text>&lt;&gt;</text>
+            <property name="insert">&lt;$$&gt;</property>
+            <property name="Name">Word group</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
-            <text>!</text>
-            <property name="insert">!</property>
-            <property name="Name">exclamation</property>
+            <text>‹›</text>
+            <property name="insert">‹$$›</property>
+            <property name="Name">Phonological group</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
-            <text>?</text>
-            <property name="insert">?</property>
-            <property name="Name">question</property>
-        </cell>
-        <cell x="12" y="0" w="4" h="2">
-            <text>+.</text>
-            <property name="insert">+.</property>
-            <property name="Name">broken for coding</property>
-        </cell>
-        <cell x="16" y="0" w="4" h="2">
-            <text>+...</text>
-            <property name="insert">+...</property>
-            <property name="Name">trail off</property>
-        </cell>
-        <cell x="20" y="0" w="4" h="2">
-            <text>+..?</text>
-            <property name="insert">+..?</property>
-            <property name="Name">trail off question</property>
-        </cell>
-        <cell x="24" y="0" w="4" h="2">
-            <text>+!?</text>
-            <property name="insert">+!?</property>
-            <property name="Name">question exclamation</property>
-        </cell>
-        <cell x="28" y="0" w="4" h="2">
-            <text>+!.</text>
-            <property name="insert">+!.</property>
-            <property name="Name">exclamation sentence</property>
-        </cell>
-        <cell x="32" y="0" w="4" h="2">
-            <text>+/.</text>
-            <property name="insert">+/.</property>
-            <property name="Name">interruption</property>
-        </cell>
-        <cell x="36" y="0" w="4" h="2">
-            <text>+/?</text>
-            <property name="insert">+/?</property>
-            <property name="Name">interruption question</property>
-        </cell>
-        <cell x="40" y="0" w="4" h="2">
-            <text>+//.</text>
-            <property name="insert">+//.</property>
-            <property name="Name">self interruption</property>
-        </cell>
-
-        <cell x="0" y="2" w="4" h="2">
-            <text>+//?</text>
-            <property name="insert">+//?</property>
-            <property name="Name">self interruption question</property>
-        </cell>
-        <cell x="4" y="2" w="4" h="2">
-            <text>+"/.</text>
-            <property name="insert">+"/.</property>
-            <property name="Name">quotation next line</property>
-        </cell>
-        <cell x="8" y="2" w="4" h="2">
-            <text>+".</text>
-            <property name="insert">+"/?</property>
-            <property name="Name">quotation precedes</property>
-        </cell>
-        <cell x="12" y="2" w="4" h="2">
-            <text>&#x224B;</text>
-            <property name="insert">&#x224B;</property>
-            <property name="Name">technical break TCU continuation</property>
-        </cell>
-        <cell x="16" y="2" w="4" h="2">
-            <text>&#x2248;</text>
-            <property name="insert">&#x2248;</property>
-            <property name="Name">no break TCU continuation</property>
+            <text>()</text>
+            <property name="insert">($$)</property>
+            <property name="Name">Shortening</property>
         </cell>
     </grid>
+
+    <grid cols="44" rows="2" name="Markers">
+        <cell x="0" y="0" w="4" h="2">
+            <text>[!]</text>
+            <property name="insert">[!]</property>
+            <property name="Name">Stressing</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Stressing_Scope</property>
+        </cell>
+        <cell x="4" y="0" w="4" h="2">
+            <text>[!!]</text>
+            <property name="insert">[!!]</property>
+            <property name="Name">Contrastive stressing</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#ContrastiveStressing_Scope</property>
+        </cell>
+        <cell x="8" y="0" w="4" h="2">
+            <text>[?]</text>
+            <property name="insert">[?]</property>
+            <property name="Name">Best guesss</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#BestGuess_Scope</property>
+        </cell>
+        <cell x="12" y="0" w="4" h="2">
+            <text>[/]</text>
+            <property name="insert">[/]</property>
+            <property name="Name">Repetition</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Repetition_Scope</property>
+        </cell>
+        <cell x="16" y="0" w="4" h="2">
+            <text>[//]</text>
+            <property name="insert">[//]</property>
+            <property name="Name">Retracing with correction</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Retracing_Scope</property>
+        </cell>
+        <cell x="20" y="0" w="4" h="2">
+            <text>[///]</text>
+            <property name="insert">[///]</property>
+            <property name="Name">Retracing reformulation</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Reformulation_Scope</property>
+        </cell>
+        <cell x="24" y="0" w="4" h="2">
+            <text>[/?]</text>
+            <property name="insert">[/?]</property>
+            <property name="Name">Retracing unclear</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#UnclearRetracing_Scope</property>
+        </cell>
+        <cell x="28" y="0" w="4" h="2">
+            <text>[/-]</text>
+            <property name="insert">[/-]</property>
+            <property name="Name">False start</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#FalseStart_Scope</property>
+        </cell>
+        <cell x="32" y="0" w="4" h="2">
+            <text>[e]</text>
+            <property name="insert">[e]</property>
+            <property name="Name">mor exclude</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#MorExclude_Scope</property>
+        </cell>
+    </grid>
+
+    <grid cols="44" rows="2" name="Group annotations">
+        <cell x="0" y="0" w="4" h="2">
+            <text>[=? ]</text>
+            <property name="insert">[=? $$word$$]</property>
+            <property name="Name">Alternative transcription</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#AlternativeTranscription_Scope</property>
+        </cell>
+        <cell x="4" y="0" w="4" h="2">
+            <text>[% ]</text>
+            <property name="insert">[% $$text$$]</property>
+            <property name="Name">Comment</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Comment_Scope</property>
+        </cell>
+        <cell x="8" y="0" w="4" h="2">
+            <text>[= ]</text>
+            <property name="insert">[= $$text$$]</property>
+            <property name="Name">Explanation</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Explanation_Scope</property>
+        </cell>
+        <cell x="12" y="0" w="4" h="2">
+            <text>[=! ]</text>
+            <property name="insert">[=! $$text$$]</property>
+            <property name="Name">Paralinguistics</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#ParalinguisticMaterial_Scope</property>
+        </cell>
+        <cell x="16" y="0" w="4" h="2">
+            <text>[# ]</text>
+            <property name="insert">[# $$...$$]</property>
+            <property name="Name">Duration</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Duration_Scope</property>
+        </cell>
+        <cell x="20" y="0" w="4" h="2">
+            <text>[* ]</text>
+            <property name="insert">[* $$text$$]</property>
+            <property name="Name">Error</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#ErrorMarking_Scope</property>
+        </cell>
+        <cell x="24" y="0" w="4" h="2">
+            <text>[^ ]</text>
+            <property name="insert">[^ $$text$$]</property>
+            <property name="Name">Freecode</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#ComplexLocalEvents</property>
+        </cell>
+    </grid>
+
+    <grid rows="2" cols="44" name="Overlaps">
+        <cell x="0" y="0" w="4" h="2">
+            <text>[&lt;]</text>
+            <property name="insert">[&lt;]</property>
+            <property name="Name">Overlap precedes</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#OverlapPrecedes_Scope</property>
+        </cell>
+        <cell x="4" y="0" w="4" h="2">
+            <text>[&gt;]</text>
+            <property name="insert">[&gt;]</property>
+            <property name="Name">Overlap follows</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#OverlapFollows_Scope</property>
+        </cell>
+        <cell x="8" y="0" w="4" h="2">
+            <text>&#x2308;</text>
+            <property name="insert">&#x2308;</property>
+            <property name="Name">Top begin overlap</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#TopBeginOverlap_Delimiter</property>
+        </cell>
+        <cell x="12" y="0" w="4" h="2">
+            <text>&#x2309;</text>
+            <property name="insert">&#x2309;</property>
+            <property name="Name">Top end overlap</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#TopEndOverlap_Delimiter</property>
+        </cell>
+        <cell x="16" y="0" w="4" h="2">
+            <text>&#x230A;</text>
+            <property name="insert">&#x230A;</property>
+            <property name="Name">Bottom begin overlap</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#BottomBeginOverlap_Delimiter</property>
+        </cell>
+        <cell x="20" y="0" w="4" h="2">
+            <text>&#x230B;</text>
+            <property name="insert">&#x230B;</property>
+            <property name="Name">Bottom end overlap</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#BottomEndOverlap_Delimiter</property>
+        </cell>
+    </grid>
+
+
 </ipaGrids>
