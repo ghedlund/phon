@@ -21,43 +21,43 @@
         <cell x="0" y="0" w="4" h="2">
             <text>+"</text>
             <property name="insert">+"</property>
-            <property name="Name">Quoted utterance next</property>
+            <property name="Name">quoted utterance next</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#QuotedUtterance_Linker</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
             <text>+^</text>
             <property name="insert">+^</property>
-            <property name="Name">Quick uptake</property>
+            <property name="Name">quick uptake</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#QuickUptake_Linker</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
             <text>+&lt;</text>
             <property name="insert">+&lt;</property>
-            <property name="Name">Lazy overlap mark</property>
+            <property name="Name">lazy overlap mark</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#LazyOverlap_Linker</property>
         </cell>
         <cell x="12" y="0" w="4" h="2">
             <text>+,</text>
             <property name="insert">+,</property>
-            <property name="Name">Self completion</property>
+            <property name="Name">self completion</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#SelfCompletion_Linker</property>
         </cell>
         <cell x="16" y="0" w="4" h="2">
             <text>++</text>
             <property name="insert">++</property>
-            <property name="Name">Other completion</property>
+            <property name="Name">other completion</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#OtherCompletion_Linker</property>
         </cell>
         <cell x="20" y="0" w="4" h="2">
             <text>+&#x224B;</text>
             <property name="insert">+&#x224B;</property>
-            <property name="Name">Technical break TCU continuation</property>
+            <property name="Name">technical break TCU continuation</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#TechnicalBreakTCUCompletion_Linker</property>
         </cell>
         <cell x="24" y="0" w="4" h="2">
             <text>+&#x2248;</text>
             <property name="insert">+&#x2248;</property>
-            <property name="Name">No break TCU continuation</property>
+            <property name="Name">no break TCU continuation</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#NoBreakTCUCompletion_Linker</property>
         </cell>
     </grid>
@@ -67,199 +67,231 @@
             <text>.</text>
             <property name="insert">.</property>
             <property name="Name">sentence terminator</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Period_Terminator</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
             <text>!</text>
             <property name="insert">!</property>
             <property name="Name">exclamation</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#ExclamationMark_Terminator</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
             <text>?</text>
             <property name="insert">?</property>
             <property name="Name">question</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#QuestionMark_Terminator</property>
         </cell>
         <cell x="12" y="0" w="4" h="2">
             <text>+.</text>
             <property name="insert">+.</property>
             <property name="Name">broken for coding</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#TranscriptionBreak_Terminator</property>
         </cell>
         <cell x="16" y="0" w="4" h="2">
             <text>+...</text>
             <property name="insert">+...</property>
             <property name="Name">trail off</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#TrailingOff_Terminator</property>
         </cell>
         <cell x="20" y="0" w="4" h="2">
             <text>+..?</text>
             <property name="insert">+..?</property>
             <property name="Name">trail off question</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#TrailingOffQuestion_Terminator</property>
         </cell>
         <cell x="24" y="0" w="4" h="2">
             <text>+!?</text>
             <property name="insert">+!?</property>
             <property name="Name">question exclamation</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#QuestionExclamation_Terminator</property>
         </cell>
         <cell x="28" y="0" w="4" h="2">
-            <text>+!.</text>
-            <property name="insert">+!.</property>
-            <property name="Name">exclamation sentence</property>
-        </cell>
-        <cell x="32" y="0" w="4" h="2">
             <text>+/.</text>
             <property name="insert">+/.</property>
             <property name="Name">interruption</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Interruption_Terminator</property>
         </cell>
-        <cell x="36" y="0" w="4" h="2">
+        <cell x="32" y="0" w="4" h="2">
             <text>+/?</text>
             <property name="insert">+/?</property>
             <property name="Name">interruption question</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#QuestionInterruption_Terminator</property>
         </cell>
-        <cell x="40" y="0" w="4" h="2">
+        <cell x="36" y="0" w="4" h="2">
             <text>+//.</text>
             <property name="insert">+//.</property>
             <property name="Name">self interruption</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#SelfInterruption_Terminator</property>
         </cell>
-
-        <cell x="0" y="2" w="4" h="2">
+        <cell x="40" y="0" w="4" h="2">
             <text>+//?</text>
             <property name="insert">+//?</property>
             <property name="Name">self interruption question</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#SelfInterruptedQuestion_Terminator</property>
         </cell>
-        <cell x="4" y="2" w="4" h="2">
+
+        <cell x="0" y="2" w="4" h="2">
             <text>+"/.</text>
             <property name="insert">+"/.</property>
             <property name="Name">quotation next line</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#QuotationFollows_Terminator</property>
         </cell>
-        <cell x="8" y="2" w="4" h="2">
+        <cell x="4" y="2" w="4" h="2">
             <text>+".</text>
             <property name="insert">+".</property>
             <property name="Name">quotation precedes</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#QuotationPrecedes_Terminator</property>
         </cell>
-        <cell x="12" y="2" w="4" h="2">
+        <cell x="8" y="2" w="4" h="2">
             <text>&#x224B;</text>
             <property name="insert">&#x224B;</property>
             <property name="Name">technical break TCU continuation</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#TechnicalBreakTCUContinuation_Terminator
+            </property>
         </cell>
-        <cell x="16" y="2" w="4" h="2">
+        <cell x="12" y="2" w="4" h="2">
             <text>&#x2248;</text>
             <property name="insert">&#x2248;</property>
             <property name="Name">no break TCU continuation</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#NoBreakTCUContinuation_Terminator</property>
         </cell>
-        <cell x="20" y="2" w="4" h="2">
+        <cell x="16" y="2" w="4" h="2">
             <text>[+ ]</text>
             <property name="insert">[+ $$text$$]</property>
-            <property name="Name">Postcode</property>
+            <property name="Name">postcode</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Postcodes</property>
         </cell>
     </grid>
 
-     <grid rows="2" cols="44" name="Word prefix">
-         <cell x="0" y="0" w="4" h="2">
-             <text>0</text>
-             <property name="insert">0$$word$$</property>
-             <property name="Name">omission</property>
-         </cell>
-         <cell x="4" y="0" w="4" h="2">
-             <text>&amp;~</text>
-             <property name="insert">&amp;~$$word$$</property>
-             <property name="Name">non word</property>
+    <grid rows="2" cols="44" name="Word prefix">
+        <cell x="0" y="0" w="4" h="2">
+            <text>0</text>
+            <property name="insert">0$$word$$</property>
+            <property name="Name">omission</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#OmittedWord_Code</property>
         </cell>
-         <cell x="8" y="0" w="4" h="2">
-             <text>&amp;-</text>
-             <property name="insert">&amp;-$$word$$</property>
-             <property name="Name">filler</property>
-         </cell>
-         <cell x="12" y="0" w="4" h="2">
+        <cell x="4" y="0" w="4" h="2">
+            <text>&amp;~</text>
+            <property name="insert">&amp;~$$word$$</property>
+            <property name="Name">non word</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Nonword</property>
+        </cell>
+        <cell x="8" y="0" w="4" h="2">
+            <text>&amp;-</text>
+            <property name="insert">&amp;-$$word$$</property>
+            <property name="Name">filler</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Filler_Code</property>
+        </cell>
+        <cell x="12" y="0" w="4" h="2">
             <text>&amp;+</text>
             <property name="insert">&amp;+$$word$$</property>
             <property name="Name">fragment</property>
-         </cell>
-     </grid>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Fragment_Code</property>
+        </cell>
+    </grid>
 
     <grid rows="6" cols="44" name="Word suffix">
         <cell x="0" y="0" w="4" h="2">
             <text>#</text>
             <property name="insert">$$word$$#</property>
             <property name="Name">separated prefix</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Separated_Prefix</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
             <text>@a</text>
             <property name="insert">$$word$$@a</property>
             <property name="Name">addition</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Addition_Marker</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
             <text>@b</text>
             <property name="insert">$$word$$@b</property>
             <property name="Name">babbling</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Babbling_Marker</property>
         </cell>
         <cell x="12" y="0" w="4" h="2">
             <text>@c</text>
             <property name="insert">$$word$$@c</property>
             <property name="Name">child-invented form</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#ChildInvented_Marker</property>
         </cell>
         <cell x="16" y="0" w="4" h="2">
             <text>@d</text>
             <property name="insert">$$word$$@d</property>
             <property name="Name">dialect form</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#DialectForm_Marker</property>
         </cell>
         <cell x="20" y="0" w="4" h="2">
             <text>@e</text>
             <property name="insert">$$word$$@e</property>
             <property name="Name">echolalia</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#EcholaliaForm_Marker</property>
         </cell>
         <cell x="24" y="0" w="4" h="2">
             <text>@f</text>
             <property name="insert">$$word$$@f</property>
             <property name="Name">family specific form</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#FamilySpecificForm_Marker</property>
         </cell>
         <cell x="28" y="0" w="4" h="2">
             <text>@fp</text>
             <property name="insert">$$word$$@fp</property>
             <property name="Name">filled pause</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#FilledPause_Marker</property>
         </cell>
         <cell x="32" y="0" w="4" h="2">
             <text>@g</text>
             <property name="insert">$$word$$@g</property>
             <property name="Name">general special form</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#GeneralSpecialForm_Marker</property>
         </cell>
         <cell x="36" y="0" w="4" h="2">
             <text>@i</text>
             <property name="insert">$$word$$@i</property>
             <property name="Name">interjection, interaction</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Interjection_Marker</property>
         </cell>
         <cell x="40" y="0" w="4" h="2">
             <text>@k</text>
             <property name="insert">$$word$$@k</property>
             <property name="Name">multiple letters</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Kana_Marker</property>
         </cell>
         <cell x="0" y="2" w="4" h="2">
             <text>@l</text>
             <property name="insert">$$word$$@l</property>
             <property name="Name">letter</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Letter_Marker</property>
         </cell>
         <cell x="4" y="2" w="4" h="2">
             <text>@n</text>
             <property name="insert">$$word$$@n</property>
             <property name="Name">neologism</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Neologism_Marker</property>
         </cell>
         <cell x="8" y="2" w="4" h="2">
             <text>@nv</text>
             <property name="insert">$$word$$@nv</property>
             <property name="Name">no voice</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#NonvoicedForm_Marker</property>
         </cell>
         <cell x="12" y="2" w="4" h="2">
             <text>@o</text>
             <property name="insert">$$word$$@o</property>
             <property name="Name">onomatopoeia</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Onomatopoeia_Marker</property>
         </cell>
         <cell x="16" y="2" w="4" h="2">
             <text>@p</text>
             <property name="insert">$$word$$@p</property>
             <property name="Name">phonology consistent form</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#PCF_Marker</property>
         </cell>
         <cell x="20" y="2" w="4" h="2">
             <text>@q</text>
             <property name="insert">$$word$$@q</property>
             <property name="Name">quoted metareference</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#MetalinguisticReference_Marker</property>
         </cell>
         <cell x="24" y="2" w="4" h="2">
             <text>@s:*</text>
@@ -275,62 +307,71 @@
             <text>@si</text>
             <property name="insert">$$word$$@si</property>
             <property name="Name">singing</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Singing_Marker</property>
         </cell>
         <cell x="36" y="2" w="4" h="2">
             <text>@sl</text>
             <property name="insert">$$word$$@sl</property>
             <property name="Name">signed language</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#SignLanguage_Marker</property>
         </cell>
         <cell x="40" y="2" w="4" h="2">
             <text>@sas</text>
             <property name="insert">$$word$$@sas</property>
             <property name="Name">sign and speech</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#SignAndSpeech_Marker</property>
         </cell>
         <cell x="0" y="4" w="4" h="2">
             <text>@t</text>
             <property name="insert">$$word$$@t</property>
             <property name="Name">test form</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#TestWord_Marker</property>
         </cell>
         <cell x="4" y="4" w="4" h="2">
             <text>@u</text>
             <property name="insert">$$word$$@u</property>
             <property name="Name">Unibet transcription</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Unibet_Marker</property>
         </cell>
         <cell x="8" y="4" w="4" h="2">
             <text>@wp</text>
             <property name="insert">$$word$$@wp</property>
             <property name="Name">word play</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#WordPlay_Marker</property>
         </cell>
         <cell x="12" y="4" w="4" h="2">
             <text>@x</text>
             <property name="insert">$$word$$@x</property>
             <property name="Name">excluded words</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Excluded_Marker</property>
         </cell>
-
         <cell x="16" y="4" w="4" h="2">
             <text>@z:*</text>
             <property name="insert">$$word$$@z:xxx</property>
             <property name="Name">user-defined code</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#User_Special_Form</property>
         </cell>
     </grid>
 
 
-
     <grid cols="44" rows="2" name="Grouping">
         <cell x="0" y="0" w="4" h="2">
-            <text>&lt;&gt;</text>
+            <text>&lt; &gt;</text>
             <property name="insert">&lt;$$&gt;</property>
-            <property name="Name">Word group</property>
+            <property name="Name">word group</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Group</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
-            <text>‹›</text>
+            <text>‹ ›</text>
             <property name="insert">‹$$›</property>
-            <property name="Name">Phonological group</property>
+            <property name="Name">phonological group</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Phonological_Group</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
-            <text>()</text>
+            <text>( )</text>
             <property name="insert">($$)</property>
-            <property name="Name">Shortening</property>
+            <property name="Name">shortening</property>
+            <property name="doc">https://talkbank.org/manuals/CHAT.html#Shortenings</property>
         </cell>
     </grid>
 
@@ -338,49 +379,49 @@
         <cell x="0" y="0" w="4" h="2">
             <text>[!]</text>
             <property name="insert">[!]</property>
-            <property name="Name">Stressing</property>
+            <property name="Name">stressing</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Stressing_Scope</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
             <text>[!!]</text>
             <property name="insert">[!!]</property>
-            <property name="Name">Contrastive stressing</property>
+            <property name="Name">contrastive stressing</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#ContrastiveStressing_Scope</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
             <text>[?]</text>
             <property name="insert">[?]</property>
-            <property name="Name">Best guesss</property>
+            <property name="Name">best guesss</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#BestGuess_Scope</property>
         </cell>
         <cell x="12" y="0" w="4" h="2">
             <text>[/]</text>
             <property name="insert">[/]</property>
-            <property name="Name">Repetition</property>
+            <property name="Name">repetition</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Repetition_Scope</property>
         </cell>
         <cell x="16" y="0" w="4" h="2">
             <text>[//]</text>
             <property name="insert">[//]</property>
-            <property name="Name">Retracing with correction</property>
+            <property name="Name">retracing with correction</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Retracing_Scope</property>
         </cell>
         <cell x="20" y="0" w="4" h="2">
             <text>[///]</text>
             <property name="insert">[///]</property>
-            <property name="Name">Retracing reformulation</property>
+            <property name="Name">retracing reformulation</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Reformulation_Scope</property>
         </cell>
         <cell x="24" y="0" w="4" h="2">
             <text>[/?]</text>
             <property name="insert">[/?]</property>
-            <property name="Name">Retracing unclear</property>
+            <property name="Name">retracing unclear</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#UnclearRetracing_Scope</property>
         </cell>
         <cell x="28" y="0" w="4" h="2">
             <text>[/-]</text>
             <property name="insert">[/-]</property>
-            <property name="Name">False start</property>
+            <property name="Name">false start</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#FalseStart_Scope</property>
         </cell>
         <cell x="32" y="0" w="4" h="2">
@@ -395,55 +436,55 @@
         <cell x="0" y="0" w="4" h="2">
             <text>[=? ]</text>
             <property name="insert">[=? $$word$$]</property>
-            <property name="Name">Alternative transcription</property>
+            <property name="Name">alternative transcription</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#AlternativeTranscription_Scope</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
             <text>[% ]</text>
             <property name="insert">[% $$text$$]</property>
-            <property name="Name">Comment</property>
+            <property name="Name">comment</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Comment_Scope</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
             <text>[= ]</text>
             <property name="insert">[= $$text$$]</property>
-            <property name="Name">Explanation</property>
+            <property name="Name">explanation</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Explanation_Scope</property>
         </cell>
         <cell x="12" y="0" w="4" h="2">
             <text>[: ]</text>
             <property name="insert">[: $$text$$]</property>
-            <property name="Name">Replacement</property>
+            <property name="Name">replacement</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Replacement_Scope</property>
         </cell>
         <cell x="16" y="0" w="4" h="2">
             <text>[:: ]</text>
             <property name="insert">[:: $$text$$]</property>
-            <property name="Name">Real replacement</property>
+            <property name="Name">real replacement</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Replacements</property>
         </cell>
         <cell x="20" y="0" w="4" h="2">
             <text>[=! ]</text>
             <property name="insert">[=! $$text$$]</property>
-            <property name="Name">Paralinguistics</property>
+            <property name="Name">paralinguistics</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#ParalinguisticMaterial_Scope</property>
         </cell>
         <cell x="24" y="0" w="4" h="2">
             <text>[# ]</text>
             <property name="insert">[# $$...$$]</property>
-            <property name="Name">Duration</property>
+            <property name="Name">duration</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Duration_Scope</property>
         </cell>
         <cell x="28" y="0" w="4" h="2">
             <text>[* ]</text>
             <property name="insert">[* $$text$$]</property>
-            <property name="Name">Error</property>
+            <property name="Name">error</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#ErrorMarking_Scope</property>
         </cell>
         <cell x="32" y="0" w="4" h="2">
             <text>[^ ]</text>
             <property name="insert">[^ $$text$$]</property>
-            <property name="Name">Freecode</property>
+            <property name="Name">freecode</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#ComplexLocalEvents</property>
         </cell>
     </grid>
@@ -452,37 +493,37 @@
         <cell x="0" y="0" w="4" h="2">
             <text>[&lt;]</text>
             <property name="insert">[&lt;]</property>
-            <property name="Name">Overlap precedes</property>
+            <property name="Name">overlap precedes</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#OverlapPrecedes_Scope</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
             <text>[&gt;]</text>
             <property name="insert">[&gt;]</property>
-            <property name="Name">Overlap follows</property>
+            <property name="Name">overlap follows</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#OverlapFollows_Scope</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
             <text>&#x2308;</text>
             <property name="insert">&#x2308;</property>
-            <property name="Name">Top begin overlap</property>
+            <property name="Name">top begin overlap</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#TopBeginOverlap_Delimiter</property>
         </cell>
         <cell x="12" y="0" w="4" h="2">
             <text>&#x2309;</text>
             <property name="insert">&#x2309;</property>
-            <property name="Name">Top end overlap</property>
+            <property name="Name">top end overlap</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#TopEndOverlap_Delimiter</property>
         </cell>
         <cell x="16" y="0" w="4" h="2">
             <text>&#x230A;</text>
             <property name="insert">&#x230A;</property>
-            <property name="Name">Bottom begin overlap</property>
+            <property name="Name">bottom begin overlap</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#BottomBeginOverlap_Delimiter</property>
         </cell>
         <cell x="20" y="0" w="4" h="2">
             <text>&#x230B;</text>
             <property name="insert">&#x230B;</property>
-            <property name="Name">Bottom end overlap</property>
+            <property name="Name">bottom end overlap</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#BottomEndOverlap_Delimiter</property>
         </cell>
     </grid>
@@ -491,73 +532,73 @@
         <cell x="0" y="0" w="4" h="2">
             <text>&#x2260;</text>
             <property name="insert">&#x2260;</property>
-            <property name="Name">Blocked segments</property>
+            <property name="Name">blocked segments</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Blocking_Marker</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
             <text>&#x223e;</text>
             <property name="insert">&#x223e;</property>
-            <property name="Name">Constriction</property>
+            <property name="Name">constriction</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Constriction_Element</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
             <text>&#x2219;</text>
             <property name="insert">&#x2219;</property>
-            <property name="Name">Inhalation</property>
+            <property name="Name">inhalation</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Inhalation_Element</property>
         </cell>
         <cell x="12" y="0" w="4" h="2">
             <text>&#x1F29;</text>
             <property name="insert">&#x1F29;</property>
-            <property name="Name">Laugh in word</property>
+            <property name="Name">laugh in word</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#LaughInWord_Element</property>
         </cell>
         <cell x="16" y="0" w="4" h="2">
             <text>&#x2193;</text>
             <property name="insert">&#x2193;</property>
-            <property name="Name">Pitch down</property>
+            <property name="Name">pitch down</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#PitchDown_Element</property>
         </cell>
         <cell x="20" y="0" w="4" h="2">
             <text>&#x21BB;</text>
             <property name="insert">&#x21BB;</property>
-            <property name="Name">Pitch reset</property>
+            <property name="Name">pitch reset</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#PitchReset_Element</property>
         </cell>
         <cell x="24" y="0" w="4" h="2">
             <text>&#x2191;</text>
             <property name="insert">&#x2191;</property>
-            <property name="Name">Pitch up</property>
+            <property name="Name">pitch up</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#PitchUp_Element</property>
         </cell>
         <cell x="28" y="0" w="4" h="2">
             <text>&#x02C8;</text>
             <property name="insert">&#x02C8;</property>
-            <property name="Name">Primary stress</property>
+            <property name="Name">primary stress</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#PrimaryStress_Element</property>
         </cell>
         <cell x="32" y="0" w="4" h="2">
             <text>&#x02CC;</text>
             <property name="insert">&#x02CC;</property>
-            <property name="Name">Secondary stress</property>
+            <property name="Name">secondary stress</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#SecondaryStress_Element</property>
         </cell>
         <cell x="36" y="0" w="4" h="2">
             <text>⁑</text>
             <property name="insert">⁑</property>
-            <property name="Name">Hardening</property>
+            <property name="Name">hardening</property>
             <property name="doc">https://talkbank.org/manuals/chat.html#Hardening_Element</property>
         </cell>
         <cell x="40" y="0" w="4" h="2">
             <text>⤇</text>
             <property name="insert">⤇</property>
-            <property name="Name">Hurried start</property>
+            <property name="Name">hurried start</property>
             <property name="doc">https://talkbank.org/manuals/chat.html#HurriedStart_Element</property>
         </cell>
         <cell x="0" y="2" w="4" h="2">
             <text>⤆</text>
             <property name="insert">⤆</property>
-            <property name="Name">Sudden stop</property>
+            <property name="Name">sudden stop</property>
             <property name="doc">https://talkbank.org/manuals/chat.html#SuddenStop_Element</property>
         </cell>
     </grid>
@@ -566,91 +607,91 @@
         <cell x="0" y="0" w="4" h="2">
             <text>&#x264B;</text>
             <property name="insert">&#x264B;$$&#x264B;</property>
-            <property name="Name">Breathy voice</property>
+            <property name="Name">breathy voice</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#BreathyVoice_Delimiter</property>
         </cell>
         <cell x="4" y="0" w="4" h="2">
             <text>&#x204E;</text>
             <property name="insert">&#x204E;$$&#x204E;</property>
-            <property name="Name">Creaky voice</property>
+            <property name="Name">creaky voice</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Creaky_Delimiter</property>
         </cell>
         <cell x="8" y="0" w="4" h="2">
             <text>&#x2206;</text>
             <property name="insert">&#x2206;$$&#x2206;</property>
-            <property name="Name">Faster</property>
+            <property name="Name">faster</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Faster_Delimiter</property>
         </cell>
         <cell x="12" y="0" w="4" h="2">
             <text>&#x2594;</text>
             <property name="insert">&#x2594;$$&#x2594;</property>
-            <property name="Name">High-pitch</property>
+            <property name="Name">high-pitch</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#HighPitch_Delimiter</property>
         </cell>
         <cell x="16" y="0" w="4" h="2">
             <text>&#x25C9;</text>
             <property name="insert">&#x25C9;$$&#x25C9;</property>
-            <property name="Name">Louder</property>
+            <property name="Name">louder</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Louder_Delimiter</property>
         </cell>
         <cell x="20" y="0" w="4" h="2">
             <text>&#x2581;</text>
             <property name="insert">&#x2581;$$&#x2581;</property>
-            <property name="Name">Low-pitch</property>
+            <property name="Name">low-pitch</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#LowPitch_Delimiter</property>
         </cell>
         <cell x="24" y="0" w="4" h="2">
             <text>&#x00A7;</text>
             <property name="insert">&#x00A7;$$&#x00A7;</property>
-            <property name="Name">Precise</property>
+            <property name="Name">precise</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Precise_Delimiter</property>
         </cell>
         <cell x="28" y="0" w="4" h="2">
             <text>&#x21AB;</text>
             <property name="insert">&#x21AB;$$&#x21AB;</property>
-            <property name="Name">Repeated segment</property>
+            <property name="Name">repeated segment</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#RepeatedSegment_Delimiter</property>
         </cell>
         <cell x="32" y="0" w="4" h="2">
             <text>&#x222E;</text>
             <property name="insert">&#x222E;$$&#x222E;</property>
-            <property name="Name">Singing</property>
+            <property name="Name">singing</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Singing_Delimiter</property>
         </cell>
         <cell x="36" y="0" w="4" h="2">
             <text>&#x2207;</text>
             <property name="insert">&#x2207;$$&#x2207;</property>
-            <property name="Name">Slower</property>
+            <property name="Name">slower</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Slower_Delimiter</property>
         </cell>
         <cell x="40" y="0" w="4" h="2">
             <text>&#x263A;</text>
             <property name="insert">&#x263A;$$&#x263A;</property>
-            <property name="Name">Smile voice</property>
+            <property name="Name">smile voice</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#SmileVoice_Delimiter</property>
         </cell>
         <cell x="0" y="2" w="4" h="2">
             <text>&#x00B0;</text>
             <property name="insert">&#x00B0;$$&#x00B0;</property>
-            <property name="Name">Softer</property>
+            <property name="Name">softer</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Softer_Delimiter</property>
         </cell>
         <cell x="4" y="2" w="4" h="2">
             <text>&#x2047;</text>
             <property name="insert">&#x2047;$$&#x2047;</property>
-            <property name="Name">Unsure</property>
+            <property name="Name">unsure</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Unsure_Delimiter</property>
         </cell>
         <cell x="8" y="2" w="4" h="2">
             <text>&#x222C;</text>
             <property name="insert">&#x222C;$$&#x222C;</property>
-            <property name="Name">Whisper</property>
+            <property name="Name">whisper</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Whisper_Delimiter</property>
         </cell>
         <cell x="12" y="2" w="4" h="2">
             <text>&#x03AB;</text>
             <property name="insert">&#x03AB;$$&#x03AB;</property>
-            <property name="Name">Yawn</property>
+            <property name="Name">yawn</property>
             <property name="doc">https://talkbank.org/manuals/CHAT.html#Yawn_Delimiter</property>
         </cell>
     </grid>
