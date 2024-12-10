@@ -1203,8 +1203,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
         try {
             final Rectangle2D caretRect = modelToView2D(getCaretPosition());
-            final Point caretPoint = new Point((int)caretRect.getCenterX(), (int)caretRect.getMaxY());
+            final Point caretPoint = new Point((int)caretRect.getMinX(), (int)caretRect.getMinY());
             SwingUtilities.convertPointToScreen(caretPoint, this);
+            final Rectangle r = new Rectangle(caretPoint.x, caretPoint.y, (int)caretRect.getWidth(), (int)caretRect.getHeight());
 //            final JPanel p = new JPanel(new BorderLayout());
             final JTabbedPane tabbedPane = new JTabbedPane();
             final JScrollPane chatScrollPane = new JScrollPane(chatMap);
@@ -1214,7 +1215,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             tabbedPane.setPreferredSize(new Dimension(tabbedPane.getPreferredSize().width, 500));
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             final CalloutWindow window =
-                    CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), tabbedPane, SwingConstants.TOP, caretPoint);
+                    CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), tabbedPane, SwingConstants.TOP, r);
             window.setAlwaysOnTop(true);
 
             // escape closes window
@@ -1271,10 +1272,10 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                             } catch (BadLocationException ex) {
                                 return;
                             }
-                            final Point caretPoint = new Point((int)caretRect.getCenterX(), (int)caretRect.getMaxY());
+                            final Point caretPoint = new Point((int)caretRect.getMinX(), (int)caretRect.getMinY());
                             SwingUtilities.convertPointToScreen(caretPoint, TranscriptEditor.this);
-                            final Point arrowPoint = window.getRelativeArrowPoint();
-                            window.setLocation(caretPoint.x - arrowPoint.x, caretPoint.y - arrowPoint.y);
+                            final Rectangle r = new Rectangle(caretPoint.x, caretPoint.y, (int)caretRect.getWidth(), (int)caretRect.getHeight());
+                            window.pointAtRect(SwingConstants.TOP, r);
                         }
                     }
                 }
