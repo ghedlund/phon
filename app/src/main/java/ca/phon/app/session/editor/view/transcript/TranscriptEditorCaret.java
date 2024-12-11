@@ -175,7 +175,7 @@ public class TranscriptEditorCaret extends DefaultCaret {
         if(oldVal != freezeCaret) {
             fireStateChanged();
             if(PrefHelper.getBoolean("phon.debug", false)) {
-                LogUtil.log(Level.TRACE, "Transcript Editor caret freeze: " + freezeCaret);
+                LogUtil.log(Level.INFO, "Transcript Editor caret freeze: " + freezeCaret);
             }
         }
     }

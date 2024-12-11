@@ -128,14 +128,12 @@ public class TranscriptNavigationFilter extends NavigationFilter {
                 editor.charPosToSessionLocation(dot)
         );
         if(!transcriptLocationChangeData.newLoc().equals(transcriptLocationChangeData.oldLoc())) {
-            SwingUtilities.invokeLater(() -> {
-                final EditorEvent<TranscriptEditor.TranscriptLocationChangeData> e = new EditorEvent<>(
-                        TranscriptEditor.transcriptLocationChanged,
-                        editor,
-                        transcriptLocationChangeData
-                );
-                editor.getEventManager().queueEvent(e);
-            });
+            final EditorEvent<TranscriptEditor.TranscriptLocationChangeData> e = new EditorEvent<>(
+                    TranscriptEditor.transcriptLocationChanged,
+                    editor,
+                    transcriptLocationChangeData
+            );
+            editor.getEventManager().queueEvent(e);
         }
     }
 
