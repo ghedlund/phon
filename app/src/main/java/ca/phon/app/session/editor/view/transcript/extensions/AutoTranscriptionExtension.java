@@ -298,7 +298,7 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
                             final Orthography orthography = getOrthography(record, editor.getDataModel().getTranscriber());
                             final AutomaticTranscription autoTranscript = autoTranscriber.transcribe(orthography);
                             if(autoTranscript.getWords().size() > 0) {
-                                SwingUtilities.invokeLater(() -> insertAutomaticTranscription(record, (Tier<IPATranscript>)tier, autoTranscript));
+                                insertAutomaticTranscription(record, (Tier<IPATranscript>)tier, autoTranscript);
                             }
                         } else if(e.getData().get().newLoc().charPosition() == currentText.length()) {
                             // get previous character, if space then suggest transcription from current word index
@@ -308,7 +308,7 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
                                 final Orthography orthography = getOrthography(record, editor.getDataModel().getTranscriber());
                                 final AutomaticTranscription autoTranscript = autoTranscriber.transcribe(orthography, numWords);
                                 if(autoTranscript.getWords().size() > 0) {
-                                    SwingUtilities.invokeLater(() -> insertAutomaticTranscription(record, (Tier<IPATranscript>)tier, autoTranscript));
+                                    insertAutomaticTranscription(record, (Tier<IPATranscript>)tier, autoTranscript);
                                 }
                             }
                         }
