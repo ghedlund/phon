@@ -7,6 +7,7 @@ import ca.phon.extensions.ExtensionSupport;
 import ca.phon.extensions.IExtendable;
 import ca.phon.extensions.UnvalidatedValue;
 import ca.phon.ipamap2.*;
+import ca.phon.orthography.Orthography;
 import ca.phon.session.Record;
 import ca.phon.session.*;
 import ca.phon.session.position.TranscriptElementLocation;
@@ -1202,6 +1203,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         ipaMap.addCellMouseListener(gridMouseListener);
 
         try {
+
             final Rectangle2D caretRect = modelToView2D(getCaretPosition());
             final Point caretPoint = new Point((int)caretRect.getMinX(), (int)caretRect.getMinY());
             SwingUtilities.convertPointToScreen(caretPoint, this);
@@ -1219,6 +1221,20 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             tabbedPane.addTab("IPA", scrollPane);
             tabbedPane.setPreferredSize(new Dimension(tabbedPane.getPreferredSize().width, 500));
             scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+            tabbedPane.setSelectedIndex(1);
+
+            final TranscriptElementLocation elementLocation = TranscriptEditor.this.getTranscriptEditorCaret().getTranscriptLocation();
+            if(!elementLocation.valid()) return;
+            if(elementLocation.transcriptElementIndex() >= 0) {
+                final Transcript.Element transcriptElement = getSession().getTranscript().getElementAt(elementLocation.transcriptElementIndex());
+                if(transcriptElement.isRecord()) {
+                    final Tier<?> tier = transcriptElement.asRecord().getTier(elementLocation.tier());
+                    if(tier.getDeclaredType() == Orthography.class) {
+                        tabbedPane.setSelectedIndex(0);
+                    }
+                }
+            }
+
             final CalloutWindow window =
                     CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), tabbedPane, SwingConstants.TOP, r);
             window.setAlwaysOnTop(true);
