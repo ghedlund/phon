@@ -430,6 +430,10 @@ public class TranscriptViewFactory implements ViewFactory {
                 try {
                     if (getDocument().getText(p0, p1 - p0).contains(" ")) {
                         return View.ExcellentBreakWeight;
+                    } else if(getDocument().getText(p0, p1 - p0).contains("/")) {
+                        return View.ExcellentBreakWeight;
+                    } else if(getDocument().getText(p0, p1 - p0).contains("-")) {
+                        return View.ExcellentBreakWeight;
                     }
                 } catch (BadLocationException ble) {
                     // assume we can't break
@@ -448,6 +452,16 @@ public class TranscriptViewFactory implements ViewFactory {
                     int breakPos = getDocument().getText(p0, p1 - p0).lastIndexOf(" ");
                     if (breakPos >= 0) {
                         p1 = p0 + breakPos + 1;
+                    } else {
+                        breakPos = getDocument().getText(p0, p1 - p0).lastIndexOf("/");
+                        if (breakPos >= 0) {
+                            p1 = p0 + breakPos + 1;
+                        } else {
+                            breakPos = getDocument().getText(p0, p1 - p0).lastIndexOf("-");
+                            if (breakPos >= 0) {
+                                p1 = p0 + breakPos + 1;
+                            }
+                        }
                     }
                 } catch (BadLocationException ble) {
                     // assume we can't break
