@@ -129,6 +129,42 @@ public class TranscriptEditorCaret extends DefaultCaret {
         }
     }
 
+    /**
+     * Get the height of the line at the given dot
+     *
+     * @param dot
+     * @return height of line or 0 if line height could not be determined
+     */
+    public int getLineHeight(int dot) {
+        int actualLineHeight = 0;
+
+        final TranscriptEditor component = (TranscriptEditor) getComponent();
+        try {
+            TextUI mapper = component.getUI();
+            Rectangle r = mapper.modelToView(component, getDot(), getDotBias());
+            if ((r == null) || ((r.width == 0) && (r.height == 0))) {
+                return actualLineHeight;
+            }
+
+            Element ele = component.getTranscriptDocument().getCharacterElement(getDot());
+            actualLineHeight = getComponent().getGraphics().getFontMetrics().getHeight();
+            if(ele != null) {
+                final AttributeSet attrs = ele.getAttributes();
+                if(StyleConstants.getFontFamily(attrs) != null && StyleConstants.getFontSize(attrs) > 0) {
+                    int style = (StyleConstants.isBold(attrs) ? Font.BOLD : 0) |
+                            (StyleConstants.isItalic(attrs) ? Font.ITALIC : 0);
+                    final float fontSizeDelta = PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f);
+                    final Font f = new Font(StyleConstants.getFontFamily(attrs), style, StyleConstants.getFontSize(attrs) + (int)fontSizeDelta);
+                    actualLineHeight = getComponent().getGraphics().getFontMetrics(f).getHeight();
+                }
+            }
+        } catch (BadLocationException e) {
+            LogUtil.warning(e.getLocalizedMessage(), e);
+        }
+
+        return actualLineHeight;
+    }
+
     public boolean isFreezeCaret() {
         return this.freezeCaret;
     }

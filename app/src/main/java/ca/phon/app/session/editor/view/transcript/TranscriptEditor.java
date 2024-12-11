@@ -1205,7 +1205,12 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             final Rectangle2D caretRect = modelToView2D(getCaretPosition());
             final Point caretPoint = new Point((int)caretRect.getMinX(), (int)caretRect.getMinY());
             SwingUtilities.convertPointToScreen(caretPoint, this);
-            final Rectangle r = new Rectangle(caretPoint.x, caretPoint.y, (int)caretRect.getWidth(), (int)caretRect.getHeight());
+
+            // get font ascent at caret position
+            final FontMetrics fm = getFontMetrics(getFont());
+            final int fontAscent = fm.getAscent();
+            final Rectangle r = new Rectangle(caretPoint.x, caretPoint.y - fontAscent, (int)caretRect.getWidth(), (int)caretRect.getHeight() + fontAscent);
+
 //            final JPanel p = new JPanel(new BorderLayout());
             final JTabbedPane tabbedPane = new JTabbedPane();
             final JScrollPane chatScrollPane = new JScrollPane(chatMap);
@@ -1274,7 +1279,10 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                             }
                             final Point caretPoint = new Point((int)caretRect.getMinX(), (int)caretRect.getMinY());
                             SwingUtilities.convertPointToScreen(caretPoint, TranscriptEditor.this);
-                            final Rectangle r = new Rectangle(caretPoint.x, caretPoint.y, (int)caretRect.getWidth(), (int)caretRect.getHeight());
+                            // get font ascent at caret position
+                            final FontMetrics fm = getFontMetrics(getFont());
+                            final int fontAscent = fm.getAscent();
+                            final Rectangle r = new Rectangle(caretPoint.x, caretPoint.y - fontAscent, (int)caretRect.getWidth(), (int)caretRect.getHeight() + fontAscent);
                             window.pointAtRect(SwingConstants.TOP, r);
                         }
                     }

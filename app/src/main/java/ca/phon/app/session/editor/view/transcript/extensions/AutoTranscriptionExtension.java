@@ -40,6 +40,7 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -331,22 +332,31 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
             final IPATranscript[] options = autoTranscript.getTranscriptionOptions(firstWord);
             if (options.length > 1) {
                 final JTextComponent textComponent = editor;
-                final Point p = textComponent.getCaret().getMagicCaretPosition();
-                SwingUtilities.convertPointToScreen(p, textComponent);
-                final int height = textComponent.getFontMetrics(textComponent.getFont()).getHeight();
-                p.y += height;
 
-                final AutoTranscriptionOptionsContent optionsContent = new AutoTranscriptionOptionsContent(autoTranscript);
-                optionsContent.setPreferredSize(new Dimension(200, 100));
-                optionsContentRef.set(optionsContent);
+                try {
+                    final Rectangle2D caretRect = textComponent.modelToView2D(editor.getCaretPosition());
+                    final Point caretPoint = new Point((int)caretRect.getMinX(), (int)caretRect.getMinY());
+                    SwingUtilities.convertPointToScreen(caretPoint, textComponent);
 
-                final CalloutWindow calloutWindow = CalloutWindow.showNonFocusableCallout(
-                        CommonModuleFrame.getCurrentFrame(),
-                        optionsContent,
-                        SwingConstants.NORTH,
-                        p
-                );
-                calloutWindowRef.set(calloutWindow);
+                    // get font ascent at caret position
+                    final FontMetrics fm = textComponent.getFontMetrics(textComponent.getFont());
+                    final int fontAscent = fm.getAscent();
+                    final Rectangle r = new Rectangle(caretPoint.x, caretPoint.y - fontAscent, (int)caretRect.getWidth(), (int)caretRect.getHeight() + fontAscent);
+
+                    final AutoTranscriptionOptionsContent optionsContent = new AutoTranscriptionOptionsContent(autoTranscript);
+                    optionsContent.setPreferredSize(new Dimension(200, 100));
+                    optionsContentRef.set(optionsContent);
+
+                    final CalloutWindow calloutWindow = CalloutWindow.showNonFocusableCallout(
+                            CommonModuleFrame.getCurrentFrame(),
+                            optionsContent,
+                            SwingConstants.NORTH,
+                            r
+                    );
+                    calloutWindowRef.set(calloutWindow);
+                } catch (BadLocationException e) {
+                    LogUtil.warning(e);
+                }
             }
         }
 
