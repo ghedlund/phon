@@ -690,6 +690,17 @@ public class XmlSessionReaderV1_2 implements SessionReader, XMLObjectReader<Sess
 					// fix shortenings
 					wordContent = wordContent.replaceAll("\\<", "\\(");
 					wordContent = wordContent.replaceAll("\\>", "\\)");
+
+					// fix fragments
+					if(wordContent.matches("^&[^&]+")) {
+						wordContent = "&~" + wordContent.substring(1, wordContent.length()-1);
+					}
+
+					// fix &=action: to 0
+					if(wordContent.matches("&=action:")) {
+						wordContent = "0";
+					}
+
 					builder.append(new ca.phon.orthography.Word(new WordText(wordContent)));
 				} else if(ele instanceof EventType) {
 					final EventType et = (EventType) ele;

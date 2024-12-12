@@ -51,7 +51,7 @@ public class XmlOrthographyVisitor extends VisitorAdapter<Object> {
             case NONWORD -> WordType.NONWORD;
             case OMISSION -> WordType.OMISSION;
         };
-        final WordPrefix prefix = wordType != null ? new WordPrefix(wordType) : null;
+        WordPrefix prefix = wordType != null ? new WordPrefix(wordType) : null;
         final String userSpecialForm = word.getUserSpecialForm();
         final WordFormType formType = word.getFormType() == null ? null : switch (word.getFormType()) {
             case ADDITION -> WordFormType.ADDITION;
@@ -103,6 +103,20 @@ public class XmlOrthographyVisitor extends VisitorAdapter<Object> {
                     compoundWord.getWord1(), compoundWord.getWord2(), compoundWord.getMarker());
             builder.append(compoundWord);
         } else {
+            // fix &word -> &~word
+            if(visitor.getWordElements().size() == 1 && visitor.getWordElements().get(0).toString().matches("&[^-~+&]+")
+                && visitor.getWordElements().get(0) instanceof WordText wordText) {
+                final WordText newText = new WordText(wordText.text().substring(1));
+                prefix = new WordPrefix(WordType.NONWORD);
+                visitor.getWordElements().clear();
+                visitor.getWordElements().add(newText);
+//                if(w.getWord().startsWith("&")) {
+//                    final WordElement we = new Word(w.getLangs(), w.getReplacements(), w.getPrefix(), w.getSuffix(), w.getUntranscribedType(), w.getWord().replace("&", "&~"));
+//                    builder.append(we);
+//                    return;
+//                }
+            }
+
             final Word w = new Word(visitor.getLangs(), visitor.getReplacements(),
                     prefix, suffix, untranscribedType, visitor.getWordElements().toArray(new WordElement[0]));
             builder.append(w);
@@ -185,7 +199,12 @@ public class XmlOrthographyVisitor extends VisitorAdapter<Object> {
         if(xmlEvent.getAction() != null) {
             builder.append(new Action(annotationVisitor.getAnnotations()));
         } else if(xmlEvent.getHappening() != null) {
-            builder.append(new Happening(xmlEvent.getHappening().getValue(), annotationVisitor.getAnnotations()));
+            // FIX empty action
+            if(xmlEvent.getHappening().getValue().equals("action:")) {
+                builder.append(new Word("", WordType.OMISSION));
+            } else {
+                builder.append(new Happening(xmlEvent.getHappening().getValue(), annotationVisitor.getAnnotations()));
+            }
         } else if(xmlEvent.getOtherSpokenEvent() != null) {
             builder.append(new OtherSpokenEvent(xmlEvent.getOtherSpokenEvent().getWho(), xmlEvent.getOtherSpokenEvent().getSaid(), annotationVisitor.getAnnotations()));
         }
