@@ -17,6 +17,7 @@ import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
 
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
@@ -181,6 +182,7 @@ public class TranscriptScrollPaneGutter extends JComponent {
             }
         });
 
+        setBorder(new MatteBorder(0, 0, 0, 1, UIManager.getColor("controlShadow")));
         setBackground(UIManager.getColor("window"));
     }
 
