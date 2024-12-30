@@ -243,14 +243,14 @@ public class TranscriptScrollPaneGutter extends JComponent {
             if(range.valid()) {
                 try {
                     final var startRect = editor.modelToView2D(range.start());
-                    final var endRect = editor.modelToView2D(range.end());
+                    final var endRect = editor.modelToView2D(range.end()-1);
                     final var rect = new Rectangle2D.Double(
                             startRect.getX(),
                             startRect.getY(),
                             clipBounds.width,
-                            endRect.getY() - startRect.getY()
+                            endRect.getMaxY() - startRect.getY()
                     );
-                    g2.setColor(UIManager.getColor("textHighlight"));
+                    g2.setColor(Color.lightGray);
                     g2.fill(rect);
                 } catch (BadLocationException e) {
                     LogUtil.warning(e);
