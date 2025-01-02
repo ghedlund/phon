@@ -104,7 +104,7 @@ public class OpenProjectEP implements IPluginEntryPoint {
 			// check to see if the project is already open...
 			for(CommonModuleFrame cmf:CommonModuleFrame.getOpenWindows()) {
 				if(isUseNewUI) {
-					if(!(cmf instanceof UnifiedProjectWindow)) continue;
+					if(!(cmf instanceof ProjectTreeWindow)) continue;
 				} else {
 					if(!(cmf instanceof ProjectWindow)) continue;
 				}
@@ -147,13 +147,15 @@ public class OpenProjectEP implements IPluginEntryPoint {
 				return true;
 			}
 
-			final CommonModuleFrame pwindow = isUseNewUI ? new UnifiedProjectWindow(project) : new ProjectWindow(project, project.getLocation());
+			final CommonModuleFrame pwindow = isUseNewUI ? new ProjectTreeWindow(project) : new ProjectWindow(project, project.getLocation());
     		pwindow.pack();
 			if(isUseNewUI) {
-				pwindow.setExtendedState(Frame.MAXIMIZED_BOTH);
+				//pwindow.setExtendedState(Frame.MAXIMIZED_BOTH);
+				pwindow.setSize(800, 600);
 			} else {
 				pwindow.setSize(800, 600);
 			}
+
     		pwindow.setLocationRelativeTo(CommonModuleFrame.getCurrentFrame());
     		pwindow.setVisible(true);
     		
@@ -161,7 +163,6 @@ public class OpenProjectEP implements IPluginEntryPoint {
 		} catch (Exception e) {
 			// catch anything and report
 			LogUtil.severe(e.getMessage());
-			e.printStackTrace();
 			props.setMessage(e.getLocalizedMessage());
 			NativeDialogs.showMessageDialog(props);
 		}
