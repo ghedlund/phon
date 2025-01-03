@@ -21,6 +21,7 @@ import ca.phon.ui.ipamap.io.Cell;
 import ca.phon.ui.ipamap.io.CellProp;
 import ca.phon.util.PrefHelper;
 
+import javax.management.Attribute;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -1228,8 +1229,8 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             if(elementLocation.transcriptElementIndex() >= 0) {
                 final Transcript.Element transcriptElement = getSession().getTranscript().getElementAt(elementLocation.transcriptElementIndex());
                 if(transcriptElement.isRecord()) {
-                    final Tier<?> tier = transcriptElement.asRecord().getTier(elementLocation.tier());
-                    if(tier.getDeclaredType() == Orthography.class) {
+                    final TierDescription td = getSession().getTier(elementLocation.tier());
+                    if(td.getDeclaredType() == Orthography.class) {
                         tabbedPane.setSelectedIndex(0);
                     }
                 }

@@ -1,10 +1,15 @@
 package ca.phon.app.project;
 
 import ca.phon.app.log.LogUtil;
+import ca.phon.app.modules.EntryPointArgs;
 import ca.phon.app.project.git.ProjectGitController;
+import ca.phon.app.session.editor.SessionEditorEP;
+import ca.phon.plugin.PluginEntryPointRunner;
+import ca.phon.plugin.PluginException;
 import ca.phon.project.Project;
 import ca.phon.project.ProjectEvent;
 import ca.phon.project.ProjectListener;
+import ca.phon.session.SessionPath;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.DropDownIcon;
 import ca.phon.ui.FlatButton;
@@ -22,20 +27,26 @@ import org.jdesktop.swingx.multisplitpane.DefaultSplitPaneModel;
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Project window with contents displayed in two columns.  The left column is the project tree and the right
  * column is the preview of the selected item in the project tree.
  *
  */
-public class ProjectTreeWindow extends CommonModuleFrame {
+public class ProjectTreeWindow extends CommonModuleFrame implements ClipboardOwner {
 
     private final Project project;
 
@@ -82,29 +93,24 @@ public class ProjectTreeWindow extends CommonModuleFrame {
         projectTree.addTreeSelectionListener(e -> {
             final Object selectedNode = projectTree.getLastSelectedPathComponent();
             previewPanel.removeAll();
+            if(selectedNode == null) return;
             if(selectedNode == projectTree.getModel().getRoot()) {
                 previewPanel.add(createProjectInfoPanel(), BorderLayout.CENTER);
             } else {
-
+                final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectedNode;
+                final Object userObject = node.getUserObject();
+                final Path projectPath = Path.of(project.getLocation());
+                if(userObject instanceof Path path) {
+                    final Path fullPath = projectPath.resolve(path);
+                    if(Files.isDirectory(fullPath)) {
+                        previewPanel.add(createFolderInfoPanel(path), BorderLayout.CENTER);
+                    } else {
+                        previewPanel.add(createSessionInfoPanel(path), BorderLayout.CENTER);
+                    }
+                }
             }
             previewPanel.revalidate();
             previewPanel.repaint();
-
-
-//            if(selectedNode instanceof DefaultMutableTreeNode) {
-//                final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectedNode;
-//                final Object userObject = node.getUserObject();
-//                if(userObject instanceof Project) {
-//                    previewPanel.removeAll();
-//                    previewPanel.add(new JLabel("Project: " + project.getName()));
-//                } else if(userObject instanceof ProjectFile) {
-//                    final ProjectFile file = (ProjectFile)userObject;
-//                    previewPanel.removeAll();
-//                    previewPanel.add(new JLabel("File: " + file.getName()));
-//                }
-//                previewPanel.revalidate();
-//                previewPanel.repaint();
-//            }
         });
 
         final JPanel leftPanel = new JPanel(new BorderLayout());
@@ -152,113 +158,32 @@ public class ProjectTreeWindow extends CommonModuleFrame {
      */
     private JPanel createProjectInfoPanel() {
         JPanel projectInfoPanel = new JPanel(new VerticalLayout());
-        JPanel mediaFolderPanel = new JPanel(new GridBagLayout());
-        mediaFolderPanel.setOpaque(false);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridheight = 1;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0;
 
-        gbc.weighty = 0.0;
-        gbc.insets = new Insets(0, 0, 0, 5);
-
-        mediaFolderPanel.add(new JLabel("Project folder:"), gbc);
-        ++gbc.gridx;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        final JLabel projectFolderLabel = new JLabel(getProject().getLocation());
-        projectFolderLabel.setForeground(Color.blue);
-        projectFolderLabel.setToolTipText("Click to show project folder");
-        projectFolderLabel.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent me) {
-                if(Desktop.isDesktopSupported()) {
-                    try {
-                        Desktop.getDesktop().open(new File(getProject().getLocation()));
-                    } catch (IOException e) {
-                        LogUtil.warning(e);
-                        Toolkit.getDefaultToolkit().beep();
-                    }
-                }
-            }
-
-        });
-        projectFolderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        mediaFolderPanel.add(projectFolderLabel, gbc);
-
-        ++gbc.gridy;
-        gbc.gridx = 0;
-        gbc.weightx = 0.0;
-        gbc.fill = GridBagConstraints.NONE;
-
-//        final JPopupMenu projectMediaFolderMenu = new JPopupMenu();
-//        projectMediaFolderMenu.addPopupMenuListener(new PopupMenuListener() {
-//
-//            @Override
-//            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-//                projectMediaFolderMenu.removeAll();
-//                //setupProjectMediaFolderMenu(new MenuBuilder(projectMediaFolderMenu));
-//            }
-//
-//            @Override
-//            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-//
-//            }
-//
-//            @Override
-//            public void popupMenuCanceled(PopupMenuEvent e) {
-//
-//            }
-//
-//        });
-//
-//        mediaFolderPanel.add(new JLabel("Media folder:"), gbc);
-//        final JLabel projectMediaFolderLabel = new JLabel();
-//        //updateProjectMediaLabel();
-//        projectMediaFolderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        projectMediaFolderLabel.addMouseListener(new MouseListener() {
-//
-//            @Override
-//            public void mouseReleased(MouseEvent e) {
-//            }
-//
-//            @Override
-//            public void mousePressed(MouseEvent e) {
-//                projectMediaFolderMenu.show(projectMediaFolderLabel, 0, projectMediaFolderLabel.getHeight());
-//            }
-//
-//            @Override
-//            public void mouseExited(MouseEvent e) {
-//            }
-//
-//            @Override
-//            public void mouseEntered(MouseEvent e) {
-//            }
-//
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//            }
-//
-//        });
-
-
-
-//        ++gbc.gridx;
-//        gbc.fill = GridBagConstraints.HORIZONTAL;
-//        gbc.weightx = 1.0;
-//        mediaFolderPanel.add(projectMediaFolderLabel, gbc);
-
-        projectInfoPanel.add(mediaFolderPanel);
         projectInfoPanel.add(new JXTitledSeparator("Actions"));
         final IconStrip projectActionsPanel = createProjectActionsStrip(getProject());
         projectInfoPanel.add(projectActionsPanel);
 
         return projectInfoPanel;
+    }
+
+    private JPanel createFolderInfoPanel(Path folderPath) {
+        JPanel folderInfoPanel = new JPanel(new VerticalLayout());
+
+        folderInfoPanel.add(new JXTitledSeparator("Actions"));
+        final IconStrip folderActionsPanel = createFolderActionStrip(getProject(), folderPath);
+        folderInfoPanel.add(folderActionsPanel);
+
+        return folderInfoPanel;
+    }
+
+    private JPanel createSessionInfoPanel(Path sessionPath) {
+        JPanel sessionInfoPanel = new JPanel(new VerticalLayout());
+
+        sessionInfoPanel.add(new JXTitledSeparator("Actions"));
+        final IconStrip sessionActionsPanel = createSessionActionStrip(getProject(), sessionPath);
+        sessionInfoPanel.add(sessionActionsPanel);
+
+        return sessionInfoPanel;
     }
 
     // endregion PreviewPanels
@@ -269,6 +194,22 @@ public class ProjectTreeWindow extends CommonModuleFrame {
         final IconStrip iconStrip = new IconStrip(SwingConstants.HORIZONTAL);
 
         iconStrip.add(createNewSessionButton(), IconStrip.IconStripPosition.LEFT);
+
+        return iconStrip;
+    }
+
+    private IconStrip createFolderActionStrip(Project project, Path folderPath) {
+        final IconStrip iconStrip = new IconStrip(SwingConstants.HORIZONTAL);
+
+        iconStrip.add(createNewSessionButton(), IconStrip.IconStripPosition.LEFT);
+
+        return iconStrip;
+    }
+
+    private IconStrip createSessionActionStrip(Project project, Path sessionPath) {
+        final IconStrip iconStrip = new IconStrip(SwingConstants.HORIZONTAL);
+
+        iconStrip.add(createOpenSessionButton(sessionPath), IconStrip.IconStripPosition.LEFT);
 
         return iconStrip;
     }
@@ -292,9 +233,37 @@ public class ProjectTreeWindow extends CommonModuleFrame {
         newSessionDialog.setVisible(true);
     }
 
+    private JButton createOpenSessionButton(Path sessionPath) {
+        final PhonUIAction<Path> openSessionAction = PhonUIAction.consumer(this::onOpenSession, sessionPath);
+        openSessionAction.putValue(PhonUIAction.NAME, "Open Session");
+        openSessionAction.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+        openSessionAction.putValue(FlatButton.ICON_NAME_PROP, "folder_open");
+        openSessionAction.putValue(FlatButton.ICON_SIZE_PROP, IconSize.XLARGE);
+        final FlatButton openSessionButton = new FlatButton(openSessionAction);
+        return openSessionButton;
+    }
+
+    private void onOpenSession(Path sessionPath) {
+        final EntryPointArgs epArgs = new EntryPointArgs();
+        epArgs.put(EntryPointArgs.PROJECT_OBJECT, getProject());
+        epArgs.put(EntryPointArgs.SESSION_NAME, sessionPath.getFileName().toString());
+        epArgs.put(EntryPointArgs.CORPUS_NAME, sessionPath.getParent().toString());
+        try {
+            PluginEntryPointRunner.executePlugin(SessionEditorEP.EP_NAME, epArgs);
+        } catch (PluginException e) {
+            LogUtil.severe(e);
+        }
+    }
+
     // endregion Actions
 
     // region UndoableEdits
 
     // endregion UndoableEdits
+
+    @Override
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+        // nothing to do
+    }
+
 }
