@@ -17,6 +17,7 @@ import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
 
 import javax.swing.*;
+import javax.swing.border.MatteBorder;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
@@ -180,6 +181,9 @@ public class TranscriptScrollPaneGutter extends JComponent {
                 }
             }
         });
+
+        setBorder(new MatteBorder(0, 0, 0, 1, UIManager.getColor("controlShadow")));
+        setBackground(UIManager.getColor("window"));
     }
 
     // region Icons
@@ -230,7 +234,7 @@ public class TranscriptScrollPaneGutter extends JComponent {
         g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 
         Rectangle clipBounds = g.getClipBounds();
-        g.setColor(UIManager.getColor("Button.background"));
+        g.setColor(getBackground());
         g.fillRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
 
         int currentRecord = -1;
@@ -243,14 +247,14 @@ public class TranscriptScrollPaneGutter extends JComponent {
             if(range.valid()) {
                 try {
                     final var startRect = editor.modelToView2D(range.start());
-                    final var endRect = editor.modelToView2D(range.end());
+                    final var endRect = editor.modelToView2D(range.end()-1);
                     final var rect = new Rectangle2D.Double(
                             startRect.getX(),
                             startRect.getY(),
                             clipBounds.width,
-                            endRect.getY() - startRect.getY()
+                            endRect.getMaxY() - startRect.getY()
                     );
-                    g2.setColor(UIManager.getColor("textHighlight"));
+                    g2.setColor(UIManager.getColor("control"));
                     g2.fill(rect);
                 } catch (BadLocationException e) {
                     LogUtil.warning(e);
@@ -276,7 +280,7 @@ public class TranscriptScrollPaneGutter extends JComponent {
                         clipBounds.width,
                         paragraphRect.getHeight()
                 );
-                g2.setColor(Color.yellow);
+                g2.setColor(UIManager.getColor("controlHighlight"));
                 g2.fill(rect);
             } catch (BadLocationException e) {
                 LogUtil.warning(e);

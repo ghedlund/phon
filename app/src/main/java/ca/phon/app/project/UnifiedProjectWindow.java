@@ -154,7 +154,7 @@ public final class UnifiedProjectWindow extends ProjectFrame {
 
     private void openSession(Session session) {
         final SessionEditor editor = new SessionEditor(getProject(), session, null);
-        editor.getViewModel().applyPerspective(RecordEditorPerspective.getPerspective("test"));
+        //editor.getViewModel().applyPerspective(RecordEditorPerspective.getPerspective("test"));
         showSessionEditor(editor);
         SwingUtilities.invokeLater(() -> {
             final EditorEvent<Void> ee = new EditorEvent<>(EditorEventType.EditorFinishedLoading, this, null);

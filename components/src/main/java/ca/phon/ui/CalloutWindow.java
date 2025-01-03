@@ -28,8 +28,11 @@ public class CalloutWindow extends JDialog {
     private JPanel closePanel;
 
     private Point relativeArrowPoint = null;
-    private int cornerRadius = 4;
+    private int cornerRadius = 3;
     private int arrowCornerRadius = 2;
+
+    private int padding = 0;
+    private int borderStrokeWidth = OSInfo.isMacOs() ? 0 : 2;
 
     public CalloutWindow(JFrame frame, JComponent content, int sideOfWindow, Point pointAtPos) {
         this(frame, content, sideOfWindow, new Rectangle(pointAtPos));
@@ -104,14 +107,34 @@ public class CalloutWindow extends JDialog {
         pointAtRect(sideOfWindow, pointAtRect);
     }
 
+    public int getPadding() {
+        return padding;
+    }
+
+    public void setPadding(int padding) {
+        this.padding = padding;
+    }
+
+    public int getBorderStrokeWidth() {
+        return borderStrokeWidth;
+    }
+
+    /**
+     * Sets shape and position of the window on screen.  The window will be positioned so that the arrow points at the
+     * given rectangle on the specified side of the window.  If the window would be off screen, the side of the window
+     * will be flipped.
+     *
+     * @param sideOfWindow
+     * @param pointAtRect
+     */
     public void pointAtRect(int sideOfWindow, Rectangle pointAtRect) {
         // get screen dimensions
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension d = content.getPreferredSize();
+        Dimension contentPreferredSize = content.getPreferredSize();
 
         // region Close button and panel
-        final int prefWidth = (int) (d.getWidth() + (sideOfWindow == SwingConstants.WEST || sideOfWindow == SwingConstants.EAST ? TRIANGLE_HEIGHT : 0) + getInsets().left + getInsets().right);
-        final int prefHeight = (int) (d.getHeight() + (sideOfWindow == SwingConstants.NORTH || sideOfWindow == SwingConstants.SOUTH ? TRIANGLE_HEIGHT : 0) + IconSize.SMALL.getHeight() + getInsets().top + getInsets().bottom);
+        final int prefWidth = (int) (contentPreferredSize.getWidth() + (getBorderStrokeWidth() * 2) + (getPadding() * 2) + (sideOfWindow == SwingConstants.WEST || sideOfWindow == SwingConstants.EAST ? TRIANGLE_HEIGHT : 0) + getInsets().left + getInsets().right);
+        final int prefHeight = (int) (contentPreferredSize.getHeight() + (getBorderStrokeWidth() * 2) + (getPadding() * 2) + (sideOfWindow == SwingConstants.NORTH || sideOfWindow == SwingConstants.SOUTH ? TRIANGLE_HEIGHT : 0) + IconSize.SMALL.getHeight() + getInsets().top + getInsets().bottom);
 
         // flip side of window if needed
         if(sideOfWindow == SwingConstants.NORTH) {
@@ -202,14 +225,14 @@ public class CalloutWindow extends JDialog {
         int leftOfRect = sideOfWindow == SwingConstants.WEST ? TRIANGLE_HEIGHT : 0;
         int rightOfRect = sideOfWindow == SwingConstants.EAST ? TRIANGLE_HEIGHT : 0;
 
-        if(sideOfWindow == SwingConstants.NORTH) {
-            closePanel.setBorder(new EmptyBorder(topOfRect, leftOfRect, 0, rightOfRect));
-        } else if (sideOfWindow == SwingConstants.SOUTH) {
-            contentPanel.setBorder(new EmptyBorder(0, leftOfRect, bottomOfRect, rightOfRect));
-        } else {
-            closePanel.setBorder(new EmptyBorder(topOfRect, leftOfRect, bottomOfRect, rightOfRect));
-            contentPanel.setBorder(new EmptyBorder(topOfRect, leftOfRect, bottomOfRect, rightOfRect));
-        }
+        closePanel.setBorder(new EmptyBorder(topOfRect + getBorderStrokeWidth() + getPadding(),
+                leftOfRect + getBorderStrokeWidth() + getPadding(),
+                0,
+                rightOfRect + getBorderStrokeWidth() + getPadding()));
+        contentPanel.setBorder(new EmptyBorder(0,
+                leftOfRect + getBorderStrokeWidth() + getPadding(),
+                bottomOfRect + getBorderStrokeWidth() + getPadding(),
+                rightOfRect + getBorderStrokeWidth() + getPadding()));
         // endregion Close button and panel
 
         shape = createShape(
@@ -222,29 +245,30 @@ public class CalloutWindow extends JDialog {
                 triangleOffset
         );
 
-//        borderShape = createShape(
-//                (int) (d.getWidth()-1),
-//                (int) (d.getHeight() + closePanel.getPreferredSize().getHeight() + cornerRadius) - 13,
-//                TRIANGLE_BASE,
-//                TRIANGLE_HEIGHT,
-//                cornerRadius,
-//                sideOfWindow
-//        );
+        borderShape = createShape(
+                prefWidth-1,
+                prefHeight-1,
+                TRIANGLE_BASE,
+                TRIANGLE_HEIGHT,
+                cornerRadius,
+                sideOfWindow,
+                triangleOffset
+        );
 
-//        setSize(prefWidth, prefHeight);
         setShape(shape);
-
         if (pointAtRect != null) {
             final Point pos = windowBounds.getLocation();
             setLocation(pos);
+
         }
+        repaint();
     }
 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
         // macos provides its own border
-        if(!OSInfo.isMacOs()) {
+        if(!OSInfo.isMacOs() && borderShape != null) {
             final Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);

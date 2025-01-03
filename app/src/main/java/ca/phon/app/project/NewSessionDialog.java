@@ -19,6 +19,7 @@ import ca.phon.project.Project;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.decorations.DialogHeader;
 import ca.phon.ui.layout.ButtonBarBuilder;
+import ca.phon.ui.text.SessionNameField;
 import ca.phon.ui.toast.ToastFactory;
 import ca.phon.util.PhonConstants;
 
@@ -26,39 +27,37 @@ import javax.swing.*;
 import java.awt.*;
 
 public class NewSessionDialog extends JDialog {
-	
-	private NewSessionPanel newSessionPanel;
+
+	private JRadioButton fromMediaButton = new JRadioButton("From existing media file");
+	private JRadioButton emptySession = new JRadioButton("Empty session");
+
+	private SessionNameField sessionNameField = new SessionNameField();
+
 	private JButton btnCreateSession = new JButton();
 	private JButton btnCancel = new JButton();
 
 	private boolean canceled = false;
 	
 	private Project proj;
+	private String subFolder;
+
+	public NewSessionDialog(Project project) {
+		this(project, ".");
+	}
 
 	/**
 	 * Default constructor
 	 */
-	public NewSessionDialog(Project project) {
+	public NewSessionDialog(Project project, String subFolder) {
 		super();
 		this.proj = project;
+		this.subFolder = subFolder;
 		setTitle(project.getName() + " : New Session");
 		setModal(true);
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setLocationRelativeTo(CommonModuleFrame.getCurrentFrame());
-		newSessionPanel = new NewSessionPanel(project);
 		
 		init();
-	}
-	
-	/**
-	 * Constructor. Default selects the corpus.
-	 */
-	public NewSessionDialog(Project project, String corpusName) {
-		this(project);
-		
-		SwingUtilities.invokeLater( () -> {
-			newSessionPanel.setSelectedCorpus(corpusName);
-		});
 	}
 	
 	private void init() {
@@ -66,6 +65,8 @@ public class NewSessionDialog extends JDialog {
 		
 		final DialogHeader header = new DialogHeader(getTitle(), "Create a new Session");
 		add(header, BorderLayout.NORTH);
+
+
 		
 		btnCreateSession.setActionCommand("Create");
 		btnCreateSession.setName("btnCreateSession");
@@ -87,8 +88,6 @@ public class NewSessionDialog extends JDialog {
 			dispose();
 		});
 		
-		add(newSessionPanel, BorderLayout.CENTER);
-		
 		JComponent buttonBar = ButtonBarBuilder.buildOkCancelBar(btnCreateSession, btnCancel);
 		add(buttonBar, BorderLayout.SOUTH);
 	}
@@ -97,8 +96,6 @@ public class NewSessionDialog extends JDialog {
 		boolean valid = true;
 		// Ensure a non-empty corpus name (description is optional)
 		if (getSessionName() == null || getSessionName().length() == 0) {
-			ToastFactory.makeToast(
-				"You must specify a non-empty session name!").start(newSessionPanel);
 			valid = false;
 		}
 		final String sessionName = getSessionName();
@@ -112,20 +109,18 @@ public class NewSessionDialog extends JDialog {
 				break;
 			}
 		}
-		
+
 		if(!valid) {
-			ToastFactory.makeToast(
-					"Session name includes illegal characters.").start(newSessionPanel);
 		}
 		return valid;
 	}
 
 	public String getSessionName() {
-		return newSessionPanel.getSessionName();
+		return sessionNameField.getText().trim();
 	}
-	
+
 	public String getCorpusName() {
-		return newSessionPanel.getSelectedCorpus();
+		return subFolder;
 	}
 	
 	public boolean wasCanceled() {

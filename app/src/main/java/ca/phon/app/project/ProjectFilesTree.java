@@ -3,14 +3,16 @@ package ca.phon.app.project;
 import ca.phon.app.log.LogUtil;
 import ca.phon.project.Project;
 import ca.phon.session.io.SessionInputFactory;
+import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeNode;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.*;
 import java.awt.*;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -20,7 +22,33 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class ProjectFilesTree extends JTree {
+public class ProjectFilesTree extends JTree implements TreeWillExpandListener {
+
+    private enum SpecialFolder {
+        MEDIA("Media"),
+        SCRIPTS("Scripts");
+
+        private final String folderName;
+
+        SpecialFolder(String folderName) {
+            this.folderName = folderName;
+        }
+
+        public String getFolderName() {
+            return folderName;
+        }
+
+        public ImageIcon getIcon() {
+            switch(this) {
+                case MEDIA:
+                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "audiotrack", IconSize.SMALL, Color.DARK_GRAY);
+                case SCRIPTS:
+                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "code", IconSize.SMALL, Color.DARK_GRAY);
+                default:
+                    return null;
+            }
+        }
+    }
 
     private boolean showHiddenFiles = false;
 
@@ -34,14 +62,40 @@ public class ProjectFilesTree extends JTree {
      * @param project
      * @return tree for project
      */
-    public static TreeNode treeForProject(Project project, boolean includeProjectFiles, boolean includeHidden) {
+    public static TreeNode treeForProject(Project project, boolean includeAllFiles, boolean includeHidden) {
         final DefaultMutableTreeNode root = new DefaultMutableTreeNode(project);
         final Path projectFolderPath = Path.of(project.getLocation());
-        scanFolder(projectFolderPath, projectFolderPath, includeProjectFiles, includeHidden, root);
+        scanFolder(projectFolderPath, projectFolderPath, includeAllFiles, includeHidden, false, root);
+
+        // add special folders
+        final DefaultMutableTreeNode mediaFolders = new DefaultMutableTreeNode(SpecialFolder.MEDIA);
+        root.add(mediaFolders);
+        final DefaultMutableTreeNode scriptsFolder = new DefaultMutableTreeNode(SpecialFolder.SCRIPTS);
+        root.add(scriptsFolder);
+
         return root;
     }
 
-    private static void scanFolder(Path rootPath, Path folderPath, boolean includeProjectFiles, boolean includeHidden, TreeNode parent) {
+    private static boolean setupScriptFolder(Path projectFolder, DefaultMutableTreeNode parent) {
+        final Path scriptsFolder = Path.of(projectFolder.toString(), "__res/scripts");
+        if(!Files.exists(scriptsFolder)) {
+            return false;
+        }
+
+        // add all .js and .groovy files
+        try(DirectoryStream<Path> stream = Files.newDirectoryStream(scriptsFolder)) {
+            for(Path p:stream) {
+                final DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(p.getFileName());
+                parent.add(fileNode);
+            }
+        } catch (IOException e) {
+            LogUtil.severe(e);
+        }
+
+        return false;
+    }
+
+    private static void scanFolder(Path rootPath, Path folderPath, boolean includeAllFiles, boolean includeHidden, boolean recursive, TreeNode parent) {
         try(DirectoryStream<Path> stream = Files.newDirectoryStream(folderPath)) {
             List<Path> pathList = new ArrayList<>();
             for(Path p:stream) {
@@ -62,8 +116,13 @@ public class ProjectFilesTree extends JTree {
                 if(Files.isDirectory(p) && folderFilter(p, includeHidden)) {
                     final DefaultMutableTreeNode folderNode = new DefaultMutableTreeNode(relativePath);
                     ((DefaultMutableTreeNode)parent).add(folderNode);
-                    scanFolder(rootPath, p, includeProjectFiles, includeHidden, folderNode);
-                } else if(fileFilter(p, includeProjectFiles, includeHidden)) {
+                    if(recursive)
+                        scanFolder(rootPath, p, includeAllFiles, includeHidden, true, folderNode);
+                    else {
+                        // add a dummy node
+                        folderNode.add(new DefaultMutableTreeNode("..."));
+                    }
+                } else if(fileFilter(p, includeAllFiles, includeHidden)) {
                     final DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(relativePath);
                     ((DefaultMutableTreeNode)parent).add(fileNode);
                 }
@@ -105,6 +164,26 @@ public class ProjectFilesTree extends JTree {
         super(treeForProject(project,  false,false));
         this.project = project;
         setCellRenderer(new ProjectFilesCellRenderer());
+        setRowHeight(IconSize.MEDIUM.height());
+
+        addTreeWillExpandListener(this);
+    }
+
+    @Override
+    public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode)event.getPath().getLastPathComponent();
+        if(node.getChildCount() == 1 && node.getChildAt(0).isLeaf()
+            && ((DefaultMutableTreeNode)node.getChildAt(0)).getUserObject().toString().equals("...")) {
+
+            final Path path = Path.of(project.getLocation(), node.getUserObject().toString());
+            firePropertyChange("scanning", false, true);
+            new FolderScanner(path, false, false, false, node).execute();
+        }
+    }
+
+    @Override
+    public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+
     }
 
     private final class ProjectFilesCellRenderer extends DefaultTreeCellRenderer {
@@ -112,18 +191,76 @@ public class ProjectFilesTree extends JTree {
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             JLabel retVal = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-
+            retVal.setFont(FontPreferences.getTitleFont().deriveFont(14.0f));
             if(value instanceof DefaultMutableTreeNode node) {
                 if(node.getUserObject() instanceof Path path) {
                     final Path fullPath = Path.of(project.getLocation(), path.toString());
                     retVal.setText(path.getFileName().toString());
-                    retVal.setIcon(IconManager.getInstance().getSystemIconForPath(fullPath.toString(), IconSize.SMALL));
+                    retVal.setIcon(getIcon(fullPath));
+                } else if(node.getUserObject() instanceof SpecialFolder specialFolder) {
+                    retVal.setText(specialFolder.getFolderName());
+                    retVal.setIcon(specialFolder.getIcon());
+                } else {
+                    retVal.setIcon(IconManager.getInstance().getFontIcon(
+                            IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.MEDIUM, Color.DARK_GRAY)
+                    );
                 }
             }
 
             return retVal;
         }
 
+        private ImageIcon getIcon(Path path) {
+            if(Files.isDirectory(path)) {
+                return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.MEDIUM, Color.DARK_GRAY);
+            } else {
+                final String ext = path.getFileName().toString().substring(path.getFileName().toString().lastIndexOf('.')+1);
+
+                // if ext is a media file, use a media icon.  Otherwise use file icon
+
+                if(ext.matches("wav|mp3|aiff|flac|ogg|mp4|mov|avi|wmv|mpg|mpeg|flv|mkv|webm")) {
+                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "audiotrack", IconSize.MEDIUM, Color.DARK_GRAY);
+                } else {
+                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "insert_drive_file", IconSize.MEDIUM, Color.DARK_GRAY);
+                }
+            }
+        }
+
     }
 
+    private class FolderScanner extends SwingWorker<Void, Void> {
+
+        private final Path folderPath;
+
+        private final boolean includeAllFiles;
+
+        private final boolean includeHidden;
+
+        private final boolean recursive;
+
+        private final DefaultMutableTreeNode parent;
+
+        public FolderScanner(Path folderPath, boolean includeAllFiles, boolean includeHidden, boolean recursive, DefaultMutableTreeNode parent) {
+            this.folderPath = folderPath;
+            this.includeAllFiles = includeAllFiles;
+            this.includeHidden = includeHidden;
+            this.recursive = recursive;
+            this.parent = parent;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            scanFolder(Path.of(project.getLocation()), folderPath, includeAllFiles, includeHidden, recursive, parent);
+            return null;
+        }
+
+        @Override
+        protected void done() {
+            // remove '...' node
+            parent.remove(0);
+            ((DefaultTreeModel)getModel()).nodeStructureChanged(parent);
+
+            ProjectFilesTree.this.firePropertyChange("scanning", true, false);
+        }
+    }
 }
