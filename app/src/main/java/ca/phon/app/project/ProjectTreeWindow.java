@@ -18,10 +18,7 @@ import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.menu.MenuBuilder;
 import ca.phon.util.icons.IconManager;
 import ca.phon.util.icons.IconSize;
-import org.jdesktop.swingx.JXBusyLabel;
-import org.jdesktop.swingx.JXMultiSplitPane;
-import org.jdesktop.swingx.JXTitledSeparator;
-import org.jdesktop.swingx.VerticalLayout;
+import org.jdesktop.swingx.*;
 import org.jdesktop.swingx.multisplitpane.DefaultSplitPaneModel;
 
 import javax.swing.*;
@@ -59,6 +56,8 @@ public class ProjectTreeWindow extends CommonModuleFrame implements ClipboardOwn
     private JPanel previewPanel;
 
     private IconStrip projectTreeToolbar;
+
+    private JXStatusBar statusBar;
     private JXBusyLabel busyLabel;
 
     // git controller for git integration
@@ -87,7 +86,7 @@ public class ProjectTreeWindow extends CommonModuleFrame implements ClipboardOwn
     }
 
     private void init() {
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
+        setLayout(new BorderLayout());
 
         projectTree = new ProjectFilesTree(project);
         projectTree.addTreeSelectionListener(e -> {
@@ -118,10 +117,11 @@ public class ProjectTreeWindow extends CommonModuleFrame implements ClipboardOwn
 
         busyLabel = new JXBusyLabel(new Dimension(IconSize.SMALL.width(), IconSize.SMALL.height()));
         busyLabel.setBusy(false);
-        projectTreeToolbar.add(busyLabel, IconStrip.IconStripPosition.RIGHT);
         projectTree.addPropertyChangeListener("scanning", e -> {
             busyLabel.setBusy((Boolean)e.getNewValue());
         });
+        statusBar = new JXStatusBar();
+        statusBar.add(busyLabel, JXStatusBar.Constraint.ResizeBehavior.FIXED);
 
         leftPanel.add(projectTreeToolbar, BorderLayout.NORTH);
         leftPanel.add(new JScrollPane(projectTree), BorderLayout.CENTER);
@@ -131,7 +131,8 @@ public class ProjectTreeWindow extends CommonModuleFrame implements ClipboardOwn
         previewPanel = new JPanel(new BorderLayout());
         splitPane.setRightComponent(new JScrollPane(previewPanel));
         splitPane.setDividerLocation(350);
-        add(splitPane);
+        add(splitPane, BorderLayout.CENTER);
+        add(statusBar, BorderLayout.SOUTH);
 
         projectTree.setSelectionRow(0);
     }
@@ -150,6 +151,19 @@ public class ProjectTreeWindow extends CommonModuleFrame implements ClipboardOwn
 
 
     // region PreviewPanels
+
+    /**
+     * Create info panel for provided mutable tree node.
+     *
+     * @param node
+     */
+    private JPanel createInfoPanel(DefaultMutableTreeNode node) {
+        final JPanel infoPanel = new JPanel(new VerticalLayout());
+
+        if (node == null) return infoPanel;
+
+        return infoPanel;
+    }
 
     /**
      * Create project information panel when selected item is project root.
