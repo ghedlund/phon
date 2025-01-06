@@ -122,7 +122,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
     /**
      * Whether the transcript editor is currently in "single record view" mode
      */
-    private boolean singleRecordView = false;
+    private boolean singleRecordView = true;
     /**
      * A reference to the document element currently being hovered over
      */
@@ -168,7 +168,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         this.eventManager = eventManager;
         this.undoSupport = undoSupport;
         this.undoManager = undoManager;
-//        setOpaque(false);
         initActions();
         registerEditorActions();
         super.setEditorKitForContentType(TranscriptEditorKit.CONTENT_TYPE, new TranscriptEditorKit());
