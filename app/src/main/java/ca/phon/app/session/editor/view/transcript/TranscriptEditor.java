@@ -1641,6 +1641,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         if (doc.getSingleRecordView()) {
             final EditorEvent<Void> e = new EditorEvent<>(recordChangedInSingleRecordMode, this, null);
             eventManager.queueEvent(e);
+            return;
         }
 
         // If the transcript editor is currently in focus, stop here
