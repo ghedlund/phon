@@ -20,6 +20,7 @@ import ca.phon.project.io.*;
 import ca.phon.session.Record;
 import ca.phon.session.*;
 import ca.phon.session.io.*;
+import org.json.*;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -27,6 +28,7 @@ import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 import java.io.*;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.*;
 import java.time.*;
@@ -46,24 +48,74 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	 *
 	 */
 	private File projectFolder;
-	
-	private Properties properties;
 
+	/**
+	 * Project JSON
+	 */
+	private JSONObject projectJson;
+
+	/**
+	 * Project XML file (Phon 2.x and earlier)
+	 */
+	@Deprecated
 	public final static String PREV_PROJECT_PROPERTIES_FILE = ".properties";
+
+	/**
+	 * Project properties file (Phon 3.x)
+	 */
+	@Deprecated
 	public final static String PROJECT_PROPERTIES_FILE = "project.properties";
 
+	/**
+	 * Phon project extension, in Phon 4.x and later this is used in place of the properties file.
+	 * The format of this file is JSON.
+	 *
+	 * The filename will be the project name with a .phonproj extension.  This file will only be created when opening an existing
+	 * Phon 3.x project with a project.properties file; or when a value is written to the file.  Double-clicking on
+	 * a .phonproj file should open the project in Phon.
+	 */
+	public final static String PROJECT_FILE_EXT = ".phonproj";
+
+	/**
+	 * Media folders for project
+	 */
+	@Deprecated
 	public final static String PROJECT_MEDIAFOLDER_PROP = "project.mediaFolder";
 
+	public final static String PROJECT_MEDIAFOLDERS_KEY = "mediaFolders";
+
+	@Deprecated
 	public final static String CORPUS_MEDIAFOLDER_PROP = "corpus.mediaFolder";
-	
+
+	/**
+	 * Project name property
+	 */
+	@Deprecated
 	public final static String PROJECT_NAME_PROP = "project.name";
-	
+
+	public final static String PROJECT_NAME_KEY = "name";
+
+	/**
+	 * Project UUID property
+	 */
+	@Deprecated
 	public final static String PROJECT_UUID_PROP = "project.uuid";
 
+	public final static String PROJECT_UUID_KEY = "uuid";
+
+	/**
+	 * Session template filename
+	 */
 	private final static String sessionTemplateFile = "__sessiontemplate.xml";
-	
+
+	/**
+	 * Project resources folder
+	 */
 	private final static String PROJECT_RES_FOLDER = "__res";
-	
+
+	/**
+	 * Corpus description file
+	 */
 	private final static String CORPUS_DESC_FILE = "__description";
 
 	/**
@@ -72,6 +124,9 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	private final Map<String, UUID> sessionLocks =
 			Collections.synchronizedMap(new HashMap<String, UUID>());
 
+	/**
+	 * Resources location for project (if defined as something other that __res
+	 */
 	private String resourceLocation = null;
 
 	/**
@@ -83,15 +138,18 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 		super();
 		this.projectFolder = projectFolder;
 
-		loadProperties();
-		// if not found, create new properties
-		if(!getExtensions().contains(Properties.class)) {
-			putExtension(Properties.class, new Properties());
+		// load json properties if file is found
+		final File projectJsonFile = new File(getFolder(), projectFolder.getName() + PROJECT_FILE_EXT);
+		if(projectJsonFile.exists()) {
+			loadProjectJson(projectJsonFile);
+		} else {
+			// load properties from Phon 3.x and earlier properties file
+			loadProperties();
 		}
-		properties = getExtension(Properties.class);
-		checkProperties();
-		
+
+		// add project refresh extension
 		putExtension(ProjectRefresh.class, this);
+		// add change project location extension
 		putExtension(ChangeProjectLocation.class, new LocalProjectChangeLocation(this));
 	}
 	
@@ -100,81 +158,70 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 		File propsFile = new File(getFolder(), PROJECT_PROPERTIES_FILE);
 		propsFile = (propsFile.exists() ? propsFile : oldPropertiesFile);
 
+		this.projectJson = new JSONObject();
+		List<String> projectMediaFolders = new ArrayList<>();
 		if(propsFile.exists()) {
 			// load properties
 			Properties props = new Properties();
 			try(final FileInputStream fin = new FileInputStream(propsFile)) {
 				props.load(fin);
+				checkProperties(props);
 			} catch (IOException e) {
 				Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
 			}
-			putExtension(Properties.class, props);
-		}
-	}
-	
-	/**
-	 * Check project setup and copy information from project.xml file if exists
-	 */
-	private void checkProperties() {
-		ProjectType pt = null;
-		final File projectXMLFile = new File(getFolder(), PROJECT_XML_FILE);
-		if(projectXMLFile.exists()) {
-			try(FileInputStream fin = new FileInputStream(projectXMLFile)) {
-				pt = loadProjectData(fin);
-			} catch (IOException | ProjectConfigurationException e) {
-				Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
-			}
-		}
-		
-		boolean modified = false;
-		if(!properties.containsKey(PROJECT_UUID_PROP)) {
-			if(pt != null) {
-				if(pt.getUuid() != null)
-					properties.put(PROJECT_UUID_PROP, pt.getUuid());
-				else
-					properties.put(PROJECT_UUID_PROP, UUID.randomUUID().toString());
-				
-				// if UUID not found we likely need to upgrade this project
-				// copy corpus descriptions if necessary
-				for(String corpus:getCorpora()) {
-					final File corpusFolder = getCorpusFolder(corpus);
-					final File corpusInfoFile = new File(corpusFolder, CORPUS_DESC_FILE);
-					
-					for(CorpusType ct:pt.getCorpus()) {
-						if(ct.getName().equals(corpus)) {
-							if(ct.getDescription() != null 
-									&& ct.getDescription().trim().length() > 0
-									&& !corpusInfoFile.exists()) {
-								try (PrintWriter out = new PrintWriter(corpusInfoFile)) {
-									out.write(ct.getDescription());
-									out.flush();
-								} catch (IOException e) {
-									Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
-								}
-							}
-							break;
-						}
+
+			// convert properties to JSON and save, remove old properties file
+			for(String propKey:props.stringPropertyNames()) {
+				switch (propKey) {
+					case PROJECT_MEDIAFOLDER_PROP, CORPUS_MEDIAFOLDER_PROP -> {
+						projectMediaFolders.add(props.getProperty(propKey));
+					}
+
+					case PROJECT_NAME_PROP -> {
+						projectJson.put(PROJECT_NAME_KEY, props.getProperty(propKey));
+					}
+
+					case PROJECT_UUID_PROP -> {
+						projectJson.put(PROJECT_UUID_KEY, props.getProperty(propKey));
+					}
+
+					default -> {
+						projectJson.put(propKey, props.getProperty(propKey));
 					}
 				}
-			} else {
-				properties.put(PROJECT_UUID_PROP, UUID.randomUUID().toString());
 			}
-			modified = true;
-		}
-		if(!properties.containsKey(PROJECT_NAME_PROP)) {
-			if(pt != null) {
-				properties.put(PROJECT_NAME_PROP, pt.getName());
-			} else {
-				properties.put(PROJECT_NAME_PROP, projectFolder.getName());
+			if(!projectMediaFolders.isEmpty()) {
+				projectJson.put(PROJECT_MEDIAFOLDERS_KEY, projectMediaFolders);
 			}
-			modified = true;
+
+			// add empty properties to avoid runtime issues with plugins
+			putExtension(Properties.class, new Properties());
 		}
-		if(modified) {
-			try {
-				saveProperties();
+	}
+
+	/**
+	 * Load project JSON from provided file
+	 *
+	 * @param projectJsonFile
+	 */
+	protected void loadProjectJson(File projectJsonFile) {
+		if(projectJsonFile.exists()) {
+			try(final FileInputStream fin = new FileInputStream(projectJsonFile)) {
+				// read fin into string
+				final byte[] jsonBytes = fin.readAllBytes();
+				final String jsonStr = new String(jsonBytes, StandardCharsets.UTF_8);
+				this.projectJson = new JSONObject(jsonStr);
+
+				// TODO check json for project properties
 			} catch (IOException e) {
 				Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
 			}
+		}
+		if(this.projectJson == null) {
+			// add project name and UUID
+			this.projectJson = new JSONObject();
+			this.projectJson.put(PROJECT_NAME_KEY, projectFolder.getName());
+			this.projectJson.put(PROJECT_UUID_KEY, UUID.randomUUID().toString());
 		}
 	}
 
@@ -185,21 +232,15 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	 */
 	protected void saveProjectData()
 		throws IOException {
-		saveProperties();
+		saveProjectJson();
 	}
 
-	protected synchronized void saveProperties() throws IOException {
-		final File oldPropsFile = new File(getFolder(), PREV_PROJECT_PROPERTIES_FILE);
-		if(oldPropsFile.exists()) {
-			Files.deleteIfExists(oldPropsFile.toPath());
-		}
-
-		// save properties
-		final Properties properties = getExtension(Properties.class);
-		if(properties != null) {
-			final File propFile = new File(getFolder(), PROJECT_PROPERTIES_FILE);
-			properties.store(new FileOutputStream(propFile),
-					String.format("Project: %s @ %s", getName(), LocalDateTime.now()));
+	protected synchronized void saveProjectJson() throws IOException {
+		final File projectJsonFile = new File(getFolder(), projectFolder.getName() + PROJECT_FILE_EXT);
+		try(final FileOutputStream fout = new FileOutputStream(projectJsonFile)) {
+			final byte[] jsonBytes = projectJson.toString(2).getBytes(StandardCharsets.UTF_8);
+			fout.write(jsonBytes);
+			fout.flush();
 		}
 	}
 
@@ -209,15 +250,19 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 
 	@Override
 	public String getName() {
-		return properties.getProperty(PROJECT_NAME_PROP, getFolder().getName());
+		if(projectJson.has(PROJECT_NAME_KEY)) {
+			return projectJson.getString(PROJECT_NAME_KEY);
+		} else {
+			return getFolder().getName();
+		}
 	}
 
 	@Override
 	public void setName(String name) {
 		final String oldName = getName();
-		properties.put(PROJECT_NAME_PROP, name);
+		projectJson.put(PROJECT_NAME_KEY, name);
 		try {
-			saveProperties();
+			saveProjectJson();
 		} catch (IOException e) {
 			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
 		}
@@ -228,65 +273,35 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 
 	@Override
 	public UUID getUUID() {
-		final UUID uuid = UUID.fromString(properties.getProperty(PROJECT_UUID_PROP));
-		return uuid;
+		if(projectJson.has(PROJECT_UUID_KEY)) {
+			return UUID.fromString(projectJson.getString(PROJECT_UUID_KEY));
+		} else {
+			UUID uuid = UUID.randomUUID();
+			setUUID(uuid);
+			return uuid;
+		}
 	}
 
 	@Override
 	public void setUUID(UUID uuid) {
 		final UUID oldUUID = getUUID();
-		properties.put(PROJECT_UUID_PROP, uuid.toString());
+		projectJson.put(PROJECT_UUID_KEY, uuid.toString());
+		try {
+			saveProjectJson();
+		} catch (IOException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
 
 		final ProjectEvent event = ProjectEvent.newUUIDChangedEvent(oldUUID.toString(), uuid.toString());
 		fireProjectDataChanged(event);
 	}
 
 	@Override
-	public List<String> getCorpora() {
-		final List<String> corpusList = new ArrayList<String>();
-
-		Path projectPath = getFolder().toPath();
-		try {
-			scanForCorpusFolders(projectPath, corpusList);
-		} catch (IOException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
-		}
-		Collections.sort(corpusList);
-
-		// add '' corpus if project folder includes session files
-		if(!getCorpusSessions("").isEmpty()) {
-			corpusList.add(0, "");
-		}
-
-		return corpusList;
+	public Iterator<String> getCorpusIterator() {
+		return new CorpusFolderIterator();
 	}
 
-	private void scanForCorpusFolders(Path path, List<String> corpusList) throws IOException {
-		try(DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-			for(Path subFolder:stream) {
-				if (Files.isDirectory(subFolder)) {
-					if (!Files.isHidden(subFolder)) {
-						String folderName = subFolder.getFileName().toString();
-						if (!folderName.startsWith("~")
-								&& !folderName.endsWith("~")
-								&& !folderName.startsWith(".")
-								&& !folderName.startsWith("__")) {
-							corpusList.add(corpusNameFromPath(subFolder));
-							scanForCorpusFolders(subFolder, corpusList);
-						}
-					}
-				}
-			}
-		}
-	}
 
-	private String corpusNameFromPath(Path path) {
-		final Path projectPath = getFolder().toPath();
-		final Path relativePath = projectPath.relativize(path);
-
-		String retVal = relativePath.toString();
-		return relativePath.toString();
-	}
 
 	@Override
 	public void addCorpus(String name) throws IOException {
@@ -401,107 +416,12 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	
 	@Override
 	public boolean hasCustomProjectMediaFolder() {
-		final Properties props = getExtension(Properties.class);
-		return (props.getProperty(PROJECT_MEDIAFOLDER_PROP) != null);
-	}
-
-	@Override
-	public String getProjectMediaFolder() {
-		final Properties props = getExtension(Properties.class);
-		String retVal = props.getProperty(PROJECT_MEDIAFOLDER_PROP, PROJECT_RES_FOLDER + File.separator + "media");
-		return retVal;
-	}
-
-	@Override
-	public void setProjectMediaFolder(String mediaFolder) {
-		final String old = getProjectMediaFolder();
-		final Properties props = getExtension(Properties.class);
-		if(mediaFolder == null) {
-			props.remove(PROJECT_MEDIAFOLDER_PROP);
+		if(this.projectJson.has(PROJECT_MEDIAFOLDERS_KEY)) {
+			JSONArray mediaFolders = this.projectJson.getJSONArray(PROJECT_MEDIAFOLDERS_KEY);
+			return (!mediaFolders.isEmpty());
 		} else {
-			props.setProperty(PROJECT_MEDIAFOLDER_PROP, mediaFolder);
+			return false;
 		}
-
-		try {
-			saveProperties();
-		} catch (IOException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
-		}
-
-		ProjectEvent pe = ProjectEvent.newProjectMediaFolderChangedEvent(old, mediaFolder);
-		fireProjectDataChanged(pe);
-	}
-
-	@Override
-	public boolean hasCustomCorpusMediaFolder(String corpus) {
-		final String propName = CORPUS_MEDIAFOLDER_PROP + "." + corpus;
-		final Properties props = getExtension(Properties.class);
-		return (props.getProperty(propName) != null);
-	}
-	
-	@Override
-	public String getCorpusMediaFolder(String corpus) {
-		final String propName = CORPUS_MEDIAFOLDER_PROP + "." + corpus;
-		final Properties props = getExtension(Properties.class);
-		return props.getProperty(propName, getProjectMediaFolder());
-	}
-
-	@Override
-	public void setCorpusMediaFolder(String corpus, String mediaFolder) {
-		final String old = getCorpusMediaFolder(corpus);
-		final Properties props = getExtension(Properties.class);
-		final String propName = CORPUS_MEDIAFOLDER_PROP + "." + corpus;
-
-		if(mediaFolder == null) {
-			props.remove(propName);
-		} else {
-			props.setProperty(propName, mediaFolder);
-		}
-
-		try {
-			saveProperties();
-		} catch (IOException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
-		}
-
-		ProjectEvent pe = ProjectEvent.newCorpusMediaFolderChangedEvent(corpus, old, mediaFolder);
-		fireProjectDataChanged(pe);
-	}
-
-	@Override
-	public List<String> getCorpusSessions(String corpus) {
-		final List<String> retVal = new ArrayList<String>();
-		
-		Set<String> validexts = SessionInputFactory.getSessionExtensions();
-		
-		final File corpusFolder = getCorpusFolder(corpus);
-		try(DirectoryStream<Path> stream = Files.newDirectoryStream(corpusFolder.toPath())) {
-			for(Path path:stream) {
-				if(!Files.isDirectory(path) && !Files.isHidden(path)) {
-					String filename = path.getFileName().toString();
-					if(!filename.startsWith("~")
-							&& !filename.endsWith("~")
-							&& !filename.startsWith("__")) {
-						int lastDot = filename.lastIndexOf('.');
-						if(lastDot > 0) {
-							String ext = filename.substring(lastDot+1);
-							if(validexts.contains(ext)) {
-								final SessionReader reader = (new SessionInputFactory()).createReaderForFile(path.toFile());
-								if(reader != null) {
-									retVal.add(filename);
-								}
-							}
-						}
-					}
-				}
-			}
-			
-			Collections.sort(retVal);
-		} catch (IOException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
-		}
-
-		return retVal;
 	}
 
 	public File getCorpusFolder(String corpus) {
@@ -961,6 +881,11 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	}
 
 	@Override
+	public Iterator<String> getSessionIterator(String corpus) {
+		return new SessionIterator(corpus);
+	}
+
+	@Override
 	public String getSessionPath(Session session) {
 		return getSessionPath(session.getCorpus(), session.getName());
 	}
@@ -1034,6 +959,103 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	}
 
 	@Override
+	public List<String> getProjectMediaFolders() {
+		return List.of();
+	}
+
+	@Override
+	public void removeProjectMediaFolder(int index) {
+		if(!this.projectJson.has(PROJECT_MEDIAFOLDERS_KEY)) return;
+
+		JSONArray mediaFolders = this.projectJson.getJSONArray(PROJECT_MEDIAFOLDERS_KEY);
+		if(index < 0 || index >= mediaFolders.length()) return;
+
+		JSONArray newMediaFolders = new JSONArray();
+		for(int i = 0; i < mediaFolders.length(); i++) {
+			if(i != index) {
+				newMediaFolders.put(mediaFolders.get(i));
+			}
+		}
+
+		this.projectJson.put(PROJECT_MEDIAFOLDERS_KEY, newMediaFolders);
+		try {
+			saveProjectJson();
+		} catch (IOException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+
+		final ProjectEvent pe = ProjectEvent.newProjectMediaFolderRemovedEvent(index, mediaFolders.getString(index));
+		fireProjectDataChanged(pe);
+	}
+
+	@Override
+	public void removeProjectMediaFolder(String mediaFolder) {
+		if(!this.projectJson.has(PROJECT_MEDIAFOLDERS_KEY)) return;
+
+		JSONArray mediaFolders = this.projectJson.getJSONArray(PROJECT_MEDIAFOLDERS_KEY);
+		JSONArray newMediaFolders = new JSONArray();
+		int index = -1;
+		for(int i = 0; i < mediaFolders.length(); i++) {
+			String folder = mediaFolders.getString(i);
+			if(!folder.equals(mediaFolder)) {
+				index = i;
+				newMediaFolders.put(folder);
+			}
+		}
+		if(index == -1) return;
+
+		this.projectJson.put(PROJECT_MEDIAFOLDERS_KEY, newMediaFolders);
+		try {
+			saveProjectJson();
+		} catch (IOException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+
+		final ProjectEvent pe = ProjectEvent.newProjectMediaFolderRemovedEvent(index, mediaFolder);
+		fireProjectDataChanged(pe);
+	}
+
+	@Override
+	public void addProjectMediaFolder(String mediaFolder) {
+		JSONArray mediaFolders =
+				this.projectJson.has(PROJECT_MEDIAFOLDERS_KEY) ? this.projectJson.getJSONArray(PROJECT_MEDIAFOLDERS_KEY)
+						: new JSONArray();
+		mediaFolders.put(mediaFolder);
+		this.projectJson.put(PROJECT_MEDIAFOLDERS_KEY, mediaFolders);
+
+		try {
+			saveProjectJson();
+		} catch (IOException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+
+		final ProjectEvent pe = ProjectEvent.newProjectMediaFolderAddedEvent(mediaFolders.length()-1, mediaFolder);
+		fireProjectDataChanged(pe);
+	}
+
+
+	@Override
+	public void addProjectMediaFolder(int index, String mediaFolder) {
+		if(index < 0 || index > getProjectMediaFolders().size()) {
+			throw new IndexOutOfBoundsException();
+		}
+		JSONArray mediaFolders =
+				this.projectJson.has(PROJECT_MEDIAFOLDERS_KEY) ? this.projectJson.getJSONArray(PROJECT_MEDIAFOLDERS_KEY)
+						: new JSONArray();
+		mediaFolders.put(index, mediaFolder);
+		this.projectJson.put(PROJECT_MEDIAFOLDERS_KEY, mediaFolders);
+
+		try {
+			saveProjectJson();
+		} catch (IOException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+
+		final ProjectEvent pe = ProjectEvent.newProjectMediaFolderAddedEvent(index, mediaFolder);
+		fireProjectDataChanged(pe);
+	}
+
+	@Override
 	public void refresh() {
 	}
 
@@ -1054,6 +1076,391 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	@Override
 	public void setResourceLocation(String location) {
 		this.resourceLocation = location;
+	}
+
+	// region Deprecated methods
+	@Deprecated
+	@Override
+	public List<String> getCorpora() {
+		final List<String> corpusList = new ArrayList<String>();
+
+		Path projectPath = getFolder().toPath();
+		try {
+			scanForCorpusFolders(projectPath, corpusList);
+		} catch (IOException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+		Collections.sort(corpusList);
+
+		// add '' corpus if project folder includes session files
+		if(!getCorpusSessions("").isEmpty()) {
+			corpusList.add(0, "");
+		}
+
+		return corpusList;
+	}
+
+
+	@Deprecated
+	private void scanForCorpusFolders(Path path, List<String> corpusList) throws IOException {
+		try(DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+			for(Path subFolder:stream) {
+				if (Files.isDirectory(subFolder)) {
+					if (!Files.isHidden(subFolder)) {
+						String folderName = subFolder.getFileName().toString();
+						if (!folderName.startsWith("~")
+								&& !folderName.endsWith("~")
+								&& !folderName.startsWith(".")
+								&& !folderName.startsWith("__")) {
+							corpusList.add(corpusNameFromPath(subFolder));
+							scanForCorpusFolders(subFolder, corpusList);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@Deprecated
+	private String corpusNameFromPath(Path path) {
+		final Path projectPath = getFolder().toPath();
+		final Path relativePath = projectPath.relativize(path);
+		return relativePath.toString();
+	}
+
+	@Deprecated
+	@Override
+	public String getProjectMediaFolder() {
+		if(this.projectJson.has(PROJECT_MEDIAFOLDERS_KEY)) {
+			JSONArray mediaFolders = this.projectJson.getJSONArray(PROJECT_MEDIAFOLDERS_KEY);
+			if(!mediaFolders.isEmpty()) {
+				return mediaFolders.getString(0);
+			}
+		}
+		return null;
+	}
+
+	@Deprecated
+	@Override
+	public void setProjectMediaFolder(String mediaFolder) {
+
+
+		final String old = getProjectMediaFolder();
+		final Properties props = getExtension(Properties.class);
+		if(mediaFolder == null) {
+			props.remove(PROJECT_MEDIAFOLDER_PROP);
+		} else {
+			props.setProperty(PROJECT_MEDIAFOLDER_PROP, mediaFolder);
+		}
+
+		try {
+			saveProperties();
+		} catch (IOException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+
+		ProjectEvent pe = ProjectEvent.newProjectMediaFolderChangedEvent(old, mediaFolder);
+		fireProjectDataChanged(pe);
+	}
+
+	@Override
+	public boolean hasCustomCorpusMediaFolder(String corpus) {
+//		final String propName = CORPUS_MEDIAFOLDER_PROP + "." + corpus;
+//		final Properties props = getExtension(Properties.class);
+//		return (props.getProperty(propName) != null);
+		return false;
+	}
+
+	@Override
+	public String getCorpusMediaFolder(String corpus) {
+//		final String propName = CORPUS_MEDIAFOLDER_PROP + "." + corpus;
+//		final Properties props = getExtension(Properties.class);
+//		return props.getProperty(propName, getProjectMediaFolder());
+		return null;
+	}
+
+	@Override
+	public void setCorpusMediaFolder(String corpus, String mediaFolder) {
+//		final String old = getCorpusMediaFolder(corpus);
+//		final Properties props = getExtension(Properties.class);
+//		final String propName = CORPUS_MEDIAFOLDER_PROP + "." + corpus;
+//
+//		if(mediaFolder == null) {
+//			props.remove(propName);
+//		} else {
+//			props.setProperty(propName, mediaFolder);
+//		}
+//
+//		try {
+//			saveProperties();
+//		} catch (IOException e) {
+//			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+//		}
+//
+//		ProjectEvent pe = ProjectEvent.newCorpusMediaFolderChangedEvent(corpus, old, mediaFolder);
+//		fireProjectDataChanged(pe);
+	}
+
+	@Deprecated
+	@Override
+	public List<String> getCorpusSessions(String corpus) {
+		final List<String> retVal = new ArrayList<String>();
+
+		Set<String> validexts = SessionInputFactory.getSessionExtensions();
+
+		final File corpusFolder = getCorpusFolder(corpus);
+		try(DirectoryStream<Path> stream = Files.newDirectoryStream(corpusFolder.toPath())) {
+			for(Path path:stream) {
+				if(!Files.isDirectory(path) && !Files.isHidden(path)) {
+					String filename = path.getFileName().toString();
+					if(!filename.startsWith("~")
+							&& !filename.endsWith("~")
+							&& !filename.startsWith("__")) {
+						int lastDot = filename.lastIndexOf('.');
+						if(lastDot > 0) {
+							String ext = filename.substring(lastDot+1);
+							if(validexts.contains(ext)) {
+								final SessionReader reader = (new SessionInputFactory()).createReaderForFile(path.toFile());
+								if(reader != null) {
+									retVal.add(filename);
+								}
+							}
+						}
+					}
+				}
+			}
+
+			Collections.sort(retVal);
+		} catch (IOException e) {
+			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+
+		return retVal;
+	}
+
+
+	@Deprecated
+	protected synchronized void saveProperties() throws IOException {
+//		final File oldPropsFile = new File(getFolder(), PREV_PROJECT_PROPERTIES_FILE);
+//		if(oldPropsFile.exists()) {
+//			Files.deleteIfExists(oldPropsFile.toPath());
+//		}
+//
+//		// save properties
+//		final Properties properties = getExtension(Properties.class);
+//		if(properties != null) {
+//			final File propFile = new File(getFolder(), PROJECT_PROPERTIES_FILE);
+//			properties.store(new FileOutputStream(propFile),
+//					String.format("Project: %s @ %s", getName(), LocalDateTime.now()));
+//		}
+	}
+
+	/**
+	 * Check project setup and copy information from project.xml file if exists
+	 *
+	 * @deprecated Since Phon 4.x
+	 */
+	@Deprecated
+	private void checkProperties(Properties properties) {
+		ProjectType pt = null;
+		final File projectXMLFile = new File(getFolder(), PROJECT_XML_FILE);
+		if(projectXMLFile.exists()) {
+			try(FileInputStream fin = new FileInputStream(projectXMLFile)) {
+				pt = loadProjectData(fin);
+			} catch (IOException | ProjectConfigurationException e) {
+				Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+			}
+		}
+
+		if(!properties.containsKey(PROJECT_UUID_PROP)) {
+			if(pt != null) {
+				if(pt.getUuid() != null)
+					properties.put(PROJECT_UUID_PROP, pt.getUuid());
+				else
+					properties.put(PROJECT_UUID_PROP, UUID.randomUUID().toString());
+
+				// if UUID not found we likely need to upgrade this project
+				// copy corpus descriptions if necessary
+				for(String corpus:getCorpora()) {
+					final File corpusFolder = getCorpusFolder(corpus);
+					final File corpusInfoFile = new File(corpusFolder, CORPUS_DESC_FILE);
+
+					for(CorpusType ct:pt.getCorpus()) {
+						if(ct.getName().equals(corpus)) {
+							if(ct.getDescription() != null
+									&& ct.getDescription().trim().length() > 0
+									&& !corpusInfoFile.exists()) {
+								try (PrintWriter out = new PrintWriter(corpusInfoFile)) {
+									out.write(ct.getDescription());
+									out.flush();
+								} catch (IOException e) {
+									Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+								}
+							}
+							break;
+						}
+					}
+				}
+			} else {
+				properties.put(PROJECT_UUID_PROP, UUID.randomUUID().toString());
+			}
+		}
+		if(!properties.containsKey(PROJECT_NAME_PROP)) {
+			if(pt != null) {
+				properties.put(PROJECT_NAME_PROP, pt.getName());
+			} else {
+				properties.put(PROJECT_NAME_PROP, projectFolder.getName());
+			}
+		}
+	}
+	// endregion
+
+	private class CorpusFolderIterator implements Iterator<String> {
+
+		private final Path projectPath;
+
+		private final Stack<Iterator<Path>> pathIterators = new Stack<>();
+
+		private Path nextPath = null;
+
+		private String lastCorpus = null;
+
+		public CorpusFolderIterator() {
+			this.projectPath = Path.of(getLocation());
+			this.nextPath = projectPath;
+			try {
+				// create directory stream
+				this.pathIterators.push(Files.newDirectoryStream(projectPath).iterator());
+			} catch (IOException e) {
+				Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+			}
+		}
+
+		@Override
+		public boolean hasNext() {
+			if(nextPath != null) return true;
+			if(pathIterators.empty()) return false;
+			final Iterator<Path> pathIterator = pathIterators.peek();
+			while(pathIterator.hasNext()) {
+				Path p = pathIterator.next();
+				try {
+					if (Files.isDirectory(p) && !Files.isHidden(p)) {
+						String folderName = p.getFileName().toString();
+						if (!folderName.startsWith("~")
+								&& !folderName.endsWith("~")
+								&& !folderName.startsWith(".")
+								&& !folderName.startsWith("__")) {
+							nextPath = p;
+							final Iterator<Path> subIterator = Files.newDirectoryStream(p).iterator();
+							pathIterators.push(subIterator);
+							return true;
+						}
+					}
+				} catch (IOException e) {
+					Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+				}
+			}
+			pathIterators.pop();
+			return hasNext();
+		}
+
+		@Override
+		public String next() {
+			if(nextPath == null) {
+				throw new NoSuchElementException();
+			}
+			String retVal = nextPath.toString();
+			this.lastCorpus = retVal;
+			nextPath = null;
+			return retVal;
+		}
+
+		@Override
+		public void remove() {
+			if(this.lastCorpus != null) {
+				try {
+					removeCorpus(this.lastCorpus);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				} finally {
+					this.lastCorpus = null;
+				}
+			}
+        }
+
+	}
+
+	private class SessionIterator implements Iterator<String> {
+
+		private final String corpus;
+
+		private Iterator<Path> pathIterator;
+
+		private Path nextPath = null;
+
+		private String lastSession = null;
+
+		public SessionIterator(String corpus) {
+			this.corpus = corpus;
+			final File corpusFolder = getCorpusFolder(corpus);
+			try {
+				this.pathIterator = Files.newDirectoryStream(corpusFolder.toPath()).iterator();
+			} catch (IOException e) {
+				Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+			}
+		}
+
+		@Override
+		public boolean hasNext() {
+			if(nextPath != null) return true;
+			while(pathIterator.hasNext()) {
+				Path p = pathIterator.next();
+				try {
+					if(!Files.isDirectory(p) && !Files.isHidden(p)) {
+						String filename = p.getFileName().toString();
+						if(!filename.startsWith("~")
+								&& !filename.endsWith("~")
+								&& !filename.startsWith("__")) {
+
+							nextPath = p;
+							return true;
+						}
+					}
+				} catch (IOException e) {
+					Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public String next() {
+			if(nextPath == null) {
+				throw new NoSuchElementException();
+			}
+			String retVal = nextPath.getFileName().toString();
+			this.lastSession = retVal;
+			nextPath = null;
+			return retVal;
+		}
+
+		@Override
+		public void remove() {
+			if(this.lastSession != null) {
+				try {
+					final UUID writeLock = getSessionWriteLock(corpus, this.lastSession);
+					try {
+						removeSession(corpus, this.lastSession, writeLock);
+					} finally {
+						releaseSessionWriteLock(corpus, this.lastSession, writeLock);
+					}
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				this.lastSession = null;
+			}
+		}
+
 	}
 
 }

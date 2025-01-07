@@ -161,7 +161,7 @@ public interface Project extends IExtendable {
 	 * Has a custom project media folder been assigned
 	 * 
 	 * @return <code>true</code> if project folder has been customized
-	 * 
+	 *
 	 */
 	public boolean hasCustomProjectMediaFolder();
 
@@ -171,15 +171,6 @@ public interface Project extends IExtendable {
 	 * @return list of media folders
 	 */
 	public List<String> getProjectMediaFolders();
-
-	/**
-	 * Set media folder for project, if any are set.  If multiple media folders
-	 * are set, then all are removed and the new folder is added.
-	 *
-	 * @param mediaFolder If <code>null</code> sets the media folder
-	 * back to default.
-	 */
-	public void setProjectMediaFolder(String mediaFolder);
 
 	/**
 	 * Add a media folder to the project
@@ -202,6 +193,13 @@ public interface Project extends IExtendable {
 	 * @param mediaFolder
 	 */
 	public void removeProjectMediaFolder(String mediaFolder);
+
+	/**
+	 * Remove a media folder by index
+	 *
+	 * @param index
+	 */
+	public void removeProjectMediaFolder(int index);
 
 	/**
 	 * Get the Session template for the given corpus.
@@ -555,17 +553,31 @@ public interface Project extends IExtendable {
 	 *
 	 * @return list of corpora
 	 *
-	 * @deprecated use {@link Project::getCorpusIterator()} instead
+	 * @deprecated use {@link #getCorpusIterator()} instead
 	 */
+	@Deprecated
 	public List<String> getCorpora();
 
 	/**
 	 * Get media folder for the project, if any are set.  If multiple media folders
 	 * are set, the first one is returned.
 	 *
-	 * @deprecated Since Phon 4.0 use {@link Project::} instead
+	 * @deprecated Since Phon 4.0 use {@link #getProjectMediaFolders()} instead
 	 */
+	@Deprecated
 	public String getProjectMediaFolder();
+
+	/**
+	 * Set media folder for project, if any are set.  If multiple media folders
+	 * are set, then all are removed and the new folder is added.
+	 *
+	 * @param mediaFolder If <code>null</code> sets the media folder
+	 * back to default.
+	 *
+	 * @deprecated Since Phon 4.0 use {@link #addProjectMediaFolder(String)} instead
+	 */
+	@Deprecated
+	public void setProjectMediaFolder(String mediaFolder);
 
 	/**
 	 * Has a custom corpus media folder been assigned
@@ -576,6 +588,7 @@ public interface Project extends IExtendable {
 	 *
 	 * @deprecated Since Phon 4.0 will always return <code>false</code>
 	 */
+	@Deprecated
 	public boolean hasCustomCorpusMediaFolder(String corpus);
 
 	/**
@@ -585,6 +598,7 @@ public interface Project extends IExtendable {
 	 *
 	 * @deprecated Since Phon 4.0 will always return null
 	 */
+	@Deprecated
 	public String getCorpusMediaFolder(String corpus);
 
 	/**
@@ -594,6 +608,7 @@ public interface Project extends IExtendable {
 	 *
 	 * @deprecated Since Phon 4.0 will do nothing
 	 */
+	@Deprecated
 	public void setCorpusMediaFolder(String corpus, String mediaFolder);
 
 	/**
@@ -604,8 +619,9 @@ public interface Project extends IExtendable {
 	 *
 	 * @return the list of sessions in the specified corpus
 	 *
-	 * @deprecated use {@link Project::getSessionIterator(String)} instead
+	 * @deprecated use {@link #getSessionIterator(String)} instead
 	 */
+	@Deprecated
 	public List<String> getCorpusSessions(String corpus);
 	// endregion
 }

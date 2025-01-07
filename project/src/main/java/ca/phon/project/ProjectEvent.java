@@ -30,8 +30,12 @@ public class ProjectEvent {
 	public static enum ProjectEventType {
 		CORPUS_ADDED,
 		CORPUS_REMOVED,
+		@Deprecated
 		PROJECT_MEDIAFOLDER_CHANGED,
+		PROJECT_MEDIAFOLDER_ADDED,
+		PROJECT_MEDIAFOLDER_REMOVED,
 		CORPUS_DESCRIPTION_CHANGED,
+		@Deprecated
 		CORPUS_MEDIAFOLDER_CHANGED,
 		SESSION_ADDED,
 		SESSION_REMOVED,
@@ -46,10 +50,14 @@ public class ProjectEvent {
 	public static enum ProjectEventProp {
 		CORPUS,
 		SESSION,
+		INDEX,
 		OLD_CORPUS_DESCRIPTION,
 		NEW_CORPUS_DESCRIPTION,
+		@Deprecated
 		OLD_MEDIAFOLDER,
+		@Deprecated
 		NEW_MEDIAFOLDER,
+		MEDIAFOLDER,
 		OLD_PROJECT_NAME,
 		NEW_PROJECT_NAME,
 		OLD_PROJECT_UUID,
@@ -102,7 +110,7 @@ public class ProjectEvent {
 	 * Create a new corpus description changed event.
 	 *
 	 * @param corpus
-	 * @param olddescription
+	 * @param oldDescription
 	 * @param newDescription
 	 *
 	 * @return
@@ -115,6 +123,7 @@ public class ProjectEvent {
 		return retVal;
 	}
 
+	@Deprecated
 	public static ProjectEvent newCorpusMediaFolderChangedEvent(String corpus, String oldFolder, String newFolder) {
 		final ProjectEvent retVal = new ProjectEvent(ProjectEventType.CORPUS_MEDIAFOLDER_CHANGED);
 		retVal.setProperty(ProjectEventProp.CORPUS, corpus);
@@ -123,10 +132,25 @@ public class ProjectEvent {
 		return retVal;
 	}
 
+	@Deprecated
 	public static ProjectEvent newProjectMediaFolderChangedEvent(String oldFolder, String newFolder) {
 		final ProjectEvent retVal = new ProjectEvent(ProjectEventType.PROJECT_MEDIAFOLDER_CHANGED);
 		retVal.setProperty(ProjectEventProp.OLD_MEDIAFOLDER, oldFolder);
 		retVal.setProperty(ProjectEventProp.NEW_MEDIAFOLDER, newFolder);
+		return retVal;
+	}
+
+	public static ProjectEvent newProjectMediaFolderAddedEvent(int index, String mediaFolder) {
+		final ProjectEvent retVal = new ProjectEvent(ProjectEventType.PROJECT_MEDIAFOLDER_ADDED);
+		retVal.setProperty(ProjectEventProp.INDEX, Integer.toString(index));
+		retVal.setProperty(ProjectEventProp.MEDIAFOLDER, mediaFolder);
+		return retVal;
+	}
+
+	public static ProjectEvent newProjectMediaFolderRemovedEvent(int index, String mediaFolder) {
+		final ProjectEvent retVal = new ProjectEvent(ProjectEventType.PROJECT_MEDIAFOLDER_REMOVED);
+		retVal.setProperty(ProjectEventProp.INDEX, Integer.toString(index));
+		retVal.setProperty(ProjectEventProp.MEDIAFOLDER, mediaFolder);
 		return retVal;
 	}
 
