@@ -1082,50 +1082,13 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	@Deprecated
 	@Override
 	public List<String> getCorpora() {
-		final List<String> corpusList = new ArrayList<String>();
-
-		Path projectPath = getFolder().toPath();
-		try {
-			scanForCorpusFolders(projectPath, corpusList);
-		} catch (IOException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		final List<String> retVal = new ArrayList<>();
+		final Iterator<String> iter = getCorpusIterator();
+		while(iter.hasNext()) {
+			retVal.add(iter.next());
 		}
-		Collections.sort(corpusList);
-
-		// add '' corpus if project folder includes session files
-		if(!getCorpusSessions("").isEmpty()) {
-			corpusList.add(0, "");
-		}
-
-		return corpusList;
-	}
-
-
-	@Deprecated
-	private void scanForCorpusFolders(Path path, List<String> corpusList) throws IOException {
-		try(DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
-			for(Path subFolder:stream) {
-				if (Files.isDirectory(subFolder)) {
-					if (!Files.isHidden(subFolder)) {
-						String folderName = subFolder.getFileName().toString();
-						if (!folderName.startsWith("~")
-								&& !folderName.endsWith("~")
-								&& !folderName.startsWith(".")
-								&& !folderName.startsWith("__")) {
-							corpusList.add(corpusNameFromPath(subFolder));
-							scanForCorpusFolders(subFolder, corpusList);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	@Deprecated
-	private String corpusNameFromPath(Path path) {
-		final Path projectPath = getFolder().toPath();
-		final Path relativePath = projectPath.relativize(path);
-		return relativePath.toString();
+		Collections.sort(retVal);
+		return retVal;
 	}
 
 	@Deprecated
@@ -1143,7 +1106,10 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	@Deprecated
 	@Override
 	public void setProjectMediaFolder(String mediaFolder) {
-
+		// remove all old media folders
+		if(this.projectJson.has(PROJECT_MEDIAFOLDERS_KEY)) {
+			this.projectJson.remove(PROJECT_MEDIAFOLDERS_KEY);
+		}
 
 		final String old = getProjectMediaFolder();
 		final Properties props = getExtension(Properties.class);
@@ -1205,39 +1171,13 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 	@Override
 	public List<String> getCorpusSessions(String corpus) {
 		final List<String> retVal = new ArrayList<String>();
-
-		Set<String> validexts = SessionInputFactory.getSessionExtensions();
-
-		final File corpusFolder = getCorpusFolder(corpus);
-		try(DirectoryStream<Path> stream = Files.newDirectoryStream(corpusFolder.toPath())) {
-			for(Path path:stream) {
-				if(!Files.isDirectory(path) && !Files.isHidden(path)) {
-					String filename = path.getFileName().toString();
-					if(!filename.startsWith("~")
-							&& !filename.endsWith("~")
-							&& !filename.startsWith("__")) {
-						int lastDot = filename.lastIndexOf('.');
-						if(lastDot > 0) {
-							String ext = filename.substring(lastDot+1);
-							if(validexts.contains(ext)) {
-								final SessionReader reader = (new SessionInputFactory()).createReaderForFile(path.toFile());
-								if(reader != null) {
-									retVal.add(filename);
-								}
-							}
-						}
-					}
-				}
-			}
-
-			Collections.sort(retVal);
-		} catch (IOException e) {
-			Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
+		final SessionIterator iter = new SessionIterator(corpus);
+		while(iter.hasNext()) {
+			retVal.add(iter.next());
 		}
-
+		Collections.sort(retVal);
 		return retVal;
 	}
-
 
 	@Deprecated
 	protected synchronized void saveProperties() throws IOException {
@@ -1417,10 +1357,25 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 				Path p = pathIterator.next();
 				try {
 					if(!Files.isDirectory(p) && !Files.isHidden(p)) {
+						Set<String> validexts = SessionInputFactory.getSessionExtensions();
 						String filename = p.getFileName().toString();
 						if(!filename.startsWith("~")
 								&& !filename.endsWith("~")
 								&& !filename.startsWith("__")) {
+							// check for valid extension
+							int lastDot = filename.lastIndexOf('.');
+							if(lastDot > 0) {
+								String ext = filename.substring(lastDot + 1);
+								if(!validexts.contains(ext)) {
+									continue;
+								}
+							}
+
+							// check to ensure we have a session reader for the file
+							final SessionReader reader = (new SessionInputFactory()).createReaderForFile(p.toFile());
+							if(reader == null) {
+								continue;
+							}
 
 							nextPath = p;
 							return true;
