@@ -166,6 +166,10 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 			try(final FileInputStream fin = new FileInputStream(propsFile)) {
 				props.load(fin);
 				checkProperties(props);
+				boolean deleted = propsFile.delete();
+				if(!deleted) {
+					Logger.getLogger(getClass().getName()).log(Level.WARNING, "Unable to delete old properties file.");
+				}
 			} catch (IOException e) {
 				Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
 			}
