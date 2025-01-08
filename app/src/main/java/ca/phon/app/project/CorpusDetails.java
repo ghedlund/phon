@@ -163,8 +163,6 @@ public class CorpusDetails extends JPanel {
 			locationLabel.setText("");
 			locationLabel.setIcon(null);
 			locationLabel.setToolTipText("");
-
-			
 		} else {
 			numSessionsLabel.setText("" + project.getCorpusSessions(corpus).size());
 

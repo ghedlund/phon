@@ -417,17 +417,15 @@ public class ProjectWindow extends CommonModuleFrame {
 		final PhonUIAction<Void> showCreateCorpusAct = PhonUIAction.runnable(this::onShowCreateCorpusButton);
 		showCreateCorpusAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "New corpus...");
 		showCreateCorpusAct.putValue(PhonUIAction.SMALL_ICON,
-				IconManager.getInstance().getIcon("actions/list-add", IconSize.SMALL));
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "create_new_folder", IconSize.MEDIUM, UIManager.getColor("titledpanel.foreground")));
 		final JButton showCreateCorpusBtn = new JButton(showCreateCorpusAct);
 		showCreateCorpusBtn.setMargin(new Insets(0, 0, 0, 0));
 		showCreateCorpusBtn.setOpaque(false);
 		showCreateCorpusBtn.setBorderPainted(false);
 
-		corpusPanel = new TitledPanel("Corpus");
-		final ImageIcon defCorpusIcn = IconManager.getInstance().getSystemStockIcon(
-				(OSInfo.isMacOs() ? MacOSStockIcon.GenericFolderIcon :
-					OSInfo.isWindows() ? WindowsStockIcon.FOLDER : null), "places/folder", IconSize.SMALL);
-		DropDownIcon corpusDdIcn = new DropDownIcon(defCorpusIcn, 0, SwingConstants.BOTTOM);
+		corpusPanel = new TitledPanel("Corpus folders");
+		final ImageIcon folderIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.MEDIUM, UIManager.getColor("titledpanel.foreground"));
+		DropDownIcon corpusDdIcn = new DropDownIcon(folderIcon, 0, SwingConstants.BOTTOM);
 		corpusPanel.setIcon(corpusDdIcn);
 		corpusPanel.getTitleLabel().addMouseListener(new MouseInputAdapter() {
 
@@ -449,7 +447,7 @@ public class ProjectWindow extends CommonModuleFrame {
 		final PhonUIAction<Void> showCreateSessionAct = PhonUIAction.runnable(this::onShowCreateSessionButton);
 		showCreateSessionAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "New session...");
 		showCreateSessionAct.putValue(PhonUIAction.SMALL_ICON,
-				IconManager.getInstance().getIcon("actions/list-add", IconSize.SMALL));
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "note_add", IconSize.MEDIUM, UIManager.getColor("titledpanel.foreground")));
 		final JButton showCreateSessionBtn = new JButton(showCreateSessionAct);
 		showCreateSessionBtn.setMargin(new Insets(0, 0, 0, 0));
 		showCreateSessionBtn.setOpaque(false);
@@ -482,8 +480,8 @@ public class ProjectWindow extends CommonModuleFrame {
 		sessionDecoration.add(showCreateSessionBtn);
 
 		sessionPanel = new TitledPanel("Session");
-		ImageIcon xmlIcn = IconManager.getInstance().getSystemIconForFileType("xml", "mimetypes/text-xml", IconSize.SMALL);
-		DropDownIcon xmlDdIcn = new DropDownIcon(xmlIcn, 0, SwingConstants.BOTTOM);
+		ImageIcon draftIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "draft", IconSize.MEDIUM, UIManager.getColor("titledpanel.foreground"));
+		DropDownIcon xmlDdIcn = new DropDownIcon(draftIcon, 0, SwingConstants.BOTTOM);
 		sessionPanel.setIcon(xmlDdIcn);
 		sessionPanel.setRightDecoration(sessionDecoration);
 		sessionPanel.getContentContainer().add(createSessionButton, BorderLayout.NORTH);
@@ -508,7 +506,8 @@ public class ProjectWindow extends CommonModuleFrame {
 		bottomPanel.add(sessionDetails);
 
 		final TitledPanel detailsPanel = new TitledPanel("Details", bottomPanel);
-		detailsPanel.setIcon(IconManager.getInstance().getIcon("categories/info-white", IconSize.SMALL));
+		detailsPanel.setIcon(IconManager.getInstance()
+				.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "info", IconSize.MEDIUM, UIManager.getColor("titledpanel.foreground")));
 
 		final JXMultiSplitPane multiSplitPane = new JXMultiSplitPane();
 		final String multiSplitLayout = "(COLUMN "
@@ -601,11 +600,7 @@ public class ProjectWindow extends CommonModuleFrame {
 			}
 
 		});
-		
-		ImageIcon folderIcn = IconManager.getInstance().getSystemIconForPath(getProject().getLocation(), "places/folder", IconSize.SMALL);
-		DropDownIcon folderDdIcn = new DropDownIcon(folderIcn, 0, SwingConstants.BOTTOM);
-		folderDdIcn.setArrowPainted(false);
-		projectFolderLabel.setIcon(folderDdIcn);
+
 		projectFolderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		projectInfoPanel.add(projectFolderLabel, gbc);
 		
@@ -778,16 +773,6 @@ public class ProjectWindow extends CommonModuleFrame {
 		File projectMediaFolder = new File(getProject().getProjectMediaFolder());
 		File absoluteProjectMediaFolder = projectMediaFolder.isAbsolute() ? projectMediaFolder : new File(getProject().getLocation(), getProject().getProjectMediaFolder());
 		
-		StockIcon stockIcon = 
-				(OSInfo.isMacOs() ? MacOSStockIcon.GenericFolderIcon : WindowsStockIcon.FOLDER );
-		ImageIcon stockFolderIcon = IconManager.getInstance().getSystemStockIcon(stockIcon, "places/folder", IconSize.SMALL);
-		ImageIcon folderIcon = absoluteProjectMediaFolder.exists()
-				? IconManager.getInstance().getSystemIconForPath(absoluteProjectMediaFolder.getAbsolutePath(), "places/folder", IconSize.SMALL) 
-				: stockFolderIcon;
-				
-		DropDownIcon dropDownIcon = new DropDownIcon(folderIcon, 0, SwingConstants.BOTTOM);
-				
-		projectMediaFolderLabel.setIcon(dropDownIcon);
 		if(!getProject().hasCustomProjectMediaFolder() && !absoluteProjectMediaFolder.exists()) {
 			projectMediaFolderLabel.setText("(click to select)");
 			projectMediaFolderLabel.setForeground(Color.blue);
@@ -1026,29 +1011,10 @@ public class ProjectWindow extends CommonModuleFrame {
 		(new RenameCorpusAction(this)).actionPerformed(pae.getActionEvent());
 	}
 
-	private ImageIcon createNewCorpusIcon() {
-		final String folderIconName = "actions/folder_new";
-		final StockIcon stockIcon =
-				(NativeUtilities.isMacOs() ? MacOSStockIcon.GenericFolderIcon : WindowsStockIcon.FOLDER);
-		final ImageIcon folderIcon =
-				IconManager.getInstance().getSystemStockIcon(stockIcon, folderIconName, IconSize.MEDIUM);
-		final ImageIcon addIcon =
-				IconManager.getInstance().getIcon("actions/list-add", IconSize.XSMALL);
-
-		final BufferedImage newIcnImg =
-				new BufferedImage(IconSize.MEDIUM.getHeight(), IconSize.MEDIUM.getHeight(),
-						BufferedImage.TYPE_INT_ARGB);
-		final Graphics g = newIcnImg.createGraphics();
-		folderIcon.paintIcon(null, g, 0, 0);
-		g.drawImage(addIcon.getImage(), IconSize.MEDIUM.getWidth() - IconSize.XSMALL.getWidth(),
-				IconSize.MEDIUM.getHeight() - IconSize.XSMALL.getHeight(), this);
-		return new ImageIcon(newIcnImg);
-	}
-
 	private MultiActionButton createCorpusButton() {
 		MultiActionButton retVal = new MultiActionButton();
 
-		final ImageIcon folderNewIcn = createNewCorpusIcon();
+		final ImageIcon folderNewIcn = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "create_new_folder", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 		String s1 = "New Corpus";
 		String s2 = "Enter corpus name and press enter.  Press escape to cancel.";
 
@@ -1060,8 +1026,8 @@ public class ProjectWindow extends CommonModuleFrame {
 
 		retVal.setOpaque(false);
 
-		ImageIcon cancelIcn = IconManager.getInstance().getIcon("actions/button_cancel", IconSize.SMALL);
-		ImageIcon cancelIcnL = cancelIcn;
+		ImageIcon cancelIcn = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "close", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+		ImageIcon cancelIcnL = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "close", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 
 		PhonUIAction<Void> btnSwapAct = PhonUIAction.runnable(this::onHideCreateCorpusButton);
 		btnSwapAct.putValue(Action.ACTION_COMMAND_KEY, "CANCEL_CREATE_ITEM");
@@ -1091,7 +1057,7 @@ public class ProjectWindow extends CommonModuleFrame {
 
 		PhonUIAction<JTextField> createNewCorpusAct = PhonUIAction.eventConsumer(this::onCreateCorpus, corpusNameField);
 		createNewCorpusAct.putValue(Action.SHORT_DESCRIPTION, "Create new corpus folder");
-		createNewCorpusAct.putValue(Action.SMALL_ICON, IconManager.getInstance().getIcon("actions/list-add", IconSize.SMALL));
+		createNewCorpusAct.putValue(Action.SMALL_ICON, IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "add", IconSize.MEDIUM, UIManager.getColor("Button.foreground")));
 
 		JButton createBtn = new JButton(createNewCorpusAct);
 		corpusNamePanel.add(createBtn, BorderLayout.EAST);
@@ -1145,25 +1111,6 @@ public class ProjectWindow extends CommonModuleFrame {
 			onHideCreateCorpusButton();
 			corpusList.setSelectedValue(corpusName, true);
 		}
-	}
-
-	private ImageIcon createNewSessionIcon() {
-		final String defaultIconName = "mimetypes/text-xml";
-		final String type = (NativeUtilities.isLinux() ? "text-xml" : "xml");
-		final ImageIcon xmlIcon =
-				IconManager.getInstance().getSystemIconForFileType(type, defaultIconName, IconSize.MEDIUM);
-		final ImageIcon addIcon =
-				IconManager.getInstance().getIcon("actions/list-add", IconSize.XSMALL);
-
-		final BufferedImage newIcnImg =
-				new BufferedImage(IconSize.MEDIUM.getHeight(), IconSize.MEDIUM.getHeight(),
-						BufferedImage.TYPE_INT_ARGB);
-		final Graphics g = newIcnImg.createGraphics();
-		xmlIcon.paintIcon(null, g, 0, 0);
-		g.drawImage(addIcon.getImage(), IconSize.MEDIUM.getWidth() - IconSize.XSMALL.getWidth(),
-				IconSize.MEDIUM.getHeight() - IconSize.XSMALL.getHeight(), this);
-		final ImageIcon xmlNewIcn = new ImageIcon(newIcnImg);
-		return xmlNewIcn;
 	}
 
 	public void onShowCreateSessionButton() {
@@ -1232,7 +1179,8 @@ public class ProjectWindow extends CommonModuleFrame {
 	private MultiActionButton createSessionButton() {
 		MultiActionButton retVal = new MultiActionButton();
 
-		final ImageIcon xmlNewIcn = createNewSessionIcon();
+		final ImageIcon xmlNewIcn =
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "note_add", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 
 		String s1 = "New Session";
 		String s2 = "Enter session name and press enter.  Press escape to cancel.";
@@ -1245,8 +1193,8 @@ public class ProjectWindow extends CommonModuleFrame {
 
 		retVal.setOpaque(false);
 
-		ImageIcon cancelIcn = IconManager.getInstance().getIcon("actions/button_cancel", IconSize.SMALL);
-		ImageIcon cancelIcnL = cancelIcn;
+		ImageIcon cancelIcn = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "close", IconSize.SMALL, UIManager.getColor("Button.foreground"));
+		ImageIcon cancelIcnL = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "close", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));;
 
 		PhonUIAction<Void> btnSwapAct = PhonUIAction.runnable(this::onHideCreateSessionButton);
 		btnSwapAct.putValue(Action.ACTION_COMMAND_KEY, "CANCEL_CREATE_ITEM");
@@ -1315,7 +1263,7 @@ public class ProjectWindow extends CommonModuleFrame {
 
 		PhonUIAction<JTextField> createNewSessionAct = PhonUIAction.eventConsumer(this::onCreateSession, sessionNameField);
 		createNewSessionAct.putValue(Action.SHORT_DESCRIPTION, "Create new session in selected corpus");
-		createNewSessionAct.putValue(Action.SMALL_ICON, IconManager.getInstance().getIcon("actions/list-add", IconSize.SMALL));
+		createNewSessionAct.putValue(Action.SMALL_ICON, IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "add", IconSize.MEDIUM, UIManager.getColor("Button.foreground")));
 
 		JButton createBtn = new JButton(createNewSessionAct);
 		sessionNamePanel.add(createBtn, BorderLayout.EAST);
@@ -1381,7 +1329,8 @@ public class ProjectWindow extends CommonModuleFrame {
 		PhonUIAction<Void> createNewCorpusAct = PhonUIAction.runnable(this::onShowCreateCorpusButton);
 		createNewCorpusAct.putValue(Action.NAME, "New corpus...");
 		createNewCorpusAct.putValue(Action.SHORT_DESCRIPTION, "Create a new corpus");
-		createNewCorpusAct.putValue(Action.SMALL_ICON, IconManager.getInstance().getIcon("actions/list-add", IconSize.SMALL));
+		createNewCorpusAct.putValue(Action.SMALL_ICON, IconManager.getInstance()
+						.getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "create_new_folder", IconSize.MEDIUM, UIManager.getColor("Button.foreground")));
 		builder.addItem(".", createNewCorpusAct);
 		
 		final boolean enabled = corpora.size() > 0;
@@ -1432,7 +1381,7 @@ public class ProjectWindow extends CommonModuleFrame {
 		PhonUIAction<Void> createNewSessionAct = PhonUIAction.runnable(this::onShowCreateSessionButton);
 		createNewSessionAct.putValue(Action.NAME, "New session...");
 		createNewSessionAct.putValue(Action.SHORT_DESCRIPTION, "Create new session in selected corpus");
-		createNewSessionAct.putValue(Action.SMALL_ICON, IconManager.getInstance().getIcon("actions/list-add", IconSize.SMALL));
+		createNewSessionAct.putValue(Action.SMALL_ICON, IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "note_add", IconSize.MEDIUM, UIManager.getColor("Button.foreground")));
 		builder.addItem(".", createNewSessionAct).setEnabled(getSelectedCorpus() != null);
 		
 		List<String> selectedSessions = getSelectedSessionNames();
@@ -1607,8 +1556,8 @@ public class ProjectWindow extends CommonModuleFrame {
 				final Path relPath = projectPath.relativize(sessionPath);
 				final String sessionRelPath = relPath.toString();
 
-			    ImageIcon icon =
-			    		IconManager.getInstance().getSystemIconForPath(getProject().getSessionPath(corpus, session), "mimetypes/text-x-generic", IconSize.SMALL);
+				ImageIcon icon =
+						IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "draft", IconSize.MEDIUM, comp.getForeground());
 
 				if(gitController.hasGitFolder() && gitController.isOpen()) {
 					try {
@@ -1639,7 +1588,7 @@ public class ProjectWindow extends CommonModuleFrame {
 				SessionListModel model = (SessionListModel)list.getModel();
 				if(model.getProject().isSessionLocked(model.getCorpus(), value.toString())) {
 					comp.setIcon(
-							IconManager.getInstance().getIcon("emblems/emblem-readonly", IconSize.SMALL));
+							IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "lock", IconSize.MEDIUM, comp.getForeground()));
 				}
 
 				comp.setIcon(icon);

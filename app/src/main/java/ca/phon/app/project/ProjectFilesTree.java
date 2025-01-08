@@ -41,7 +41,7 @@ public class ProjectFilesTree extends JTree implements TreeWillExpandListener {
 
         @Override
         public ImageIcon getIcon() {
-            return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "audiotrack", IconSize.MEDIUM, Color.DARK_GRAY);
+            return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "video_library", IconSize.MEDIUM, Color.DARK_GRAY);
         }
     };
 
@@ -215,7 +215,7 @@ public class ProjectFilesTree extends JTree implements TreeWillExpandListener {
                 if(ext.matches("wav|mp3|aiff|flac|ogg|mp4|mov|avi|wmv|mpg|mpeg|flv|mkv|webm")) {
                     return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "audiotrack", IconSize.MEDIUM, Color.DARK_GRAY);
                 } else {
-                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "insert_drive_file", IconSize.MEDIUM, Color.DARK_GRAY);
+                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "draft", IconSize.MEDIUM, Color.DARK_GRAY);
                 }
             }
         }

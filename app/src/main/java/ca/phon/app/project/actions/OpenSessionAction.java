@@ -52,12 +52,11 @@ public class OpenSessionAction extends ProjectWindowAction {
 		this.sessionName = sessionName;
 		this.blindMode = blindMode;
 
-		ImageIcon icn = IconManager.getInstance().getSystemIconForFileType("xml", "mimetypes/text-xml", IconSize.SMALL);
+		ImageIcon icn = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "file_open", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 		putValue(NAME, "Open session");
 		putValue(SHORT_DESCRIPTION, "Open session in a new editor window");
 		putValue(SMALL_ICON, icn);
 	}
-	
 
 	@Override
 	public void hookableActionPerformed(ActionEvent ae) {
