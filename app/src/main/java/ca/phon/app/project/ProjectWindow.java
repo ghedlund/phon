@@ -258,12 +258,6 @@ public class ProjectWindow extends CommonModuleFrame {
 				corpusDetails.setCorpus(corpus);
 				sessionDetails.setCorpus(corpus);
 				sessionDetails.setSession(null);
-
-				if(getProject().getCorpusSessions(corpus).size() == 0) {
-					onShowCreateSessionButton();
-				} else {
-					onHideCreateSessionButton();
-				}
 			}
 		});
 		corpusList.addMouseListener(new MouseInputAdapter() {
@@ -543,18 +537,6 @@ public class ProjectWindow extends CommonModuleFrame {
 		add(header, BorderLayout.NORTH);
 		add(multiSplitPane, BorderLayout.CENTER);
 		add(statusBar, BorderLayout.SOUTH);
-
-		// if no corpora are currently available, 'prompt' the user to create a new one
-		if(getProject().getCorpora().size() == 0) {
-			SwingUtilities.invokeLater( () -> {
-				onShowCreateCorpusButton();
-			});
-		} else {
-			SwingUtilities.invokeLater( () -> {
-				corpusList.setSelectedIndex(0);
-				corpusList.requestFocusInWindow();
-			});
-		}
 
 		addWindowFocusListener(new WindowAdapter() {
 			@Override
