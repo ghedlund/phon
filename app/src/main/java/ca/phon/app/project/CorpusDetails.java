@@ -41,9 +41,6 @@ public class CorpusDetails extends JPanel {
 	// location of corpus folder
 	private JLabel locationLabel;
 
-	// location of corpus media folder
-	private JLabel mediaFolderLabel;
-
 	// description
 	private JTextArea corpusDescriptionArea;
 
@@ -84,25 +81,6 @@ public class CorpusDetails extends JPanel {
 
 		});
 
-		mediaFolderLabel = new JLabel();
-		mediaFolderLabel.setForeground(new Color(0, 90, 140));
-		mediaFolderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		mediaFolderLabel.addMouseListener(new MouseAdapter() {
-
-			@Override
-			public void mouseClicked(MouseEvent me) {
-				if(corpus != null) {
-					ProjectWindow parentWindow = (ProjectWindow)SwingUtilities.getAncestorOfClass(ProjectWindow.class, CorpusDetails.this);
-					if(parentWindow != null) {
-						JPopupMenu popupMenu = new JPopupMenu();
-						parentWindow.setupCorpusFolderMenu(corpus, new MenuBuilder(popupMenu));
-						popupMenu.show(mediaFolderLabel, 0, mediaFolderLabel.getHeight());
-					}
-				}
-			}
-
-		});
-
 		numSessionsLabel = new JLabel();
 
 		final JPanel folderPanel = new JPanel(new GridBagLayout());
@@ -121,17 +99,6 @@ public class CorpusDetails extends JPanel {
 		gbc.weightx = 1.0;
 		gbc.insets = new Insets(0, 5, 0, 0);
 		folderPanel.add(locationLabel, gbc);
-
-		++gbc.gridy;
-		gbc.gridx = 0;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.weightx = 0.0;
-		gbc.insets.left = 0;
-		folderPanel.add(new JLabel("Media folder:"), gbc);
-		++gbc.gridx;
-		gbc.weightx = 1.0;
-		gbc.insets.left = 5;
-		folderPanel.add(mediaFolderLabel, gbc);
 
 		++gbc.gridy;
 		gbc.gridx = 0;
@@ -184,42 +151,6 @@ public class CorpusDetails extends JPanel {
 		this.corpus = corpus;
 		update();
 	}
-
-	private void updateCorpusMediaLabel() {
-		if(corpus == null || !project.getCorpora().contains(corpus)) {
-			mediaFolderLabel.setText("");
-			mediaFolderLabel.setToolTipText("");
-			mediaFolderLabel.setIcon(null);
-		} else {
-			File corpusMediaFolder = new File(project.getCorpusMediaFolder(corpus));
-			File absoluteCorpusMediaFolder = corpusMediaFolder.isAbsolute() ? corpusMediaFolder : new File(project.getLocation(), project.getCorpusMediaFolder(corpus));
-			
-			StockIcon stockIcon = 
-					(OSInfo.isMacOs() ? MacOSStockIcon.GenericFolderIcon : WindowsStockIcon.FOLDER );
-			ImageIcon stockFolderIcon = IconManager.getInstance().getSystemStockIcon(stockIcon, "places/folder", IconSize.SMALL);
-			ImageIcon folderIcon = absoluteCorpusMediaFolder.exists()
-					? IconManager.getInstance().getSystemIconForPath(absoluteCorpusMediaFolder.getAbsolutePath(), "places/folder", IconSize.SMALL) 
-					: stockFolderIcon;
-					
-			DropDownIcon dropDownIcon = new DropDownIcon(folderIcon, 0, SwingConstants.BOTTOM);
-					
-			mediaFolderLabel.setIcon(dropDownIcon);
-			if(!project.hasCustomCorpusMediaFolder(corpus)) {
-				mediaFolderLabel.setText("(same as project - click to change)");
-				mediaFolderLabel.setToolTipText("Corpus media folder is same as project media folder, click to change");
-				mediaFolderLabel.setForeground(Color.blue);
-			} else {
-				mediaFolderLabel.setText(project.getCorpusMediaFolder(corpus));
-				if(absoluteCorpusMediaFolder.exists()) {
-					mediaFolderLabel.setForeground(Color.blue);
-					mediaFolderLabel.setToolTipText("Click to change project media folder");
-				} else {
-					mediaFolderLabel.setForeground(Color.red);
-					mediaFolderLabel.setToolTipText("Media folder not found, click to create or select new project media folder");
-				}
-			}
-		}
-	}
 	
 	void update() {
 		if(corpus == null || !project.getCorpora().contains(corpus)) {
@@ -232,8 +163,6 @@ public class CorpusDetails extends JPanel {
 			locationLabel.setText("");
 			locationLabel.setIcon(null);
 			locationLabel.setToolTipText("");
-
-			
 		} else {
 			numSessionsLabel.setText("" + project.getCorpusSessions(corpus).size());
 
@@ -244,18 +173,12 @@ public class CorpusDetails extends JPanel {
 			locationLabel.setText(relativePath.toString());
 			locationLabel.setForeground(Color.blue);
 			locationLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			
-			ImageIcon folderIcn = IconManager.getInstance().getSystemIconForPath(corpusAbsolutePath, "places/folder", IconSize.SMALL);
-			DropDownIcon folderDdIcn = new DropDownIcon(folderIcn, 0, SwingConstants.BOTTOM);
-			folderDdIcn.setArrowPainted(false);
-			locationLabel.setIcon(folderDdIcn);
 			locationLabel.setToolTipText(corpusAbsolutePath);
 
 			corpusDescriptionArea.setText(project.getCorpusDescription(corpus));
 			corpusDescriptionArea.setEnabled(true);
 			corpusDescriptionArea.setCaretPosition(0);
 		}
-		updateCorpusMediaLabel();
 	}
 
 }

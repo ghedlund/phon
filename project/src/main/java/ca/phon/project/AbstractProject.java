@@ -15,6 +15,7 @@ public abstract class AbstractProject implements Project {
 	 * Local projects no longer create this file but will read from it
 	 * Remote projects require this file exists
 	 */
+	@Deprecated
 	protected final static String PROJECT_XML_FILE = "project.xml";
 
 	private final ExtensionSupport extSupport;
@@ -34,7 +35,10 @@ public abstract class AbstractProject implements Project {
 	 * If not found, empty project data is created.
 	 *
 	 * @return projectData
+	 *
+	 * @deprecated Since Phon 3
 	 */
+	@Deprecated
 	protected ProjectType loadProjectData(InputStream inputStream) throws ProjectConfigurationException {
 		try {
 			final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);

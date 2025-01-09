@@ -92,7 +92,11 @@ public class TranscriptView extends EditorView {
 
         this.transcriptEditor.setMediaModel(editor.getMediaModel());
         this.transcriptEditor.addPropertyChangeListener(
-            "currentRecordIndex", e -> editor.setCurrentRecordIndex((Integer) e.getNewValue())
+            "currentRecordIndex", e -> {
+                if(!isSingleRecordActive()) {
+                    editor.setCurrentRecordIndex((Integer) e.getNewValue());
+                }
+            }
         );
 
         initUI();
@@ -102,15 +106,10 @@ public class TranscriptView extends EditorView {
             this::onEditorFinishedLoading,
             EditorEventManager.RunOn.EditorEventDispatchThread
         );
-//        if (editor.isFinishedLoading()) {
-//            transcriptEditor.loadSession();
-//        }
 
         addPropertyChangeListener("fontSizeDelta", e -> {
             PrefHelper.getUserPreferences().putFloat(FONT_SIZE_DELTA_PROP, getFontSizeDelta());
             transcriptEditor.getTranscriptDocument().updateGlobalParagraphAttributes();
-            transcriptEditor.revalidate();
-            transcriptEditor.repaint();
         });
         setupKeyboardShortcuts();
     }

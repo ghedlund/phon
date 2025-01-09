@@ -21,6 +21,7 @@ import ca.phon.ui.ipamap.io.Cell;
 import ca.phon.ui.ipamap.io.CellProp;
 import ca.phon.util.PrefHelper;
 
+import javax.management.Attribute;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -121,7 +122,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
     /**
      * Whether the transcript editor is currently in "single record view" mode
      */
-    private boolean singleRecordView = false;
+    private boolean singleRecordView = true;
     /**
      * A reference to the document element currently being hovered over
      */
@@ -167,7 +168,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         this.eventManager = eventManager;
         this.undoSupport = undoSupport;
         this.undoManager = undoManager;
-//        setOpaque(false);
         initActions();
         registerEditorActions();
         super.setEditorKitForContentType(TranscriptEditorKit.CONTENT_TYPE, new TranscriptEditorKit());
@@ -1228,8 +1228,8 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             if(elementLocation.transcriptElementIndex() >= 0) {
                 final Transcript.Element transcriptElement = getSession().getTranscript().getElementAt(elementLocation.transcriptElementIndex());
                 if(transcriptElement.isRecord()) {
-                    final Tier<?> tier = transcriptElement.asRecord().getTier(elementLocation.tier());
-                    if(tier.getDeclaredType() == Orthography.class) {
+                    final TierDescription td = getSession().getTier(elementLocation.tier());
+                    if(td.getDeclaredType() == Orthography.class) {
                         tabbedPane.setSelectedIndex(0);
                     }
                 }
@@ -1641,6 +1641,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         if (doc.getSingleRecordView()) {
             final EditorEvent<Void> e = new EditorEvent<>(recordChangedInSingleRecordMode, this, null);
             eventManager.queueEvent(e);
+            return;
         }
 
         // If the transcript editor is currently in focus, stop here

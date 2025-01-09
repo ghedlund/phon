@@ -24,31 +24,26 @@ import java.util.List;
 
 public class ProjectFilesTree extends JTree implements TreeWillExpandListener {
 
-    private enum SpecialFolder {
-        MEDIA("Media"),
-        SCRIPTS("Scripts");
-
-        private final String folderName;
-
-        SpecialFolder(String folderName) {
-            this.folderName = folderName;
+    /**
+     * Special folder for media folders.  Global and project media folders will be added
+     * as children of this node.
+     */
+    public static final ProjectTreeSpecialFolder MEDIA_FOLDER = new ProjectTreeSpecialFolder() {
+        @Override
+        public String getName() {
+            return "Media";
         }
 
-        public String getFolderName() {
-            return folderName;
+        @Override
+        public String getDescription() {
+            return "Media folders";
         }
 
+        @Override
         public ImageIcon getIcon() {
-            switch(this) {
-                case MEDIA:
-                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "audiotrack", IconSize.SMALL, Color.DARK_GRAY);
-                case SCRIPTS:
-                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "code", IconSize.SMALL, Color.DARK_GRAY);
-                default:
-                    return null;
-            }
+            return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "video_library", IconSize.MEDIUM, Color.DARK_GRAY);
         }
-    }
+    };
 
     private boolean showHiddenFiles = false;
 
@@ -68,10 +63,8 @@ public class ProjectFilesTree extends JTree implements TreeWillExpandListener {
         scanFolder(projectFolderPath, projectFolderPath, includeAllFiles, includeHidden, false, root);
 
         // add special folders
-        final DefaultMutableTreeNode mediaFolders = new DefaultMutableTreeNode(SpecialFolder.MEDIA);
+        final DefaultMutableTreeNode mediaFolders = new DefaultMutableTreeNode(MEDIA_FOLDER);
         root.add(mediaFolders);
-        final DefaultMutableTreeNode scriptsFolder = new DefaultMutableTreeNode(SpecialFolder.SCRIPTS);
-        root.add(scriptsFolder);
 
         return root;
     }
@@ -197,8 +190,9 @@ public class ProjectFilesTree extends JTree implements TreeWillExpandListener {
                     final Path fullPath = Path.of(project.getLocation(), path.toString());
                     retVal.setText(path.getFileName().toString());
                     retVal.setIcon(getIcon(fullPath));
-                } else if(node.getUserObject() instanceof SpecialFolder specialFolder) {
-                    retVal.setText(specialFolder.getFolderName());
+                } else if(node.getUserObject() instanceof ProjectTreeSpecialFolder specialFolder) {
+                    retVal.setText(specialFolder.getName());
+                    retVal.setToolTipText(specialFolder.getDescription());
                     retVal.setIcon(specialFolder.getIcon());
                 } else {
                     retVal.setIcon(IconManager.getInstance().getFontIcon(
@@ -221,7 +215,7 @@ public class ProjectFilesTree extends JTree implements TreeWillExpandListener {
                 if(ext.matches("wav|mp3|aiff|flac|ogg|mp4|mov|avi|wmv|mpg|mpeg|flv|mkv|webm")) {
                     return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "audiotrack", IconSize.MEDIUM, Color.DARK_GRAY);
                 } else {
-                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "insert_drive_file", IconSize.MEDIUM, Color.DARK_GRAY);
+                    return IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "draft", IconSize.MEDIUM, Color.DARK_GRAY);
                 }
             }
         }
