@@ -189,9 +189,76 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
      * @param singleRecordIndex the index of the new record for single record mode
      */
     public void setSingleRecordIndex(int singleRecordIndex) {
+        var oldIndex = this.singleRecordIndex;
         this.singleRecordIndex = singleRecordIndex;
-        if (singleRecordView) {
-            reload();
+        if (singleRecordView && oldIndex != singleRecordIndex) {
+            updateSingleRecord();
+        }
+    }
+
+    private void updateSingleRecord() {
+        final AttributeSet finalElementAttrs = getParagraphAttributes(getDefaultRootElement().getElementCount() - 1);
+        // remove content after any header information
+        int removeStart = 0;
+        final StartEnd headerRange = getRangeForSessionElementIndex(-1);
+        if(headerRange.valid())
+            removeStart = headerRange.end();
+        setBypassDocumentFilter(true);
+        try {
+            remove(removeStart, getLength() - removeStart);
+        } catch (BadLocationException e) {
+            LogUtil.severe(e);
+            return;
+        } finally {
+            setBypassDocumentFilter(false);
+        }
+        final int lastParaEleStart = getDefaultRootElement().getElement(getDefaultRootElement().getElementCount() - 1).getStartOffset();
+        setParagraphAttributes(lastParaEleStart, 0, finalElementAttrs, true);
+        if(this.singleRecordIndex < 0 || this.singleRecordIndex >= session.getRecordCount()) {
+            return;
+        }
+
+        // create batch update for single record mode
+        final TranscriptBatchBuilder batchBuilder = new TranscriptBatchBuilder(this);
+        final Record record = session.getRecord(this.singleRecordIndex);
+        final int recordElementIndex = session.getTranscript().getElementIndex(record);
+
+        int startElementIndex = recordElementIndex;
+        while(startElementIndex > 0) {
+            final Transcript.Element sessionElement = session.getTranscript().getElementAt(startElementIndex - 1);
+            if(sessionElement.isRecord()) {
+                break;
+            }
+            startElementIndex--;
+        }
+
+        int endElementIndex = recordElementIndex;
+        while(endElementIndex < session.getTranscript().getNumberOfElements() - 1) {
+            final Transcript.Element sessionElement = session.getTranscript().getElementAt(endElementIndex + 1);
+            if(sessionElement.isRecord()) {
+                break;
+            }
+            endElementIndex++;
+        }
+
+        for(int eleIdx = startElementIndex; eleIdx <= endElementIndex; eleIdx++) {
+            final Transcript.Element sessionElement = session.getTranscript().getElementAt(eleIdx);
+            if(sessionElement.isRecord()) {
+                final Record r = sessionElement.asRecord();
+                batchBuilder.appendRecord(getSession(), r, getTranscriber(), isChatTierNamesShown());
+            } else if(sessionElement.isComment()) {
+                final Comment c = sessionElement.asComment();
+                batchBuilder.appendComment(c, isChatTierNamesShown());
+            } else if(sessionElement.isGem()) {
+                final Gem g = sessionElement.asGem();
+                batchBuilder.appendGem(g, isChatTierNamesShown());
+            }
+        }
+
+        try {
+            processBatchUpdates(removeStart, batchBuilder.getBatch());
+        } catch (BadLocationException e) {
+            LogUtil.severe(e);
         }
     }
 
