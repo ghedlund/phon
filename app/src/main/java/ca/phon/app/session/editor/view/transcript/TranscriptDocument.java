@@ -373,8 +373,9 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
      * @param tierName
      */
     public int findParagraphElementIndexForTier(int elementIndex, String tierName) {
-        final int transcriptElementIndex = findParagraphElementIndexForSessionElementIndex(elementIndex);
-        for(int i = transcriptElementIndex; i < getDefaultRootElement().getElementCount(); i++) {
+        final int pIdx = findParagraphElementIndexForSessionElementIndex(elementIndex);
+        if(pIdx < 0) return pIdx;
+        for(int i = pIdx; i < getDefaultRootElement().getElementCount(); i++) {
             AttributeSet attrs = getParagraphAttributes(i);
             Record currentRecord = TranscriptStyleConstants.getRecord(attrs);
             if(elementIndex >= 0) {
@@ -460,6 +461,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
                 low = mid + 1;
             }
         }
+        // not found
         return -1;
     }
 

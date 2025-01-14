@@ -1634,8 +1634,24 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
     private void onRecordChanged(EditorEvent<EditorEventType.RecordChangedData> editorEvent) {
         TranscriptDocument doc = getTranscriptDocument();
 
+        final TranscriptElementLocation currentLocation = getTranscriptEditorCaret().getTranscriptLocation();
+        // commit any changes
+        getTranscriptEditorCaret().freeze();
+        commitChanges(getCaretPosition());
         // Update the single record index in the doc
         doc.setSingleRecordIndex(editorEvent.data().recordIndex());
+        getTranscriptEditorCaret().unfreeze();
+
+        // set dot to start of currently selected record tier
+        if(currentLocation.transcriptElementIndex() >= 0) {
+            final int transcriptElementIndex = editorEvent.data().elementIndex();
+            final TranscriptElementLocation newLocation = new TranscriptElementLocation(transcriptElementIndex,
+                    currentLocation.tier(), 0);
+            final int dot = sessionLocationToCharPos(newLocation);
+            if (dot >= 0) {
+                setCaretPosition(dot);
+            }
+        }
 
         // If it's currently in single record view fire the appropriate event
         if (doc.getSingleRecordView()) {
