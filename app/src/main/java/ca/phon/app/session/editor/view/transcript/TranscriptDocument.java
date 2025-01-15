@@ -1032,10 +1032,10 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
      * @return the transcript element index or -1 if not found
      */
     private int getTranscriptElementIndex(Element paraEle) {
-        if(paraEle.getElementCount() < 1) return -1;
+        if(paraEle.getElementCount() < 1) return -2;
         final Element innerEle = paraEle.getElement(0);
         final AttributeSet attrs = innerEle.getAttributes();
-        int paraEleIdx = -1;
+        int paraEleIdx = -2;
         if (attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD) != null) {
             paraEleIdx = getSession().getRecordElementIndex(TranscriptStyleConstants.getRecord(attrs));
         } else if (attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_COMMENT) != null) {
@@ -1602,9 +1602,14 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
                 propertyChangeSupport.firePropertyChange("transcriptElementRemoved", false, true);
 
                 // fix paragraph attributes
-                if(attrs != null) {
+                if (attrs != null) {
                     setParagraphAttributes(recordRange.start(), 0, attrs, true);
                     updateGlobalParagraphAttributes();
+                }
+
+                if(getSingleRecordView()) {
+                    this.singleRecordIndex = -1;
+                    setSingleRecordIndex(recordIndex);
                 }
             } catch (BadLocationException e) {
                 LogUtil.severe(e);
