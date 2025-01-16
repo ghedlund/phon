@@ -91,7 +91,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
     /**
      * The index of the record that gets displayed if the document is in single-record mode
      */
-    private int singleRecordIndex = 0;
+    private int singleRecordIndex = -1;
 
     /**
      * Whether the next removal from the document will bypass the document filter
@@ -2161,6 +2161,14 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
                 var attrs = doc.getCharacterElement(offset).getAttributes();
                 if (doc.containsNotEditableAttribute(attrs)) return;
                 if (attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_SYLLABIFICATION) != null) return;
+                try {
+                    String txt = doc.getText(offset, length);
+                    if(txt.contains("\n")) {
+                        return;
+                    }
+                } catch (BadLocationException e) {
+                    LogUtil.severe(e);
+                }
             }
 
             doc.setBypassDocumentFilter(false);

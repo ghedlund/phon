@@ -289,61 +289,61 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         PhonUIAction<Void> endAct = PhonUIAction.runnable(this::onPressedEnd);
         actionMap.put("pressedEnd", endAct);
 
-        KeyStroke delete = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
-        inputMap.put(delete, "deleteElement");
-        PhonUIAction<Void> deleteAct = PhonUIAction.runnable(() -> {
-            TranscriptDocument doc = getTranscriptDocument();
-
-            int currentPos = getCaretPosition();
-            var currentPosAttrs = getTranscriptDocument().getCharacterElement(currentPos).getAttributes();
-            String elementType = TranscriptStyleConstants.getElementType(currentPosAttrs);
-
-            boolean atEndOfTier = false;
-
-            switch (elementType) {
-                case "record" -> {
-                    currentPosAttrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD);
-                    Record currentRecord = TranscriptStyleConstants.getRecord(currentPosAttrs);
-                    if (currentRecord == null) return;
-                    int recordIndex = doc.getSession().getRecordPosition(currentRecord);
-                    Tier<?> tier = TranscriptStyleConstants.getTier(currentPosAttrs);
-                    if (tier == null) return;
-                    int endPos = doc.getTierEnd(recordIndex, tier.getName());
-
-                    atEndOfTier = currentPos + 1 == endPos;
-                }
-                case "comment" -> {
-                    Comment currentComment = TranscriptStyleConstants.getComment(currentPosAttrs);
-                    if (currentComment == null) return;
-                    int endPos = doc.getCommentEnd(currentComment);
-
-                    atEndOfTier = currentPos + 1 == endPos;
-                }
-                case "gem" -> {
-                    Gem currentGem = TranscriptStyleConstants.getGEM(currentPosAttrs);
-                    if (currentGem == null) return;
-                    int endPos = doc.getGemEnd(currentGem);
-
-                    atEndOfTier = currentPos + 1 == endPos;
-                }
-                case "generic" -> {
-                    Tier<?> currentGeneric = TranscriptStyleConstants.getGenericTier(currentPosAttrs);
-                    if (currentGeneric == null) return;
-                    int endPos = doc.getGenericEnd(currentGeneric);
-
-                    atEndOfTier = currentPos + 1 == endPos;
-                }
-            }
-
-            if (!atEndOfTier) {
-                try {
-                    getTranscriptDocument().remove(currentPos, 1);
-                } catch (BadLocationException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        actionMap.put("deleteElement", deleteAct);
+//        KeyStroke delete = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+//        inputMap.put(delete, "deleteElement");
+//        PhonUIAction<Void> deleteAct = PhonUIAction.runnable(() -> {
+//            TranscriptDocument doc = getTranscriptDocument();
+//
+//            int currentPos = getCaretPosition();
+//            var currentPosAttrs = getTranscriptDocument().getCharacterElement(currentPos).getAttributes();
+//            String elementType = TranscriptStyleConstants.getElementType(currentPosAttrs);
+//
+//            boolean atEndOfTier = false;
+//
+//            switch (elementType) {
+//                case "record" -> {
+//                    currentPosAttrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD);
+//                    Record currentRecord = TranscriptStyleConstants.getRecord(currentPosAttrs);
+//                    if (currentRecord == null) return;
+//                    int recordIndex = doc.getSession().getRecordPosition(currentRecord);
+//                    Tier<?> tier = TranscriptStyleConstants.getTier(currentPosAttrs);
+//                    if (tier == null) return;
+//                    int endPos = doc.getTierEnd(recordIndex, tier.getName());
+//
+//                    atEndOfTier = currentPos + 1 == endPos;
+//                }
+//                case "comment" -> {
+//                    Comment currentComment = TranscriptStyleConstants.getComment(currentPosAttrs);
+//                    if (currentComment == null) return;
+//                    int endPos = doc.getCommentEnd(currentComment);
+//
+//                    atEndOfTier = currentPos + 1 == endPos;
+//                }
+//                case "gem" -> {
+//                    Gem currentGem = TranscriptStyleConstants.getGEM(currentPosAttrs);
+//                    if (currentGem == null) return;
+//                    int endPos = doc.getGemEnd(currentGem);
+//
+//                    atEndOfTier = currentPos + 1 == endPos;
+//                }
+//                case "generic" -> {
+//                    Tier<?> currentGeneric = TranscriptStyleConstants.getGenericTier(currentPosAttrs);
+//                    if (currentGeneric == null) return;
+//                    int endPos = doc.getGenericEnd(currentGeneric);
+//
+//                    atEndOfTier = currentPos + 1 == endPos;
+//                }
+//            }
+//
+//            if (!atEndOfTier) {
+//                try {
+//                    getTranscriptDocument().remove(currentPos, 1);
+//                } catch (BadLocationException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        });
+//        actionMap.put("deleteElement", deleteAct);
 
         // show ipa character map
         KeyStroke ipaMap = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
@@ -817,6 +817,10 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         }
     }
 
+    private String getFirstVisibleTierName() {
+        return getSession().getTierView().stream().filter(TierViewItem::isVisible).findFirst().map(TierViewItem::getTierName).orElse(null);
+    }
+
     /**
      * Runs when a new record gets added
      *
@@ -828,23 +832,36 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         Record addedRecord = getSession().getRecord(data.recordIndex());
         int elementIndex = data.elementIndex();
         // Add it to the doc
-        getTranscriptDocument().addRecord(addedRecord, elementIndex);
+        if(isSingleRecordView()) {
+            getTranscriptDocument().setSingleRecordIndex(editorEvent.data().recordIndex());
+        } else {
+            getTranscriptDocument().addRecord(addedRecord, elementIndex);
+        }
 
-        // set the caret position to the start of the new record
-        SwingUtilities.invokeLater(() -> {
-            final int paragraphElementIndex = getTranscriptDocument().findParagraphElementIndexForSessionElementIndex(elementIndex);
-            if (paragraphElementIndex >= 0) {
-                final Element paragraphElement = getTranscriptDocument().getDefaultRootElement().getElement(paragraphElementIndex);
-                for (int i = 0; i < paragraphElement.getElementCount(); i++) {
-                    final Element elem = paragraphElement.getElement(i);
-                    final AttributeSet attrs = elem.getAttributes();
-                    if (!TranscriptStyleConstants.isNotEditable(attrs)) {
-                        setCaretPosition(elem.getStartOffset());
-                        break;
-                    }
-                }
+        final TranscriptElementLocation newCaretLoc = new TranscriptElementLocation(elementIndex,
+                getFirstVisibleTierName(), 0);
+        if(newCaretLoc.valid()) {
+            final int newDot = sessionLocationToCharPos(newCaretLoc);
+            if(newDot >= 0) {
+                setCaretPosition(newDot);
             }
-        });
+        }
+
+//        // set the caret position to the start of the new record
+//        SwingUtilities.invokeLater(() -> {
+//            final int paragraphElementIndex = getTranscriptDocument().findParagraphElementIndexForSessionElementIndex(elementIndex);
+//            if (paragraphElementIndex >= 0) {
+//                final Element paragraphElement = getTranscriptDocument().getDefaultRootElement().getElement(paragraphElementIndex);
+//                for (int i = 0; i < paragraphElement.getElementCount(); i++) {
+//                    final Element elem = paragraphElement.getElement(i);
+//                    final AttributeSet attrs = elem.getAttributes();
+//                    if (!TranscriptStyleConstants.isNotEditable(attrs)) {
+//                        setCaretPosition(elem.getStartOffset());
+//                        break;
+//                    }
+//                }
+//            }
+//        });
     }
 
     /**
