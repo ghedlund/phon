@@ -855,58 +855,65 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
     private void onRecordDeleted(EditorEvent<EditorEventType.RecordDeletedData> editorEvent) {
         TranscriptDocument doc = getTranscriptDocument();
 
-        int deletedRecordIndex = editorEvent.data().recordIndex();
+        int deletedTranscriptElementIndex = editorEvent.data().elementIndex();
 
-        int startCaretPos = getCaretPosition();
-        var elem = doc.getCharacterElement(startCaretPos);
-        var caretAttrs = elem.getAttributes();
-        Tier<?> caretTier = TranscriptStyleConstants.getTier(caretAttrs);
-        Record caretRecord = TranscriptStyleConstants.getRecord(caretAttrs);
-        int caretRecordIndex = caretRecord != null ? getSession().getRecordPosition(caretRecord) : -1;
-
-        boolean caretInDeletedRecord = caretRecord != null && caretRecord == editorEvent.data().record();
-
-        int caretOffset = doc.getOffsetInContent(startCaretPos);
+        var currentLocation = getTranscriptEditorCaret().getTranscriptLocation();
+        if(currentLocation.transcriptElementIndex() == -2) {
+            // we are inside deleted record
+            currentLocation = new TranscriptElementLocation(deletedTranscriptElementIndex, currentLocation.tier(), currentLocation.charPosition());
+        }
 
         // Delete the record from the doc
         var data = editorEvent.data();
         getTranscriptDocument().deleteRecord(data.elementIndex(), data.recordIndex(), data.record());
 
         // Caret in record / tier
-        if (caretTier != null) {
-            // Caret in deleted record
-            if (caretInDeletedRecord) {
-                boolean deletedRecordWasLast = deletedRecordIndex == getSession().getRecordCount();
-
-                int newCaretRecordIndex = deletedRecordWasLast ? deletedRecordIndex - 1 : deletedRecordIndex;
-
-                int newCaretTierStart = doc.getTierContentStart(newCaretRecordIndex, caretTier.getName());
-                int newCaretTierEnd = doc.getTierEnd(newCaretRecordIndex, caretTier.getName());
-
-                int newCaretPos = Math.min(newCaretTierStart + caretOffset, newCaretTierEnd - 1);
-                setCaretPosition(newCaretPos);
+        if(currentLocation.valid()) {
+            TranscriptElementLocation nextLoc = currentLocation;
+            if(deletedTranscriptElementIndex == currentLocation.transcriptElementIndex()) {
+                if(currentLocation.transcriptElementIndex() < getSession().getTranscript().getNumberOfElements()) {
+                    final Transcript.Element nextElem = getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
+                    if(nextElem.isRecord()) {
+                        // keep caret in same tier
+                        nextLoc = new TranscriptElementLocation(currentLocation.transcriptElementIndex(), currentLocation.tier(), 0);
+                    } else {
+                        // move caret to beginning of comment/gem
+                        nextLoc = new TranscriptElementLocation(currentLocation.transcriptElementIndex(), "", 0);
+                    }
+                } else {
+                    nextLoc = new TranscriptElementLocation(currentLocation.transcriptElementIndex() - 1, null, 0);
+                    if(nextLoc.transcriptElementIndex() < 0) {
+                        nextLoc = new TranscriptElementLocation(-2, null, 0);
+                    }
+                }
             }
-            // Caret in record not deleted
-            else {
-                int tierContentStart = doc.getTierContentStart(caretRecordIndex, caretTier.getName());
-                if (tierContentStart >= 0)
-                    setCaretPosition(tierContentStart + caretOffset);
+            if(nextLoc.valid()) {
+                final int newDot = sessionLocationToCharPos(nextLoc);
+                if(newDot >= 0) {
+                    setCaretPosition(newDot);
+                } else {
+                    int prevValidIdx = getPrevValidIndex(getCaretPosition() - 1, false);
+                    if(prevValidIdx >= 0) {
+                        setCaretPosition(prevValidIdx);
+                    } else {
+                        setCaretPosition(0);
+                    }
+                }
+            } else {
+                int prevValidIdx = getPrevValidIndex(getCaretPosition() - 1, false);
+                if(prevValidIdx >= 0) {
+                    setCaretPosition(prevValidIdx);
+                } else {
+                    setCaretPosition(0);
+                }
             }
-        }
-        // Caret not in record / tier
-        else {
-            String elementType = TranscriptStyleConstants.getElementType(caretAttrs);
-            int start = -1;
-            switch (elementType) {
-                case TranscriptStyleConstants.ELEMENT_TYPE_COMMENT ->
-                        start = doc.getCommentContentStart(TranscriptStyleConstants.getComment(caretAttrs));
-                case TranscriptStyleConstants.ATTR_KEY_GEM ->
-                        start = doc.getGemContentStart(TranscriptStyleConstants.getGEM(caretAttrs));
-                case TranscriptStyleConstants.ATTR_KEY_GENERIC_TIER ->
-                        start = doc.getGenericContentStart(TranscriptStyleConstants.getGenericTier(caretAttrs));
+        } else {
+            int prevValidIdx = getPrevValidIndex(getCaretPosition() - 1, false);
+            if(prevValidIdx >= 0) {
+                setCaretPosition(prevValidIdx);
+            } else {
+                setCaretPosition(0);
             }
-
-            setCaretPosition(start + caretOffset);
         }
     }
 
@@ -2228,7 +2235,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         String elementType = (String) attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_ELEMENT_TYPE);
 
         if (elementType == null) {
-            return new TranscriptElementLocation(-1, null, -1);
+            return new TranscriptElementLocation(-2, null, -1);
         }
 
         int transcriptElementIndex = -1;
@@ -2242,14 +2249,19 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                     return new TranscriptElementLocation(-1, null, -1);
                 }
                 int recordIndex = transcript.getRecordPosition(record);
-                if (recordIndex == -1) {
-                    return new TranscriptElementLocation(-1, null, -1);
-                }
-                transcriptElementIndex = transcript.getElementIndex(record);
+//                if (recordIndex == -1) {
+//                    return new TranscriptElementLocation(-1, null, -1);
+//                }
+                transcriptElementIndex = recordIndex == -1 ? -2 : transcript.getElementIndex(record);
                 Tier<?> tier = (Tier<?>) attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_TIER);
                 if (tier != null) {
                     label = tier.getName();
-                    posInTier = charPos - doc.getTierContentStart(recordIndex, tier.getName());
+                    int contentStart = doc.getTierContentStart(recordIndex, tier.getName());
+                    if(contentStart > 0) {
+                        posInTier = charPos - doc.getTierContentStart(recordIndex, tier.getName());
+                    } else {
+                        posInTier = 0;
+                    }
                 }
             }
             case TranscriptStyleConstants.ATTR_KEY_COMMENT -> {

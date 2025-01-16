@@ -25,6 +25,16 @@ import java.util.function.Function;
 public class TranscriptDocument extends DefaultStyledDocument implements IExtendable {
 
     /**
+     * Header tier transcript element index
+     */
+    public static int HEADER_TIER_TRANSCRIPT_ELEMENT_INDEX = -1;
+
+    /**
+     * Transcript element index not found
+     */
+    public static int TRANSCRIPT_ELEMENT_INDEX_NOT_FOUND = -2;
+
+    /**
      * A wrapper record for a start and end index
      * */
     public record StartEnd(int start, int end) {
@@ -400,7 +410,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
      *
      * @param elementIndex
      * @param tierName
-     * @return
+     * @return the last paragraph index for the given tier or -1 if not found
      */
     public int findLastParagraphElementIndexForTier(int elementIndex, String tierName) {
         final int firstParagraphIndex = findParagraphElementIndexForTier(elementIndex, tierName);
@@ -478,7 +488,8 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
         }
         Element ele = getDefaultRootElement().getElement(eleIdx);
         Element endEle = ele;
-        if(ele.getAttributes().getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD) != null || sessionElementIndex == -1) {
+        if(ele.getAttributes().getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD) != null
+                || sessionElementIndex == HEADER_TIER_TRANSCRIPT_ELEMENT_INDEX) {
             for(int i = eleIdx + 1; i < getDefaultRootElement().getElementCount(); i++) {
                 Element e = getDefaultRootElement().getElement(i);
                 if(getTranscriptElementIndex(e) == sessionElementIndex)
@@ -1031,21 +1042,31 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
      * Return transcript element index for given paragraph element
      *
      * @param paraEle the paragraph element
-     * @return the transcript element index or -1 if not found
+     * @return the transcript element index or -2 if not found (-1 is used
+     * for header/generic tiers)
      */
     private int getTranscriptElementIndex(Element paraEle) {
-        if(paraEle.getElementCount() < 1) return -2;
+        if(paraEle.getElementCount() < 1) return TRANSCRIPT_ELEMENT_INDEX_NOT_FOUND;
         final Element innerEle = paraEle.getElement(0);
         final AttributeSet attrs = innerEle.getAttributes();
-        int paraEleIdx = -2;
+        int paraEleIdx = TRANSCRIPT_ELEMENT_INDEX_NOT_FOUND;
         if (attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_RECORD) != null) {
             paraEleIdx = getSession().getRecordElementIndex(TranscriptStyleConstants.getRecord(attrs));
+            if(paraEleIdx == -1) {
+                paraEleIdx = TRANSCRIPT_ELEMENT_INDEX_NOT_FOUND;
+            }
         } else if (attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_COMMENT) != null) {
             paraEleIdx = getSession().getTranscript().getElementIndex(TranscriptStyleConstants.getComment(attrs));
+            if(paraEleIdx == -1) {
+                paraEleIdx = TRANSCRIPT_ELEMENT_INDEX_NOT_FOUND;
+            }
         } else if (attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_GEM) != null) {
             paraEleIdx = getSession().getTranscript().getElementIndex(TranscriptStyleConstants.getGEM(attrs));
+            if(paraEleIdx == -1) {
+                paraEleIdx = TRANSCRIPT_ELEMENT_INDEX_NOT_FOUND;
+            }
         } else if (attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_GENERIC_TIER) != null) {
-            paraEleIdx = -1;
+            paraEleIdx = HEADER_TIER_TRANSCRIPT_ELEMENT_INDEX;
         }
         return paraEleIdx;
     }
