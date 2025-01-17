@@ -812,7 +812,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         }
     }
 
-    private String getFirstVisibleTierName() {
+    public String getFirstVisibleTierName() {
         return getSession().getTierView().stream().filter(TierViewItem::isVisible).findFirst().map(TierViewItem::getTierName).orElse(null);
     }
 
@@ -828,6 +828,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         int elementIndex = data.elementIndex();
         // Add it to the doc
         if(isSingleRecordView()) {
+            getTranscriptDocument().setSingleRecordIndex(-1);
             getTranscriptDocument().setSingleRecordIndex(editorEvent.data().recordIndex());
         } else {
             getTranscriptDocument().addRecord(addedRecord, elementIndex);
@@ -841,22 +842,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                 setCaretPosition(newDot);
             }
         }
-
-//        // set the caret position to the start of the new record
-//        SwingUtilities.invokeLater(() -> {
-//            final int paragraphElementIndex = getTranscriptDocument().findParagraphElementIndexForSessionElementIndex(elementIndex);
-//            if (paragraphElementIndex >= 0) {
-//                final Element paragraphElement = getTranscriptDocument().getDefaultRootElement().getElement(paragraphElementIndex);
-//                for (int i = 0; i < paragraphElement.getElementCount(); i++) {
-//                    final Element elem = paragraphElement.getElement(i);
-//                    final AttributeSet attrs = elem.getAttributes();
-//                    if (!TranscriptStyleConstants.isNotEditable(attrs)) {
-//                        setCaretPosition(elem.getStartOffset());
-//                        break;
-//                    }
-//                }
-//            }
-//        });
     }
 
     /**

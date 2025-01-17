@@ -13,7 +13,6 @@ import ca.phon.app.session.editor.view.timeline.TimelineView;
 import ca.phon.app.session.editor.view.transcript.actions.*;
 import ca.phon.app.session.editor.view.transcript.extensions.*;
 import ca.phon.session.*;
-import ca.phon.session.check.ValidationEvent;
 import ca.phon.session.io.SessionOutputFactory;
 import ca.phon.session.position.TranscriptElementLocation;
 import ca.phon.ui.*;
@@ -93,7 +92,7 @@ public class TranscriptView extends EditorView {
         this.transcriptEditor.setMediaModel(editor.getMediaModel());
         this.transcriptEditor.addPropertyChangeListener(
             "currentRecordIndex", e -> {
-                if(!isSingleRecordActive()) {
+                if(!isSingleRecordView()) {
                     editor.setCurrentRecordIndex((Integer) e.getNewValue());
                 }
             }
@@ -930,12 +929,13 @@ public class TranscriptView extends EditorView {
      */
     private void setupRecordMenu(MenuBuilder menuBuilder) {
         TranscriptElementLocation transcriptLocation = getTranscriptEditor().getCurrentSessionLocation();
-        int currentTranscriptElementIndex = transcriptLocation == null ? -1 : transcriptLocation.transcriptElementIndex();
-        boolean inHeaders = currentTranscriptElementIndex < 0;
+        final int currentTranscriptElementIndex = transcriptLocation == null ?
+                (isSingleRecordView() ? getEditor().getSession().getRecordElementIndex(getEditor().getCurrentRecordIndex()) : -2)
+                : transcriptLocation.transcriptElementIndex();
+        boolean inHeaders = currentTranscriptElementIndex == -1;
 
         JMenuItem insertRecordBelowItem = new JMenuItem();
         PhonUIAction<Void> insertRecordBelowAct = PhonUIAction.runnable(() -> {
-            Transcript transcript = getEditor().getSession().getTranscript();
             final AddRecordEdit edit = new AddRecordEdit(getEditor(), SessionFactory.newFactory().createRecord(), currentTranscriptElementIndex+1);
             getEditor().getUndoSupport().postEdit(edit);
         });
@@ -1000,8 +1000,10 @@ public class TranscriptView extends EditorView {
      */
     private void setupCommentsMenu(MenuBuilder menuBuilder) {
         TranscriptElementLocation transcriptLocation = getTranscriptEditor().getCurrentSessionLocation();
-        int currentTranscriptElementIndex = transcriptLocation == null ? -1 : transcriptLocation.transcriptElementIndex();
-        boolean inHeaders = currentTranscriptElementIndex < 0;
+        final int currentTranscriptElementIndex = transcriptLocation == null ?
+                (isSingleRecordView() ? getEditor().getSession().getRecordElementIndex(getEditor().getCurrentRecordIndex()) : -2)
+                : transcriptLocation.transcriptElementIndex();
+        boolean inHeaders = currentTranscriptElementIndex == -1;
 
         JMenuItem insertCommentBelowItem = new JMenuItem();
         PhonUIAction<Void> insertCommentBelowAct = PhonUIAction.runnable(() -> {
@@ -1082,8 +1084,10 @@ public class TranscriptView extends EditorView {
      */
     private void setupGemsMenu(MenuBuilder menuBuilder) {
         TranscriptElementLocation transcriptLocation = getTranscriptEditor().getCurrentSessionLocation();
-        int currentTranscriptElementIndex = transcriptLocation == null ? -1 : transcriptLocation.transcriptElementIndex();
-        boolean inHeaders = currentTranscriptElementIndex < 0;
+        final int currentTranscriptElementIndex = transcriptLocation == null ?
+                (isSingleRecordView() ? getEditor().getSession().getRecordElementIndex(getEditor().getCurrentRecordIndex()) : -2)
+                : transcriptLocation.transcriptElementIndex();
+        boolean inHeaders = currentTranscriptElementIndex == -1;
 
         JMenuItem insertGemBelowItem = new JMenuItem();
         PhonUIAction<Void> insertGemBelowAct = PhonUIAction.runnable(() -> {
@@ -1230,7 +1234,7 @@ public class TranscriptView extends EditorView {
         transcriptEditor.loadSession();
     }
 
-    public boolean isSingleRecordActive() {
+    public boolean isSingleRecordView() {
         return transcriptEditor.isSingleRecordView();
     }
 

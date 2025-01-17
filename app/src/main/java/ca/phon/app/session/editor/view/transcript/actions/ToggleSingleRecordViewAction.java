@@ -11,7 +11,7 @@ public class ToggleSingleRecordViewAction extends TranscriptViewAction {
     public ToggleSingleRecordViewAction(SessionEditor editor, TranscriptView view) {
         super(editor, view);
 
-        final boolean singleRecordActivated = view.isSingleRecordActive();
+        final boolean singleRecordActivated = view.isSingleRecordView();
         putValue(NAME, "Show " + (singleRecordActivated ? "all records" : "single record"));
     }
 
