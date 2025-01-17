@@ -257,15 +257,20 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
 
         for(int eleIdx = startElementIndex; eleIdx <= endElementIndex; eleIdx++) {
             final Transcript.Element sessionElement = session.getTranscript().getElementAt(eleIdx);
+//            if(!batchBuilder.isEmpty()) {
+//                batchBuilder.appendEOL();
+//            }
             if(sessionElement.isRecord()) {
                 final Record r = sessionElement.asRecord();
                 batchBuilder.appendRecord(getSession(), r, getTranscriber(), isChatTierNamesShown());
             } else if(sessionElement.isComment()) {
                 final Comment c = sessionElement.asComment();
                 batchBuilder.appendComment(c, isChatTierNamesShown());
+                batchBuilder.appendEOL();
             } else if(sessionElement.isGem()) {
                 final Gem g = sessionElement.asGem();
                 batchBuilder.appendGem(g, isChatTierNamesShown());
+                batchBuilder.appendEOL();
             }
         }
 

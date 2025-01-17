@@ -20,7 +20,7 @@ public class TranscriptViewFactory implements ViewFactory {
 
     public final static int LABEL_COLUMN_WIDTH = 150;
 
-    public final static int LABEL_COLUMN_PADDING = 10;
+    public final static int LABEL_COLUMN_PADDING = 0;
 
     public final static int PAGE_WIDTH = (int)(8.5 * 96);
 
