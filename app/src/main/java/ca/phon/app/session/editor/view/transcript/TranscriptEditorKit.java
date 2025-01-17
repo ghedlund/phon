@@ -1,5 +1,7 @@
 package ca.phon.app.session.editor.view.transcript;
 
+import ca.phon.session.Session;
+
 import javax.swing.text.Document;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.ViewFactory;
@@ -11,13 +13,13 @@ public class TranscriptEditorKit extends StyledEditorKit {
     public static String CONTENT_TYPE = "phon/transcript";
     private final TranscriptViewFactory viewFactory;
 
-    public TranscriptEditorKit() {
-        viewFactory = new TranscriptViewFactory();
+    public TranscriptEditorKit(Session session) {
+        viewFactory = new TranscriptViewFactory(session);
     }
 
     @Override
     public Document createDefaultDocument() {
-        return new TranscriptDocument();
+        return new TranscriptDocument(viewFactory);
     }
 
     @Override

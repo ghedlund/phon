@@ -1,6 +1,7 @@
 package ca.phon.app.session.editor.view.transcript;
 
 import ca.phon.app.log.LogUtil;
+import ca.phon.session.Session;
 import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.util.PrefHelper;
 import org.apache.commons.logging.Log;
@@ -10,6 +11,7 @@ import javax.swing.border.Border;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 /**
  * The {@link ViewFactory} used by the {@link TranscriptEditor}
@@ -18,13 +20,17 @@ public class TranscriptViewFactory implements ViewFactory {
 
     public final static int LABEL_COLUMN_WIDTH = 150;
 
+    public final static int LABEL_COLUMN_PADDING = 10;
+
     public final static int PAGE_WIDTH = (int)(8.5 * 96);
+
+    public final static int MAX_LABEL_COLUMN_WIDTH = PAGE_WIDTH / 2;
 
     public final static float LINE_SPACING = 0.2f;
 
     public int pageWidth = PAGE_WIDTH;
 
-    private int labelColumnWidth = LABEL_COLUMN_WIDTH;
+    private int labelColumnWidth = -1;
 
     /**
      * The spacing between the lines of the document
@@ -67,7 +73,27 @@ public class TranscriptViewFactory implements ViewFactory {
         }
     }
 
-    public TranscriptViewFactory() {
+    private static int calculatePreferredLabelColumnWidth(Graphics g, Session session) {
+        int currentMax = 0;
+
+        for (var tier : session.getTierView()) {
+            if(!tier.isVisible()) continue;
+            var lblText = "    " + tier.getTierName() + ": ";
+            final float fontSizeDelta = PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f);
+            var tierLabelWidth = g.getFontMetrics(FontPreferences.getTierFont().deriveFont(
+                    FontPreferences.getTierFont().getSize() + fontSizeDelta
+            )).stringWidth(lblText);
+            currentMax = Math.max(currentMax, tierLabelWidth);
+        }
+
+        return currentMax + LABEL_COLUMN_PADDING;
+    }
+
+    private final Session session;
+
+    public TranscriptViewFactory(Session session) {
+        this.session = session;
+
     }
 
     public float getLineSpacing() {
@@ -76,7 +102,17 @@ public class TranscriptViewFactory implements ViewFactory {
 
     public int getLabelColumnWidth(Graphics g, TranscriptDocument transcriptDocument) {
         if(labelColumnWidth < 0) {
-            labelColumnWidth = calculatePreferredLabelColumnWidth(g, transcriptDocument);
+            labelColumnWidth = Math.min(calculatePreferredLabelColumnWidth(g, this.session), MAX_LABEL_COLUMN_WIDTH);
+        }
+        return labelColumnWidth;
+    }
+
+    public int getCurrentLabelColumnWidth() {
+        if(labelColumnWidth < 0) {
+            // create a buffered image, get the graphics and calculate preferred label column width
+            var bi = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+            var g = bi.createGraphics();
+            labelColumnWidth = calculatePreferredLabelColumnWidth(g, this.session);
         }
         return labelColumnWidth;
     }

@@ -86,7 +86,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
     /**
      * Whether the document is in single-record mode
      */
-    private boolean singleRecordView = true;
+    private boolean singleRecordView = false;
 
     /**
      * The index of the record that gets displayed if the document is in single-record mode
@@ -114,10 +114,12 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
     private boolean chatTierNamesShown = false;
     private TranscriptStyleContext transcriptStyleContext;
 
+    private TranscriptViewFactory viewFactory;
+
     /**
      * Constructor
      */
-    public TranscriptDocument() {
+    public TranscriptDocument(TranscriptViewFactory viewFactory) {
         super(new TranscriptStyleContext());
         this.transcriptStyleContext = (TranscriptStyleContext) getAttributeContext();
 
@@ -131,6 +133,8 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
 
         extensionSupport.initExtensions();
         loadRegisteredInsertionHooks();
+
+        this.viewFactory = viewFactory;
     }
 
     // region Getters and Setters
@@ -1238,8 +1242,8 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
         AttributeSet attrs = paraEle.getAttributes();
         SimpleAttributeSet newAttrs = new SimpleAttributeSet(attrs);
         StyleConstants.setLineSpacing(newAttrs, TranscriptViewFactory.LINE_SPACING);
-        StyleConstants.setLeftIndent(newAttrs, TranscriptViewFactory.LABEL_COLUMN_WIDTH);
-        StyleConstants.setFirstLineIndent(newAttrs, -TranscriptViewFactory.LABEL_COLUMN_WIDTH);
+        StyleConstants.setLeftIndent(newAttrs, viewFactory.getCurrentLabelColumnWidth());
+        StyleConstants.setFirstLineIndent(newAttrs, -viewFactory.getCurrentLabelColumnWidth());
         setParagraphAttributes(paraEle.getStartOffset(), 0, newAttrs, true);
     }
 
@@ -2043,7 +2047,12 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
                         ElementSpec nextEnd = chunk.remove(chunk.size() - 1);
                         nextEndStart = new EndStart(nextEnd, nextStart);
                     }
+                    int currentNumParagraphs = getDefaultRootElement().getElementCount();
                     processBatchUpdates(getLength(), chunk);
+                    for(int i = currentNumParagraphs; i < getDefaultRootElement().getElementCount(); i++) {
+                        Element paraEle = getDefaultRootElement().getElement(i);
+                        updateParagraphAttributes(paraEle);
+                    }
                 } catch (BadLocationException e) {
                     throw new RuntimeException(e);
                 }
