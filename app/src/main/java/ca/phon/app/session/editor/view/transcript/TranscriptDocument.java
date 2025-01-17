@@ -86,7 +86,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
     /**
      * Whether the document is in single-record mode
      */
-    private boolean singleRecordView = false;
+    private boolean singleRecordView = true;
 
     /**
      * The index of the record that gets displayed if the document is in single-record mode

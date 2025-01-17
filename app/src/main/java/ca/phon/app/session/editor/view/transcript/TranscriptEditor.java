@@ -120,10 +120,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      */
     private int currentRecordIndex = -1;
     /**
-     * Whether the transcript editor is currently in "single record view" mode
-     */
-    private boolean singleRecordView = false;
-    /**
      * A reference to the document element currently being hovered over
      */
     private Element hoverElem = null;
@@ -538,7 +534,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      * @return true if single record view, false otherwise
      */
     public boolean isSingleRecordView() {
-        return singleRecordView;
+        return getTranscriptDocument().getSingleRecordView();
     }
 
     /**
@@ -547,8 +543,8 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      * @param singleRecordView
      */
     public void setSingleRecordView(boolean singleRecordView) {
-        var wasSingleRecordView = this.singleRecordView;
-        this.singleRecordView = singleRecordView;
+        var wasSingleRecordView = isSingleRecordView();
+        getTranscriptDocument().setSingleRecordView(singleRecordView);
         if (wasSingleRecordView != singleRecordView)
             getTranscriptDocument().setSingleRecordView(singleRecordView);
         firePropertyChange("singleRecordView", wasSingleRecordView, singleRecordView);
