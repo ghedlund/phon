@@ -171,6 +171,27 @@ public class TranscriptEditorUIProps implements UIDefaultsHandler, IPluginExtens
 
     public final static Color DEFAULT_RECORD_BORDER_COLOR = UIManager.getColor("Button.background");
 
+
+    // region TranscriptScrollPaneGutter
+    public final static String SCROLL_PANE_GUTTER_BACKGROUND = "TranscriptScrollPaneGutter.background";
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_BACKGROUND = UIManager.getColor("control");
+
+    public final static String SCROLL_PANE_GUTTER_FOREGROUND = "TranscriptScrollPaneGutter.foreground";
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_FOREGROUND = UIManager.getColor("controlText");
+
+    public final static String SCROLL_PANE_GUTTER_FONT = "TranscriptScrollPaneGutter.font";
+    public final static Font DEFAULT_SCROLL_PANE_GUTTER_FONT = UIManager.getFont("Label.font");
+
+    public final static String SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND = "TranscriptScrollPaneGutter.currentRecordBackground";
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND = Color.decode("#f8f8f8");
+
+    public final static String SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND = "TranscriptScrollPaneGutter.currentTierBackground";
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND = Color.decode("#e0e0e0");
+
+    public final static String SCROLL_PANE_GUTTER_BORDER_COLOR = "TranscriptScrollPaneGutter.borderColor";
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_BORDER_COLOR = UIManager.getColor("controlShadow");
+    // endregion
+
     @Override
     public void setupDefaults(UIDefaults uiDefaults) {
         uiDefaults.put(BACKGROUND, DEFAULT_BACKGROUND);
@@ -230,6 +251,13 @@ public class TranscriptEditorUIProps implements UIDefaultsHandler, IPluginExtens
 
         uiDefaults.put(BLIND_TRANSCRIPTION_FOREGROUND, DEFAULT_BLIND_TRANSCRIPTION_FOREGROUND);
         uiDefaults.put(RECORD_BORDER_COLOR, DEFAULT_RECORD_BORDER_COLOR);
+
+        uiDefaults.put(SCROLL_PANE_GUTTER_BACKGROUND, DEFAULT_SCROLL_PANE_GUTTER_BACKGROUND);
+        uiDefaults.put(SCROLL_PANE_GUTTER_FOREGROUND, DEFAULT_SCROLL_PANE_GUTTER_FOREGROUND);
+        uiDefaults.put(SCROLL_PANE_GUTTER_FONT, DEFAULT_SCROLL_PANE_GUTTER_FONT);
+        uiDefaults.put(SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND, DEFAULT_SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND);
+        uiDefaults.put(SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND, DEFAULT_SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND);
+        uiDefaults.put(SCROLL_PANE_GUTTER_BORDER_COLOR, DEFAULT_SCROLL_PANE_GUTTER_BORDER_COLOR);
     }
 
     @Override

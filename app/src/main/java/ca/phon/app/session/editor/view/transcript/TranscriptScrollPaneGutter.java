@@ -182,8 +182,8 @@ public class TranscriptScrollPaneGutter extends JComponent {
             }
         });
 
-        setBorder(new MatteBorder(0, 0, 0, 1, UIManager.getColor("controlShadow")));
-        setBackground(UIManager.getColor("window"));
+        setBorder(new MatteBorder(0, 0, 0, 1, UIManager.getColor("TranscriptScrollPaneGutter.borderColor")));
+        setBackground(UIManager.getColor("TranscriptScrollPaneGutter.background"));
     }
 
     // region Icons
@@ -254,7 +254,7 @@ public class TranscriptScrollPaneGutter extends JComponent {
                             clipBounds.width,
                             endRect.getMaxY() - startRect.getY()
                     );
-                    g2.setColor(UIManager.getColor("control"));
+                    g2.setColor(UIManager.getColor("TranscriptScrollPaneGutter.currentRecordBackground"));
                     g2.fill(rect);
                 } catch (BadLocationException e) {
                     LogUtil.warning(e);
@@ -280,7 +280,7 @@ public class TranscriptScrollPaneGutter extends JComponent {
                         clipBounds.width,
                         paragraphRect.getHeight()
                 );
-                g2.setColor(UIManager.getColor("controlHighlight"));
+                g2.setColor(UIManager.getColor("TranscriptScrollPaneGutter.currentTierBackground"));
                 g2.fill(rect);
             } catch (BadLocationException e) {
                 LogUtil.warning(e);
