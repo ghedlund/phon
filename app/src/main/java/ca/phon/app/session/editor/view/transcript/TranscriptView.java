@@ -929,9 +929,10 @@ public class TranscriptView extends EditorView {
      */
     private void setupRecordMenu(MenuBuilder menuBuilder) {
         TranscriptElementLocation transcriptLocation = getTranscriptEditor().getCurrentSessionLocation();
-        final int currentTranscriptElementIndex = transcriptLocation == null ?
+        final int transcriptElementIndex = transcriptLocation == null ? -2 : transcriptLocation.transcriptElementIndex();
+        final int currentTranscriptElementIndex = transcriptElementIndex == -2 ?
                 (isSingleRecordView() ? getEditor().getSession().getRecordElementIndex(getEditor().getCurrentRecordIndex()) : -2)
-                : transcriptLocation.transcriptElementIndex();
+                : transcriptElementIndex;
         boolean inHeaders = currentTranscriptElementIndex == -1;
 
         JMenuItem insertRecordBelowItem = new JMenuItem();
@@ -1000,9 +1001,10 @@ public class TranscriptView extends EditorView {
      */
     private void setupCommentsMenu(MenuBuilder menuBuilder) {
         TranscriptElementLocation transcriptLocation = getTranscriptEditor().getCurrentSessionLocation();
-        final int currentTranscriptElementIndex = transcriptLocation == null ?
+        final int transcriptElementIndex = transcriptLocation == null ? -2 : transcriptLocation.transcriptElementIndex();
+        final int currentTranscriptElementIndex = transcriptElementIndex == -2 ?
                 (isSingleRecordView() ? getEditor().getSession().getRecordElementIndex(getEditor().getCurrentRecordIndex()) : -2)
-                : transcriptLocation.transcriptElementIndex();
+                : transcriptElementIndex;
         boolean inHeaders = currentTranscriptElementIndex == -1;
 
         JMenuItem insertCommentBelowItem = new JMenuItem();
@@ -1084,9 +1086,10 @@ public class TranscriptView extends EditorView {
      */
     private void setupGemsMenu(MenuBuilder menuBuilder) {
         TranscriptElementLocation transcriptLocation = getTranscriptEditor().getCurrentSessionLocation();
-        final int currentTranscriptElementIndex = transcriptLocation == null ?
+        final int transcriptElementIndex = transcriptLocation == null ? -2 : transcriptLocation.transcriptElementIndex();
+        final int currentTranscriptElementIndex = transcriptElementIndex == -2 ?
                 (isSingleRecordView() ? getEditor().getSession().getRecordElementIndex(getEditor().getCurrentRecordIndex()) : -2)
-                : transcriptLocation.transcriptElementIndex();
+                : transcriptElementIndex;
         boolean inHeaders = currentTranscriptElementIndex == -1;
 
         JMenuItem insertGemBelowItem = new JMenuItem();
