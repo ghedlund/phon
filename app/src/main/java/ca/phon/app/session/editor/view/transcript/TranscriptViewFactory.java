@@ -20,7 +20,7 @@ public class TranscriptViewFactory implements ViewFactory {
 
     public final static int LABEL_COLUMN_WIDTH = 150;
 
-    public final static int LABEL_COLUMN_PADDING = 0;
+    public final static int LABEL_COLUMN_PADDING = 5;
 
     public final static int PAGE_WIDTH = (int)(8.5 * 96);
 
@@ -57,7 +57,7 @@ public class TranscriptViewFactory implements ViewFactory {
             if (isLabel) {
                 var tier = TranscriptStyleConstants.getTier(attrs);
                 if(tier != null) {
-                    var lblText = "    " + tier.getName() + ": ";
+                    var lblText = tier.getName() + ": ";
                     var tierLabelWidth = g.getFontMetrics(FontPreferences.getTierFont()).stringWidth(lblText);
                     return Math.max(currentMax, tierLabelWidth);
                 }
@@ -78,7 +78,7 @@ public class TranscriptViewFactory implements ViewFactory {
 
         for (var tier : session.getTierView()) {
             if(!tier.isVisible()) continue;
-            var lblText = "    " + tier.getTierName() + ": ";
+            var lblText = tier.getTierName() + ": ";
             final float fontSizeDelta = PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f);
             var tierLabelWidth = g.getFontMetrics(FontPreferences.getTierFont().deriveFont(
                     FontPreferences.getTierFont().getSize() + fontSizeDelta
