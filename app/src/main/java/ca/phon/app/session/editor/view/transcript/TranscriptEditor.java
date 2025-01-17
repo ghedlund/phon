@@ -195,11 +195,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
         getTranscriptDocument().addDocumentPropertyChangeListener("populate", (e) -> {
             if (e.getNewValue() instanceof Boolean b && !b) {
-                // set caret position to first editable position in document
-                int caretPos = getNextValidIndex(0, false);
-                if(caretPos >= 0) {
-                    setCaretPosition(caretPos);
-                }
                 // update error highlights
                 updateErrorHighlights();
             }
@@ -212,7 +207,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                System.out.println("Focus lost");
                 saveCurrentLine();
             }
         });
