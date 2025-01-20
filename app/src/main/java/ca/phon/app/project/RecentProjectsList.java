@@ -68,6 +68,7 @@ public class RecentProjectsList extends JPanel {
 			}
 			
 		});
+		clearLabel.setIcon(IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "history", IconSize.SMALL, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP)));
 		actionPanel.add(clearLabel);
 		
 		add(actionPanel, BorderLayout.NORTH);
