@@ -137,6 +137,18 @@ public class RecentFiles implements Iterable<File> {
 		fileHistory.clear();
 		saveHistory();
 	}
+
+	public void removeFromHistory(File f) {
+		Iterator<File> itr = fileHistory.iterator();
+		while(itr.hasNext()) {
+			File tf = itr.next();
+			if(tf.equals(f)) {
+				itr.remove();
+				break;
+			}
+		}
+		saveHistory();
+	}
 	
 	public int size() {
 		return this.fileHistory.size();

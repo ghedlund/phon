@@ -136,12 +136,27 @@ public class RecentProjectsList extends JPanel {
 		showAction.putValue(Action.SHORT_DESCRIPTION, "Show project in " + fsName);
 		retVal.addAction(showAction);
 
+		PhonUIAction<File> removeFrommHistoryAct = PhonUIAction.eventConsumer(this::removeFromHistory, projectFolder);
+		removeFrommHistoryAct.putValue(Action.NAME, "Remove from history");
+		removeFrommHistoryAct.putValue(Action.SHORT_DESCRIPTION, "Remove project from history");
+		final ImageIcon removeIcon = IconManager.getInstance().getFontIcon(
+				IconManager.GoogleMaterialDesignIconsFontName, "remove", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+		removeFrommHistoryAct.putValue(Action.SMALL_ICON, removeIcon);
+		removeFrommHistoryAct.putValue(Action.LARGE_ICON_KEY, removeIcon);
+		retVal.addAction(removeFrommHistoryAct);
+
 		final ImageIcon folderIcon = IconManager.getInstance().getFontIcon(
 				IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
 		retVal.getTopLabel().setIcon(folderIcon);
 		retVal.setDefaultAction(openAction);
 		
 		return retVal;
+	}
+
+	private void removeFromHistory(PhonActionEvent<File> pae) {
+		final RecentProjects history = new RecentProjects();
+		history.removeFromHistory(pae.getData());
+		updateProjectList();
 	}
 	
 	public void onShowProject(PhonActionEvent<LocalProjectButton> pae) {
