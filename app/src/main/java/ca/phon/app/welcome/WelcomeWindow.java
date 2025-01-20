@@ -57,6 +57,8 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 	private final static String HEADER_TITLE = "Welcome to Phon " + VersionInfo.getInstance().getVersionNoBuild();
 	private final static String HEADER_MESSAGE = "";
 
+	private JXMultiSplitPane splitPane;
+
 	// action panel
 	private TitledPanel actionsContainer;
 	private JPanel actionsPanel;
@@ -102,7 +104,7 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 		mediaPrefsButton = createMediaButton();
 
 		actionsPanel.setLayout(new VerticalLayout());
-		actionsPanel.setPreferredSize(new Dimension(250, 0));
+//		actionsPanel.setPreferredSize(new Dimension(250, 0));
 		actionsPanel.add(newProjectButton);
 		actionsPanel.add(browseProjectButton);
 		actionsPanel.add(openPrefsButton);
@@ -120,33 +122,12 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 		}
 
 		actionsContainer = new TitledPanel("Actions", actionsPanel);
-		add(actionsContainer, BorderLayout.WEST);
+//		add(actionsContainer, BorderLayout.WEST);
 		
-		if(OSInfo.isMacOs()) {
-			final ImageIcon actionsIcn = IconManager.getInstance().getSystemStockIcon(MacOSStockIcon.ToolbarUtilitiesFolderIcon, IconSize.SMALL);
-			actionsContainer.setLeftDecoration(new JLabel(actionsIcn));
-		}
-
 		workspaceProjectsPanel = new WorkspaceProjectsPanel();
-		final JXCollapsiblePane cpane = new JXCollapsiblePane(JXCollapsiblePane.Direction.UP);
-		cpane.setLayout(new BorderLayout());
+		final JPanel cpane = new JPanel(new BorderLayout());
 		cpane.add(workspaceProjectsPanel, BorderLayout.CENTER);
-		cpane.setCollapsed(PrefHelper.getBoolean(WORKSPACE_PROJECTS_COLLAPSED, DEFAULT_COLLAPSE_WORKSPACE_PROJECTS));
-		cpane.addPropertyChangeListener("collapsed", (e) -> {
-			updateWorkspaceDecoration(cpane);
-			PrefHelper.getUserPreferences().putBoolean(WORKSPACE_PROJECTS_COLLAPSED, cpane.isCollapsed());
-		});
 		workspaceContainer = new TitledPanel("Workspace", cpane);
-		workspaceProjectsPanel.setPreferredSize(new Dimension(0, 310));
-		workspaceContainer.getTitleLabel().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		workspaceContainer.getTitleLabel().setToolTipText("Click to collapse/show workspace projects");
-		workspaceContainer.getTitleLabel().addMouseListener(new MouseInputAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				cpane.setCollapsed(!cpane.isCollapsed());
-			}
-		});
-		updateWorkspaceDecoration(cpane);
 
 		recentProjectsPanel = new JPanel();
 		recentProjectsPanel.setLayout(new BorderLayout());
@@ -154,11 +135,6 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 		final JScrollPane recentProjectsScroller = new JScrollPane(recentProjectsList);
 		recentProjectsPanel.add(recentProjectsScroller, BorderLayout.CENTER);
 		recentProjectsContainer = new TitledPanel("Recent Projects", recentProjectsPanel);
-		
-		if(OSInfo.isMacOs()) {
-			final ImageIcon recentsIcn = IconManager.getInstance().getSystemStockIcon(MacOSStockIcon.ToolbarSitesFolderIcon, IconSize.SMALL);
-			recentProjectsContainer.setLeftDecoration(new JLabel(recentsIcn));
-		}
 
 		PrefHelper.getUserPreferences().addPreferenceChangeListener( (p) -> {
 			if(p.getKey().equals(RecentProjects.PROJECT_HISTORY_PROP)) {
@@ -166,11 +142,18 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 			}
 		});
 
-		JPanel rightPanel = new JPanel(new BorderLayout());
-		rightPanel.add(workspaceContainer, BorderLayout.NORTH);
-		rightPanel.add(recentProjectsContainer, BorderLayout.CENTER);
+		String layoutDef = "(ROW (LEAF name=left weight=0.2) (COLUMN weight=0.8 (LEAF name=top weight=0.5) (LEAF name=bottom weight=0.5)))";
+		MultiSplitLayout.Node modelRoot = MultiSplitLayout.parseModel(layoutDef);
 
-		add(rightPanel, BorderLayout.CENTER);
+		// Create the JXMultiSplitPane
+		splitPane = new JXMultiSplitPane();
+		splitPane.getMultiSplitLayout().setModel(modelRoot);
+
+		splitPane.add(actionsContainer, "left");
+		splitPane.add(workspaceContainer, "top");
+		splitPane.add(recentProjectsContainer, "bottom");
+		splitPane.setDividerSize(2);
+		add(splitPane, BorderLayout.CENTER);
 
 		addWindowFocusListener(new WindowAdapter() {
 			@Override
@@ -180,37 +163,11 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 		});
 	}
 
-	private void updateWorkspaceDecoration(JXCollapsiblePane cpane) {
-		Icon icn =
-				(cpane.isCollapsed() ? UIManager.getIcon("Tree.collapsedIcon") : UIManager.getIcon("Tree.expandedIcon"));
-
-		if(OSInfo.isMacOs()) {
-			final ImageIcon workspaceIcn = IconManager.getInstance().getSystemStockIcon(MacOSStockIcon.ToolbarDocumentsFolderIcon, IconSize.SMALL);
-			icn = IconManager.getInstance().createIconStrip(new Icon[]{workspaceIcn, icn});
-		}
-
-		workspaceContainer.setLeftDecoration(new JLabel(icn));
-	}
-
 	private MultiActionButton createNewButton() {
 		MultiActionButton retVal = new MultiActionButton();
-
-		final String folderIconName = "actions/folder_new";
-		final StockIcon stockIcon =
-				(NativeUtilities.isMacOs() ? MacOSStockIcon.GenericFolderIcon : WindowsStockIcon.FOLDER);
-		final ImageIcon folderIcon =
-				IconManager.getInstance().getSystemStockIcon(stockIcon, folderIconName, IconSize.MEDIUM);
-		final ImageIcon addIcon =
-				IconManager.getInstance().getIcon("actions/list-add", IconSize.XSMALL);
-
-		final BufferedImage newIcnImg =
-				new BufferedImage(IconSize.MEDIUM.getHeight(), IconSize.MEDIUM.getHeight(),
-						BufferedImage.TYPE_INT_ARGB);
-		final Graphics g = newIcnImg.createGraphics();
-		folderIcon.paintIcon(null, g, 0, 0);
-		g.drawImage(addIcon.getImage(), IconSize.MEDIUM.getWidth() - IconSize.XSMALL.getWidth(),
-				IconSize.MEDIUM.getHeight() - IconSize.XSMALL.getHeight(), this);
-		final ImageIcon newIcn = new ImageIcon(newIcnImg);
+		final ImageIcon newIcn =
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "create_new_folder",
+						IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 
 		String s1 = "Create Project";
 		String s2 = "Create a new project";
@@ -238,29 +195,22 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 
 	private MultiActionButton createBrowseButton() {
 		MultiActionButton retVal = new MultiActionButton();
-
-		final String defaultFolderIconName = "actions/document-open";
-		final StockIcon stockIcon =
-				(NativeUtilities.isMacOs() ? MacOSStockIcon.OpenFolderIcon :
-					NativeUtilities.isWindows() ? WindowsStockIcon.FOLDEROPEN : null);
-
 		final ImageIcon browseIcn =
-				IconManager.getInstance().getSystemStockIcon(stockIcon, defaultFolderIconName, IconSize.SMALL);
-		final ImageIcon browseIcnL =
-				IconManager.getInstance().getSystemStockIcon(stockIcon, defaultFolderIconName, IconSize.MEDIUM);
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder_open",
+						IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 
 		String s1 = "Browse for Project";
 		String s2 = "Browse for project folder on disk";
 
 		retVal.getTopLabel().setText(WorkspaceTextStyler.toHeaderText(s1));
-		retVal.getTopLabel().setIcon(browseIcnL);
+		retVal.getTopLabel().setIcon(browseIcn);
 		retVal.getTopLabel().setFont(FontPreferences.getTitleFont());
 		retVal.getTopLabel().setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 		retVal.getBottomLabel().setText(WorkspaceTextStyler.toDescText(s2));
 
 		final OpenProjectCommand browseAct = new OpenProjectCommand();
 		browseAct.putValue(Action.SMALL_ICON, browseIcn);
-		browseAct.putValue(PhonUIAction.LARGE_ICON_KEY, browseIcnL);
+		browseAct.putValue(PhonUIAction.LARGE_ICON_KEY, browseIcn);
 		browseAct.putValue(PhonUIAction.NAME, "Browse...");
 		browseAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Browse for project folder on disk...");
 		retVal.setOpaque(false);
@@ -278,19 +228,15 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 
 	private MultiActionButton createPrefsButton() {
 		MultiActionButton retVal = new MultiActionButton();
-
-		final StockIcon prefIcon =
-				OSInfo.isMacOs() ? MacOSStockIcon.ToolbarCustomizeIcon
-						: OSInfo.isWindows() ?  WindowsStockIcon.APPLICATION : null;
-		final String defIcn = "categories/preferences";
-		ImageIcon prefsIcn = IconManager.getInstance().getSystemStockIcon(prefIcon, defIcn, IconSize.SMALL);
-		ImageIcon prefsIcnL = IconManager.getInstance().getSystemStockIcon(prefIcon, defIcn, IconSize.MEDIUM);
+		final ImageIcon prefsIcn =
+				IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "settings",
+						IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 
 		String s1 = "Edit Preferences";
 		String s2 = "Modify application settings";
 
 		retVal.setTopLabelText(WorkspaceTextStyler.toHeaderText(s1));
-		retVal.getTopLabel().setIcon(prefsIcnL);
+		retVal.getTopLabel().setIcon(prefsIcn);
 		retVal.getTopLabel().setFont(FontPreferences.getTitleFont());
 		retVal.getTopLabel().setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
 		retVal.setBottomLabelText(WorkspaceTextStyler.toDescText(s2));
@@ -299,7 +245,7 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 		prefsAct.putValue(PhonUIAction.NAME, "Open preferences...");
 		prefsAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Modify application settings...");
 		prefsAct.putValue(PhonUIAction.SMALL_ICON, prefsIcn);
-		prefsAct.putValue(PhonUIAction.LARGE_ICON_KEY, prefsIcnL);
+		prefsAct.putValue(PhonUIAction.LARGE_ICON_KEY, prefsIcn);
 
 		BtnBgPainter bgPainter = new BtnBgPainter();
 		retVal.setBackgroundPainter(bgPainter);
@@ -313,24 +259,8 @@ public class WelcomeWindow extends CommonModuleFrame implements IExtendable {
 
 	private MultiActionButton createMediaButton() {
 		MultiActionButton retVal = new MultiActionButton();
-
-		final String folderIconName = "places/folder-video";
-		final StockIcon stockIcon =
-				(NativeUtilities.isMacOs() ? MacOSStockIcon.VoicesFolderIcon
-						: NativeUtilities.isWindows() ? WindowsStockIcon.VIDEOFILES : null);
-		final ImageIcon folderIcon =
-				IconManager.getInstance().getSystemStockIcon(stockIcon, folderIconName, IconSize.MEDIUM);
-		final ImageIcon addIcon =
-				IconManager.getInstance().getIcon("actions/list-add", IconSize.XSMALL);
-
-		final BufferedImage newIcnImg =
-				new BufferedImage(IconSize.MEDIUM.getHeight(), IconSize.MEDIUM.getHeight(),
-						BufferedImage.TYPE_INT_ARGB);
-		final Graphics g = newIcnImg.createGraphics();
-		folderIcon.paintIcon(null, g, 0, 0);
-		g.drawImage(addIcon.getImage(), IconSize.MEDIUM.getWidth() - IconSize.XSMALL.getWidth(),
-				IconSize.MEDIUM.getHeight() - IconSize.XSMALL.getHeight(), this);
-		final ImageIcon newIcn = new ImageIcon(newIcnImg);
+		final ImageIcon newIcn = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName,
+				"video_library", IconSize.MEDIUM, UIManager.getColor("Button.foreground"));
 
 		String s1 = "Select Media Folders";
 		String s2 = "Set up a list of folders where media can be found";
