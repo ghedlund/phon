@@ -20,6 +20,7 @@ import ca.phon.app.log.LogUtil;
 import ca.phon.app.modules.EntryPointArgs;
 import ca.phon.app.welcome.LocalProjectButton;
 import ca.phon.plugin.PluginEntryPointRunner;
+import ca.phon.ui.FlatButtonUIProps;
 import ca.phon.ui.PhonGuiConstants;
 import ca.phon.ui.action.*;
 import ca.phon.util.OSInfo;
@@ -110,54 +111,34 @@ public class RecentProjectsList extends JPanel {
 		LocalProjectButton retVal = new LocalProjectButton(projectFolder);
 		
 		PhonUIAction<LocalProjectButton> openAction = PhonUIAction.eventConsumer(this::onOpenProject, retVal);
-		
-		final String defaultIconName = "actions/document-open";
-		ImageIcon openIcn = (projectFolder.exists() ? IconManager.getInstance().getSystemIconForPath(projectFolder.getAbsolutePath(), defaultIconName, IconSize.SMALL)
-				: IconManager.getInstance().getIcon("blank", IconSize.SMALL));
-		ImageIcon openIcnL = (projectFolder.exists() ? IconManager.getInstance().getSystemIconForPath(projectFolder.getAbsolutePath(), defaultIconName, IconSize.MEDIUM)
-				: IconManager.getInstance().getIcon("blank", IconSize.SMALL));
+
+		ImageIcon icon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder_open", IconSize.SMALL, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+		ImageIcon iconL = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder_open", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
 		openAction.putValue(Action.NAME, "Open project");
 		openAction.putValue(Action.SHORT_DESCRIPTION, "Open: " + projectFolder.getAbsolutePath());
-		openAction.putValue(Action.SMALL_ICON, openIcn);
-		openAction.putValue(Action.LARGE_ICON_KEY, openIcnL);
-		
-		String fsIconName = "apps/system-file-manager";
+		openAction.putValue(Action.SMALL_ICON, icon);
+		openAction.putValue(Action.LARGE_ICON_KEY, iconL);
+
+		ImageIcon fsIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "open_in_browser", IconSize.SMALL, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+		ImageIcon fsIconL = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "open_in_browser", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+
 		String fsName = "file system viewer";
-		
-		ImageIcon fsIcon = IconManager.getInstance().getIcon(fsIconName, IconSize.SMALL);
-		ImageIcon fsIconL = IconManager.getInstance().getIcon(fsIconName, IconSize.MEDIUM);
-		
 		if(OSInfo.isWindows()) {
 			fsName = "File Explorer";
-			
-			final String explorerPath = "C:\\Windows\\explorer.exe";
-			ImageIcon explorerIcon = IconManager.getInstance().getSystemIconForPath(explorerPath, IconSize.SMALL);
-			ImageIcon explorerIconL = IconManager.getInstance().getSystemIconForPath(explorerPath, IconSize.MEDIUM);
-			
-			if(explorerIcon != null)
-				fsIcon = explorerIcon;
-			if(explorerIconL != null)
-				fsIconL = explorerIconL;
 		} else if(OSInfo.isMacOs()) {
 			fsName = "Finder";
-			
-			ImageIcon finderIcon = IconManager.getInstance().getSystemStockIcon(MacOSStockIcon.FinderIcon, IconSize.SMALL);
-			ImageIcon finderIconL = IconManager.getInstance().getSystemStockIcon(MacOSStockIcon.FinderIcon, IconSize.MEDIUM);
-			
-			if(finderIcon != null)
-				fsIcon = finderIcon;
-			if(finderIconL != null)
-				fsIconL = finderIconL;
 		}
-		
+
 		PhonUIAction<LocalProjectButton> showAction = PhonUIAction.eventConsumer(this::onShowProject, retVal);
 		showAction.putValue(Action.NAME, "Show project");
 		showAction.putValue(Action.SMALL_ICON, fsIcon);
 		showAction.putValue(Action.LARGE_ICON_KEY, fsIconL);
 		showAction.putValue(Action.SHORT_DESCRIPTION, "Show project in " + fsName);
 		retVal.addAction(showAction);
-		
-		retVal.getTopLabel().setIcon(openIcnL);
+
+		final ImageIcon folderIcon = IconManager.getInstance().getFontIcon(
+				IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+		retVal.getTopLabel().setIcon(folderIcon);
 		retVal.setDefaultAction(openAction);
 		
 		return retVal;

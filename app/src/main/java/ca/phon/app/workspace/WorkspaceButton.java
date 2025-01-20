@@ -32,12 +32,9 @@ public class WorkspaceButton extends MultiActionButton {
 		selectHistoryAct.putValue(Action.NAME, "Select workspace");
 		selectHistoryAct.putValue(Action.SHORT_DESCRIPTION, "Change workspace folder...");
 
-		ImageIcon workspaceIcnL =
-				(Workspace.userWorkspaceFolder().exists()
-						? (IconManager.getInstance().getSystemIconForPath(
-							Workspace.userWorkspaceFolder().getAbsolutePath(), "places/folder-workspace", IconSize.MEDIUM))
-						: IconManager.getInstance().getSystemStockIcon(
-						(OSInfo.isMacOs() ? MacOSStockIcon.GenericFolderIcon : WindowsStockIcon.WARNING), IconSize.MEDIUM));
+		ImageIcon workspaceIcnL = IconManager.getInstance().getFontIcon(
+				IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.MEDIUM, UIManager.getColor("Button.foreground")
+		);
 		DropDownIcon icn = new DropDownIcon(workspaceIcnL, 0, SwingConstants.BOTTOM);
 
 		setTopLabelText(WorkspaceTextStyler.toHeaderText("Workspace Folder"));
@@ -80,17 +77,7 @@ public class WorkspaceButton extends MultiActionButton {
 			}
 		}
 
-		ImageIcon browseIcn =
-				IconManager.getInstance().getIcon("actions/document-open", IconSize.SMALL);
-		if(OSInfo.isMacOs()) {
-			ImageIcon finderIcon =
-					IconManager.getInstance().getSystemStockIcon(MacOSStockIcon.OpenFolderIcon, IconSize.SMALL);
-			if(finderIcon != null) browseIcn = finderIcon;
-		} else if(OSInfo.isWindows()) {
-			ImageIcon explorerIcon =
-					IconManager.getInstance().getSystemStockIcon(WindowsStockIcon.FOLDEROPEN, IconSize.SMALL);
-			if(explorerIcon != null) browseIcn = explorerIcon;
-		}
+		ImageIcon browseIcn = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder_open", IconSize.SMALL, UIManager.getColor("Button.foreground"));
 
 		builder.addSeparator(".", "clear");
 
@@ -173,39 +160,19 @@ public class WorkspaceButton extends MultiActionButton {
 	}
 
 	private Action createShowWorkspaceAction() {
+		ImageIcon fsIcon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "open_in_browser", IconSize.SMALL, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+		ImageIcon fsIconL = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "open_in_browser", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
 
-		String fsIconName = "apps/system-file-manager";
 		String fsName = "file system viewer";
-
-		ImageIcon fsIcon = IconManager.getInstance().getIcon(fsIconName, IconSize.SMALL);
-		ImageIcon fsIconL = IconManager.getInstance().getIcon(fsIconName, IconSize.MEDIUM);
-
 		if(OSInfo.isWindows()) {
 			fsName = "File Explorer";
-
-			final String explorerPath = "C:\\Windows\\explorer.exe";
-			ImageIcon explorerIcon = IconManager.getInstance().getSystemIconForPath(explorerPath, IconSize.SMALL);
-			ImageIcon explorerIconL = IconManager.getInstance().getSystemIconForPath(explorerPath, IconSize.MEDIUM);
-
-			if(explorerIcon != null)
-				fsIcon = explorerIcon;
-			if(explorerIconL != null)
-				fsIconL = explorerIconL;
 		} else if(OSInfo.isMacOs()) {
 			fsName = "Finder";
-
-			ImageIcon finderIcon = IconManager.getInstance().getSystemStockIcon(MacOSStockIcon.FinderIcon, IconSize.SMALL);
-			ImageIcon finderIconL = IconManager.getInstance().getSystemStockIcon(MacOSStockIcon.FinderIcon, IconSize.MEDIUM);
-
-			if(finderIcon != null)
-				fsIcon = finderIcon;
-			if(finderIconL != null)
-				fsIconL = finderIconL;
 		}
 
 		final PhonUIAction<Void> act = PhonUIAction.runnable(this::onShowWorkspace);
-		act.putValue(PhonUIAction.NAME, "Show workspace");
-		act.putValue(PhonUIAction.SHORT_DESCRIPTION, "Show workspace folder");
+		act.putValue(PhonUIAction.NAME, "Show workspace in " + fsName);
+		act.putValue(PhonUIAction.SHORT_DESCRIPTION, "Show workspace folder in " + fsName);
 		act.putValue(PhonUIAction.SMALL_ICON, fsIcon);
 		act.putValue(PhonUIAction.LARGE_ICON_KEY, fsIconL);
 

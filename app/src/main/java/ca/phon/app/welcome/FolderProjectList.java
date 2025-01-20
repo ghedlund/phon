@@ -163,8 +163,8 @@ public class FolderProjectList extends JPanel {
 	private LocalProjectButton getProjectButton(File f) {
 		LocalProjectButton retVal = new LocalProjectButton(f);
 		
-		ImageIcon icon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.SMALL, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
-		ImageIcon iconL = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+		ImageIcon icon = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder_open", IconSize.SMALL, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+		ImageIcon iconL = IconManager.getInstance().getFontIcon(IconManager.GoogleMaterialDesignIconsFontName, "folder_open", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
 		
 		PhonUIAction<LocalProjectButton> openAction = PhonUIAction.eventConsumer(this::onOpenProject, retVal);
 		
@@ -185,7 +185,7 @@ public class FolderProjectList extends JPanel {
 		}
 		
 		PhonUIAction<LocalProjectButton> showAction = PhonUIAction.eventConsumer(this::onShowProject, retVal);
-		showAction.putValue(Action.NAME, "Show project");
+		showAction.putValue(Action.NAME, "Show project in " + fsName);
 		showAction.putValue(Action.SMALL_ICON, fsIcon);
 		showAction.putValue(Action.LARGE_ICON_KEY, fsIconL);
 		showAction.putValue(Action.SHORT_DESCRIPTION, "Show project in " + fsName);
@@ -196,12 +196,15 @@ public class FolderProjectList extends JPanel {
 
 		
 		PhonUIAction<LocalProjectButton> archiveAction = PhonUIAction.eventConsumer(this::onArchiveProject, retVal);
-		archiveAction.putValue(Action.NAME, "Archive project");
+		archiveAction.putValue(Action.NAME, "Zip project");
 		archiveAction.putValue(Action.SHORT_DESCRIPTION, "Create .zip archive of phon project...");
 		archiveAction.putValue(Action.SMALL_ICON, archiveIcn);
 		archiveAction.putValue(Action.LARGE_ICON_KEY, archiveIcnL);
 		retVal.addAction(archiveAction);
-		retVal.getTopLabel().setIcon(iconL);
+
+		final ImageIcon folderIcon = IconManager.getInstance().getFontIcon(
+				IconManager.GoogleMaterialDesignIconsFontName, "folder", IconSize.MEDIUM, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP));
+		retVal.getTopLabel().setIcon(folderIcon);
 		
 		return retVal;
 	}
@@ -292,7 +295,9 @@ public class FolderProjectList extends JPanel {
 			}
 			add(sortByGrp, cc.xy(3,1));
 			
-			ImageIcon icn = IconManager.getInstance().getIcon("actions/reload", IconSize.SMALL);
+			ImageIcon icn = IconManager.getInstance().getFontIcon(
+					IconManager.GoogleMaterialDesignIconsFontName, "refresh", IconSize.SMALL, UIManager.getColor(FlatButtonUIProps.ICON_COLOR_PROP)
+			);
 			JLabel refreshLabel = new JLabel("<html><u style='color: rgb(0, 90, 140);'>Refresh</u></html>");
 			refreshLabel.setIcon(icn);
 			refreshLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

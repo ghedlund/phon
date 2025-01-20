@@ -51,26 +51,21 @@ public class ProjectArchiveTask extends PhonTask {
 	
 	private List<File> buildFileList() {
 		List<File> retVal = new ArrayList<File>();
-		
-		File projectRoot = new File(project.getLocation());
-		File projectXmlFile = new File(projectRoot, "project.xml");
-		retVal.add(projectXmlFile);
-		
-		// scan corpus directories
-		for(File f:projectRoot.listFiles()) {
-			if(f.isDirectory()
-					&& !f.getName().startsWith("__") && !f.getName().startsWith("~")
-					&& !f.isHidden()) {
-				for(File cf:f.listFiles()) {
-					if(!cf.isHidden() && cf.isFile()) {
-						if(cf.getName().startsWith("__")) {
-							if(cf.getName().equals("__sessiontemplate.xml")) {
-								// add file
-								retVal.add(cf);
-							}
-						} else if(!cf.getName().startsWith("~")) {
-							retVal.add(cf);
-						}
+
+		// TODO add .phonproj files from root folder
+
+
+		final Iterator<String> corpusIterator = project.getCorpusIterator();
+		while(corpusIterator.hasNext()) {
+			String corpus = corpusIterator.next();
+			File corpusDir = new File(project.getCorpusPath(corpus));
+			if(corpusDir.exists()) {
+				final Iterator<String> sessionIterator = project.getSessionIterator(corpus);
+				while(sessionIterator.hasNext()) {
+					String session = sessionIterator.next();
+					File sessionFile = new File(project.getSessionPath(corpus, session));
+					if(sessionFile.exists()) {
+						retVal.add(sessionFile);
 					}
 				}
 			}
