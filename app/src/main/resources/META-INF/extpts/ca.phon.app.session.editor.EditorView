@@ -4,7 +4,7 @@ ca.phon.app.session.editor.view.mediaPlayer.MediaPlayerExtension
 ca.phon.app.session.editor.view.speechAnalysis.SpeechAnalysisExtension
 ca.phon.app.session.editor.view.tierManagement.TierManagementViewExtPt
 #ca.phon.app.session.editor.view.record_data.RecordDataViewExtension
-#ca.phon.app.session.editor.view.syllabification_and_alignment.SyllabificationAlignmentExtension
+ca.phon.app.session.editor.view.syllabificationAlignment.SyllabificationAlignmentExtension
 #ca.phon.app.session.editor.view.ipa_validation.ValidationExtension
 ca.phon.app.session.editor.view.ipaDictionary.IPADictionaryViewExtension
 #ca.phon.app.session.editor.view.find_and_replace.FindAndReplaceEditorViewExtension

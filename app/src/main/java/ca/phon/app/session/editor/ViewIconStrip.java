@@ -6,6 +6,7 @@ import ca.phon.app.session.editor.view.mediaPlayer.MediaPlayerEditorView;
 import ca.phon.app.session.editor.view.participants.ParticipantsView;
 import ca.phon.app.session.editor.view.search.SearchView;
 import ca.phon.app.session.editor.view.speechAnalysis.SpeechAnalysisEditorView;
+import ca.phon.app.session.editor.view.syllabificationAlignment.SyllabificationAlignmentEditorView;
 import ca.phon.app.session.editor.view.tierManagement.TierManagementView;
 import ca.phon.app.session.editor.view.timeline.TimelineView;
 import ca.phon.app.session.editor.view.transcript.TranscriptView;
@@ -68,9 +69,11 @@ public class ViewIconStrip extends IconStrip {
         } else {
             viewButtons.put(SearchView.VIEW_NAME, createViewButton(SearchView.VIEW_NAME));
             viewButtons.put(IPADictionaryView.VIEW_NAME, createViewButton(IPADictionaryView.VIEW_NAME));
+            viewButtons.put(SyllabificationAlignmentEditorView.VIEW_NAME, createViewButton(SyllabificationAlignmentEditorView.VIEW_NAME));
 
             add(viewButtons.get(SearchView.VIEW_NAME), IconStripPosition.LEFT);
             add(viewButtons.get(IPADictionaryView.VIEW_NAME), IconStripPosition.LEFT);
+            add(viewButtons.get(SyllabificationAlignmentEditorView.VIEW_NAME), IconStripPosition.LEFT);
         }
 
         viewModel.addEditorViewModelListener(new EditorViewModelListener() {

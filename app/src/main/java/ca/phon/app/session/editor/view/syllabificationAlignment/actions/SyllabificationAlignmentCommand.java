@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ca.phon.app.session.editor.view.syllabification_and_alignment.actions;
+package ca.phon.app.session.editor.view.syllabificationAlignment.actions;
 
 import ca.phon.app.session.editor.SessionEditor;
 import ca.phon.app.session.editor.actions.SessionEditorAction;
-import ca.phon.app.session.editor.view.syllabification_and_alignment.SyllabificationAlignmentEditorView;
+import ca.phon.app.session.editor.view.syllabificationAlignment.SyllabificationAlignmentEditorView;
 
 public abstract class SyllabificationAlignmentCommand extends SessionEditorAction {
 

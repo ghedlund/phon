@@ -17,7 +17,7 @@ package ca.phon.app.session.editor.view.common;
 
 import ca.phon.app.session.editor.SessionEditor;
 import ca.phon.app.session.editor.undo.TierEdit;
-import ca.phon.app.session.editor.view.syllabification_and_alignment.*;
+import ca.phon.app.session.editor.view.syllabificationAlignment.*;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.ipa.alignment.PhoneMap;
 import ca.phon.plugin.*;

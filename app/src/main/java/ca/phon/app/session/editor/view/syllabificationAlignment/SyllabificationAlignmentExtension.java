@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ca.phon.app.session.editor.view.syllabification_and_alignment;
+package ca.phon.app.session.editor.view.syllabificationAlignment;
 
+import ca.phon.app.session.ViewPosition;
 import ca.phon.app.session.editor.*;
 import ca.phon.plugin.*;
 
 @PhonPlugin(name="Syllabification & Alignment")
-@EditorViewInfo(name="Syllabification & Alignment", category=EditorViewCategory.RECORD, icon="misc/syllabification")
+@EditorViewInfo(name=SyllabificationAlignmentEditorView.VIEW_NAME, category=EditorViewCategory.RECORD, icon=SyllabificationAlignmentEditorView.VIEW_ICON, dockPosition = ViewPosition.RIGHT_BOTTOM)
 public class SyllabificationAlignmentExtension implements IPluginExtensionPoint<EditorView> {
 
 	@Override

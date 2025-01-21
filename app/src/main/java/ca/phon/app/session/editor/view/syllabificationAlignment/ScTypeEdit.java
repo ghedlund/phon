@@ -13,40 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ca.phon.app.session.editor.view.syllabification_and_alignment;
+package ca.phon.app.session.editor.view.syllabificationAlignment;
 
 import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.undo.SessionUndoableEdit;
-import ca.phon.ipa.*;
-import ca.phon.syllable.SyllabificationInfo;
+import ca.phon.ipa.IPATranscript;
+import ca.phon.syllable.SyllableConstituentType;
 
-public class ToggleDiphthongEdit extends SessionUndoableEdit {
-	
+public class ScTypeEdit extends SessionUndoableEdit {
+
 	private final IPATranscript transcript;
 	
 	private final int index;
 	
-	public ToggleDiphthongEdit(SessionEditor editor, IPATranscript transcript, int index) {
+	private final SyllableConstituentType scType;
+	
+	private SyllableConstituentType prevScType;
+	
+	public ScTypeEdit(SessionEditor editor, IPATranscript transcript, int index, SyllableConstituentType scType) {
 		super(editor.getSession(), editor.getEventManager());
 		this.transcript = transcript;
 		this.index = index;
+		this.scType = scType;
 	}
 	
 	@Override
 	public void undo() {
-		super.redo();
+		if(prevScType != null && index >= 0 && index < transcript.length()) {
+			transcript.elementAt(index).setScType(prevScType);
+		
+			final EditorEvent<SyllabificationAlignmentEditorView.ScEditData> ee =
+					new EditorEvent<>(SyllabificationAlignmentEditorView.ScEdit, getSource(),
+							new SyllabificationAlignmentEditorView.ScEditData(transcript, index, scType, prevScType));
+			getEditorEventManager().queueEvent(ee);
+		}
 	}
-
+	
 	@Override
 	public void doIt() {
 		if(index >= 0 && index < transcript.length()) {
-			final IPAElement ele = transcript.elementAt(index);
-			final SyllabificationInfo info = ele.getExtension(SyllabificationInfo.class);
-			info.setDiphthongMember(!info.isDiphthongMember());
+			prevScType = transcript.elementAt(index).getScType();
+			transcript.elementAt(index).setScType(scType);
 
 			final EditorEvent<SyllabificationAlignmentEditorView.ScEditData> ee =
 					new EditorEvent<>(SyllabificationAlignmentEditorView.ScEdit, getSource(),
-							new SyllabificationAlignmentEditorView.ScEditData(transcript, index, info.getConstituentType(), info.getConstituentType()));
+							new SyllabificationAlignmentEditorView.ScEditData(transcript, index, prevScType, scType));
 			getEditorEventManager().queueEvent(ee);
 		}
 	}

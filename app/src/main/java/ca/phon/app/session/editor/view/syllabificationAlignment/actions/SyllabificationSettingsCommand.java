@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ca.phon.app.session.editor.view.syllabification_and_alignment.actions;
+package ca.phon.app.session.editor.view.syllabificationAlignment.actions;
 
 import ca.phon.app.session.editor.SessionEditor;
-import ca.phon.app.session.editor.view.syllabification_and_alignment.*;
+import ca.phon.app.session.editor.view.syllabificationAlignment.*;
 import ca.phon.session.*;
 import ca.phon.ui.CommonModuleFrame;
 import ca.phon.ui.decorations.DialogHeader;

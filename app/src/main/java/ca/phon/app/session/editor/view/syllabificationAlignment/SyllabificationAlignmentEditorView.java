@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ca.phon.app.session.editor.view.syllabification_and_alignment;
+package ca.phon.app.session.editor.view.syllabificationAlignment;
 
 import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.undo.TierEdit;
 import ca.phon.app.session.editor.view.common.*;
-import ca.phon.app.session.editor.view.syllabification_and_alignment.actions.*;
+import ca.phon.app.session.editor.view.syllabificationAlignment.actions.*;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.ipa.alignment.PhoneMap;
 import ca.phon.session.Record;
@@ -45,7 +45,9 @@ public class SyllabificationAlignmentEditorView extends EditorView {
 	public record ScEditData(IPATranscript ipa, int eleIdx, SyllableConstituentType oldType, SyllableConstituentType newType) { }
 	public final static EditorEventType<ScEditData> ScEdit = new EditorEventType<>(EditorEventName.MODIFICATION_EVENT + "_SC_TYPE_", ScEditData.class);
 
-	private final static String VIEW_NAME = "Syllabification & Alignment";
+	public final static String VIEW_NAME = "Syllabification & Alignment";
+
+	public final static String VIEW_ICON = IconManager.GoogleMaterialDesignIconsFontName + ":indeterminate_question_box";
 
 	private JPanel topPanel;
 	private DropDownButton settingsBtn;
