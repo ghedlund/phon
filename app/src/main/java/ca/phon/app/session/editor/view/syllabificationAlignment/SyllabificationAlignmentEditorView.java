@@ -19,17 +19,22 @@ import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.undo.TierEdit;
 import ca.phon.app.session.editor.view.common.*;
 import ca.phon.app.session.editor.view.syllabificationAlignment.actions.*;
+import ca.phon.app.session.editor.view.transcript.TranscriptEditor;
+import ca.phon.app.session.editor.view.transcript.TranscriptScrollPane;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.ipa.alignment.PhoneMap;
 import ca.phon.session.Record;
 import ca.phon.session.*;
 import ca.phon.syllable.SyllableConstituentType;
 import ca.phon.ui.DropDownButton;
+import ca.phon.ui.FlatButton;
+import ca.phon.ui.IconStrip;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.ui.ipa.*;
 import ca.phon.ui.ipa.PhoneMapDisplay.AlignmentChangeData;
 import ca.phon.ui.ipa.SyllabificationDisplay.SyllabificationChangeData;
+import ca.phon.ui.menu.MenuBuilder;
 import ca.phon.util.PrefHelper;
 import ca.phon.util.icons.*;
 import com.jgoodies.forms.layout.*;
@@ -49,8 +54,7 @@ public class SyllabificationAlignmentEditorView extends EditorView {
 
 	public final static String VIEW_ICON = IconManager.GoogleMaterialDesignIconsFontName + ":indeterminate_question_box";
 
-	private JPanel topPanel;
-	private DropDownButton settingsBtn;
+	private IconStrip toolbar;
 
 	private final static String SHOW_TARGET_IPA = "SyllabificationAndAlignmentEditorView.showTargetIPA";
 	private final static boolean DEFAULT_SHOW_TARGET_IPA = true;
@@ -72,8 +76,8 @@ public class SyllabificationAlignmentEditorView extends EditorView {
 	private final static boolean DEFAULT_SHOW_DIACRITICS = false;
 	private JCheckBox showDiacriticsBox;
 
-	private TierDataLayoutPanel contentPane;
-	private JScrollPane scroller;
+	private TranscriptScrollPane scrollPane;
+	private TranscriptEditor editor;
 
 	// components
 	private SyllabificationDisplay targetDisplay;
@@ -87,86 +91,77 @@ public class SyllabificationAlignmentEditorView extends EditorView {
 	}
 
 	private void init() {
-		// tier content
-		contentPane = new TierDataLayoutPanel();
-
-		// top panel
-		final FormLayout topLayout = new FormLayout(
-				"pref, pref, pref, pref, pref, pref, fill:pref:grow, right:pref", "pref");
-		topPanel = new JPanel(topLayout);
+		// toolbar
+		toolbar = new IconStrip(SwingConstants.HORIZONTAL);
 
 		ImageIcon sigmaIcn = IconManager.getInstance().getIcon("misc/small_sigma", IconSize.SMALL);
 
-		final PhonUIAction<Void> syllabifierSettingsAct = PhonUIAction.runnable(() -> {});
-		syllabifierSettingsAct.putValue(PhonUIAction.NAME, "Syllabifier settings");
-		syllabifierSettingsAct.putValue(PhonUIAction.SMALL_ICON, sigmaIcn);
+		final PhonUIAction<Void> syllabifierSettingsAct = PhonUIAction.runnable(() -> {
+			final JPopupMenu settingsMenu = new JPopupMenu();
+			final MenuBuilder menuBuilder = new MenuBuilder(settingsMenu);
+		});
+		syllabifierSettingsAct.putValue(PhonUIAction.NAME, "Settings");
 		syllabifierSettingsAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Select syllabifier settings for session");
+		syllabifierSettingsAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
+		syllabifierSettingsAct.putValue(FlatButton.ICON_NAME_PROP, "settings");
+		syllabifierSettingsAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
 
-		final SyllabifierInfo syllabifierInfo = getEditor().getSession().getExtension(SyllabifierInfo.class);
-		SyllabificationSettingsPanel popupPanel = new SyllabificationSettingsPanel(syllabifierInfo);
-		popupPanel.addPropertyChangeListener(SyllabificationSettingsPanel.IPA_TARGET_SYLLABIFIER_PROP, (e) -> {
-			syllabifierInfo.saveInfo(getEditor().getSession());
-		});
-		popupPanel.addPropertyChangeListener(SyllabificationSettingsPanel.IPA_ACTUAL_SYLLABIFIER_PROP, (e) -> {
-			syllabifierInfo.saveInfo(getEditor().getSession());
-		});
-		syllabifierSettingsAct.putValue(DropDownButton.BUTTON_POPUP, popupPanel);
-		syllabifierSettingsAct.putValue(DropDownButton.ARROW_ICON_GAP, 0);
-		syllabifierSettingsAct.putValue(DropDownButton.ARROW_ICON_POSITION, SwingConstants.BOTTOM);
+//		final SyllabifierInfo syllabifierInfo = getEditor().getSession().getExtension(SyllabifierInfo.class);
+//		SyllabificationSettingsPanel popupPanel = new SyllabificationSettingsPanel(syllabifierInfo);
+//		popupPanel.addPropertyChangeListener(SyllabificationSettingsPanel.IPA_TARGET_SYLLABIFIER_PROP, (e) -> {
+//			syllabifierInfo.saveInfo(getEditor().getSession());
+//		});
+//		popupPanel.addPropertyChangeListener(SyllabificationSettingsPanel.IPA_ACTUAL_SYLLABIFIER_PROP, (e) -> {
+//			syllabifierInfo.saveInfo(getEditor().getSession());
+//		});
+//		syllabifierSettingsAct.putValue(DropDownButton.BUTTON_POPUP, popupPanel);
+//		syllabifierSettingsAct.putValue(DropDownButton.ARROW_ICON_GAP, 0);
+//		syllabifierSettingsAct.putValue(DropDownButton.ARROW_ICON_POSITION, SwingConstants.BOTTOM);
 
-		settingsBtn = new DropDownButton(syllabifierSettingsAct);
-		settingsBtn.setOnlyPopup(true);
+		FlatButton settingsBtn = new FlatButton(syllabifierSettingsAct);
 
+		toolbar.add(settingsBtn, IconStrip.IconStripPosition.LEFT);
+
+		setLayout(new BorderLayout());
+//		scroller = new JScrollPane(contentPane);
+//		scroller.setBackground(Color.white);
+//		scroller.setOpaque(true);
+		add(toolbar, BorderLayout.NORTH);
+//		add(scroller, BorderLayout.CENTER);
+
+		update();
+	}
+
+	private void setupSettingsMenu(MenuBuilder menuBuilder) {
 		final PhonUIAction<Void> toggleTargetAct = PhonUIAction.runnable(this::toggleCheckbox);
 		toggleTargetAct.putValue(PhonUIAction.NAME, SystemTierType.TargetSyllables.getName());
 		toggleTargetAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Toggle target syllables");
 		toggleTargetAct.putValue(PhonUIAction.SELECTED_KEY, PrefHelper.getBoolean(SHOW_TARGET_IPA, DEFAULT_SHOW_TARGET_IPA));
-		targetIPABox = new JCheckBox(toggleTargetAct);
+		menuBuilder.addItem(".", new JCheckBoxMenuItem(toggleTargetAct));
 
 		final PhonUIAction<Void> toggleActualAct = PhonUIAction.runnable(this::toggleCheckbox);
 		toggleActualAct.putValue(PhonUIAction.NAME, SystemTierType.ActualSyllables.getName());
 		toggleActualAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Toggle actual syllables");
 		toggleActualAct.putValue(PhonUIAction.SELECTED_KEY, PrefHelper.getBoolean(SHOW_ACTUAL_IPA, DEFAULT_SHOW_ACTUAL_IPA));
-		actualIPABox = new JCheckBox(toggleActualAct);
+		menuBuilder.addItem(".", new JCheckBoxMenuItem(toggleActualAct));
 
 		final PhonUIAction<Void> toggleAlignmentAct = PhonUIAction.runnable(this::toggleCheckbox);
 		toggleAlignmentAct.putValue(PhonUIAction.NAME, SystemTierType.PhoneAlignment.getName());
 		toggleAlignmentAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Toggle alignment");
 		toggleAlignmentAct.putValue(PhonUIAction.SELECTED_KEY, PrefHelper.getBoolean(SHOW_ALIGNMENT, DEFAULT_SHOW_ALIGNMENT));
-		alignmentBox = new JCheckBox(toggleAlignmentAct);
+		menuBuilder.addItem(".", new JCheckBoxMenuItem(toggleAlignmentAct));
 
 		final PhonUIAction<Void> toggleAlignmentColorAct = PhonUIAction.runnable(this::toggleCheckbox);
 		toggleAlignmentColorAct.putValue(PhonUIAction.NAME, "Color in alignment");
 		toggleAlignmentColorAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Toggle color in alignment");
 		toggleAlignmentColorAct.putValue(PhonUIAction.SELECTED_KEY, PrefHelper.getBoolean(COLOR_IN_ALIGNMENT, DEFAULT_COLOR_IN_ALIGNMENT));
-		colorInAlignmentBox = new JCheckBox(toggleAlignmentColorAct);
+		menuBuilder.addItem(".", new JCheckBoxMenuItem(toggleAlignmentColorAct));
 
 		final PhonUIAction<Void> toggleDiacriticsAct = PhonUIAction.runnable(this::toggleCheckbox);
 		toggleDiacriticsAct.putValue(PhonUIAction.NAME, "Show diacritics");
 		toggleDiacriticsAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Toggle display of diacritics");
 		toggleDiacriticsAct.putValue(PhonUIAction.SELECTED_KEY, PrefHelper.getBoolean(SHOW_DIACRITICS, DEFAULT_SHOW_DIACRITICS));
-		showDiacriticsBox = new JCheckBox(toggleDiacriticsAct);
-
-		final TierDataLayoutButtons tdlb = new TierDataLayoutButtons(contentPane,
-				(TierDataLayout)contentPane.getLayout());
-
-		final CellConstraints cc = new CellConstraints();
-		topPanel.add(settingsBtn, cc.xy(1,1));
-		topPanel.add(targetIPABox, cc.xy(2,1));
-		topPanel.add(actualIPABox, cc.xy(3,1));
-		topPanel.add(alignmentBox, cc.xy(4,1));
-		topPanel.add(colorInAlignmentBox, cc.xy(5,1));
-		topPanel.add(showDiacriticsBox, cc.xy(6, 1));
-		topPanel.add(tdlb, cc.xy(8,1));
-
-		setLayout(new BorderLayout());
-		scroller = new JScrollPane(contentPane);
-		scroller.setBackground(Color.white);
-		scroller.setOpaque(true);
-		add(topPanel, BorderLayout.NORTH);
-		add(scroller, BorderLayout.CENTER);
-
-		update();
+		menuBuilder.addItem(".", new JCheckBoxMenuItem(toggleDiacriticsAct));
 	}
 
 	private void setupEditorActions() {
@@ -264,139 +259,139 @@ public class SyllabificationAlignmentEditorView extends EditorView {
 	};
 
 	public void update() {
-		final boolean showTarget = targetIPABox.isSelected();
-		PrefHelper.getUserPreferences().putBoolean(SHOW_TARGET_IPA, showTarget);
-		final boolean showActual = actualIPABox.isSelected();
-		PrefHelper.getUserPreferences().putBoolean(SHOW_ACTUAL_IPA, showActual);
-		final boolean showAlignment = alignmentBox.isSelected();
-		PrefHelper.getUserPreferences().putBoolean(SHOW_ALIGNMENT, showAlignment);
-		final boolean colorInAlignment = colorInAlignmentBox.isSelected();
-		PrefHelper.getUserPreferences().putBoolean(COLOR_IN_ALIGNMENT, colorInAlignment);
-		final boolean showDiacritics = showDiacriticsBox.isSelected();
-		PrefHelper.getUserPreferences().putBoolean(SHOW_DIACRITICS, showDiacritics);
+//		final boolean showTarget = targetIPABox.isSelected();
+//		PrefHelper.getUserPreferences().putBoolean(SHOW_TARGET_IPA, showTarget);
+//		final boolean showActual = actualIPABox.isSelected();
+//		PrefHelper.getUserPreferences().putBoolean(SHOW_ACTUAL_IPA, showActual);
+//		final boolean showAlignment = alignmentBox.isSelected();
+//		PrefHelper.getUserPreferences().putBoolean(SHOW_ALIGNMENT, showAlignment);
+//		final boolean colorInAlignment = colorInAlignmentBox.isSelected();
+//		PrefHelper.getUserPreferences().putBoolean(COLOR_IN_ALIGNMENT, colorInAlignment);
+//		final boolean showDiacritics = showDiacriticsBox.isSelected();
+//		PrefHelper.getUserPreferences().putBoolean(SHOW_DIACRITICS, showDiacritics);
+//
+//		final SessionEditor editor = getEditor();
+//		final Record record = editor.currentRecord();
+//		if(record == null) return;
 
-		final SessionEditor editor = getEditor();
-		final Record record = editor.currentRecord();
-		if(record == null) return;
-
-		contentPane.removeAll();
-		final ImageIcon reloadIcn = IconManager.getInstance().getIcon("actions/reload", IconSize.SMALL);
-
-		if(showTarget) {
-			final ResetSyllabificationCommand resetTargetAct = new ResetSyllabificationCommand(getEditor(), this, SystemTierType.IPATarget.getName());
-			resetTargetAct.putValue(Action.NAME, null);
-			resetTargetAct.putValue(Action.SMALL_ICON, reloadIcn);
-			final JButton btn = new JButton(resetTargetAct);
-
-			final JLabel targetSyllLbl = new JLabel(SystemTierType.TargetSyllables.getName());
-			targetSyllLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-			targetSyllLbl.setHorizontalTextPosition(SwingConstants.RIGHT);
-
-			final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-			panel.setOpaque(false);
-			panel.add(btn);
-			panel.add(targetSyllLbl);
-
-			final TierDataConstraint targetConstraint = new TierDataConstraint(TierDataConstraint.TIER_LABEL_COLUMN, 0);
-			contentPane.add(panel, targetConstraint);
-		}
-
-		if(showActual) {
-			final ResetSyllabificationCommand resetActualAct = new ResetSyllabificationCommand(getEditor(), this, SystemTierType.IPAActual.getName());
-			resetActualAct.putValue(Action.NAME, null);
-			resetActualAct.putValue(Action.SMALL_ICON, reloadIcn);
-			final JButton btn = new JButton(resetActualAct);
-
-			final JLabel actualSyllLbl = new JLabel(SystemTierType.ActualSyllables.getName());
-			actualSyllLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-			actualSyllLbl.setHorizontalTextPosition(SwingConstants.RIGHT);
-
-			final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-			panel.setOpaque(false);
-			panel.add(btn);
-			panel.add(actualSyllLbl);
-
-			final TierDataConstraint actualConstraint = new TierDataConstraint(TierDataConstraint.TIER_LABEL_COLUMN, 1);
-			contentPane.add(panel, actualConstraint);
-		}
-
-		if(showAlignment) {
-			final ResetAlignmentCommand resetAct = new ResetAlignmentCommand(getEditor(), this);
-			resetAct.putValue(Action.NAME, null);
-			resetAct.putValue(Action.SMALL_ICON, reloadIcn);
-			final JButton btn = new JButton(resetAct);
-
-			final JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
-			separator.setForeground(Color.lightGray);
-			final TierDataConstraint sepConstraint = new TierDataConstraint(TierDataConstraint.FULL_TIER_COLUMN, 2);
-			contentPane.add(separator, sepConstraint);
-
-			final JLabel alignSyllLbl = new JLabel(SystemTierType.PhoneAlignment.getName());
-			alignSyllLbl.setHorizontalAlignment(SwingConstants.RIGHT);
-			alignSyllLbl.setHorizontalTextPosition(SwingConstants.RIGHT);
-
-			final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-			panel.setOpaque(false);
-			panel.add(btn);
-			panel.add(alignSyllLbl);
-
-			final TierDataConstraint alignConstraint = new TierDataConstraint(TierDataConstraint.TIER_LABEL_COLUMN, 3);
-			contentPane.add(panel, alignConstraint);
-		}
-
-		final TierDataLayout layout = TierDataLayout.class.cast(contentPane.getLayout());
-		if(showTarget) {
-			// target
-			final IPATranscript ipaTarget = record.getIPATarget();
-			final SyllabificationDisplay ipaTargetDisplay = getIPATargetDisplay();
-			ipaTargetDisplay.setFont(FontPreferences.getTierFont());
-			ipaTargetDisplay.setTranscript(ipaTarget);
-			ipaTargetDisplay.setShowDiacritics(showDiacritics);
-
-			if(!layout.hasLayoutComponent(ipaTargetDisplay)) {
-				final TierDataConstraint ipaTargetConstraint =
-						new TierDataConstraint(TierDataConstraint.FLAT_TIER_COLUMN, 0);
-				contentPane.add(ipaTargetDisplay, ipaTargetConstraint);
-			}
-		}
-
-		if(showActual) {
-			// actual
-			final IPATranscript ipaActual = record.getIPAActual();
-			final SyllabificationDisplay ipaActualDisplay = getIPAActualDisplay();
-			ipaActualDisplay.setFont(FontPreferences.getTierFont());
-			ipaActualDisplay.setTranscript(ipaActual);
-			ipaActualDisplay.setShowDiacritics(showDiacritics);
-
-			if(!layout.hasLayoutComponent(ipaActualDisplay)) {
-				final TierDataConstraint ipaActualConstraint =
-						new TierDataConstraint(TierDataConstraint.FLAT_TIER_COLUMN, 1);
-				contentPane.add(ipaActualDisplay, ipaActualConstraint);
-			}
-		}
-
-		if(showAlignment) {
-			// alignment
-			PhoneAlignment phoneAlignment = record.getPhoneAlignment();
-			if(phoneAlignment == null) {
-				phoneAlignment = PhoneAlignment.fromTiers(record.getIPATargetTier(), record.getIPAActualTier());
-			}
-			final PhoneMapDisplay pmDisplay = getAlignmentDisplay();
-			pmDisplay.setFont(FontPreferences.getTierFont());
-			for(int i = 0; i < phoneAlignment.getAlignments().size(); i++) {
-				pmDisplay.setPhoneMapForWord(0, phoneAlignment.getAlignments().get(i));
-				pmDisplay.setFocusedPosition(0);
-				pmDisplay.setPaintPhoneBackground(colorInAlignment);
-				pmDisplay.setShowDiacritics(showDiacritics);
-
-				if (!layout.hasLayoutComponent(pmDisplay)) {
-					final TierDataConstraint pmConstraint =
-							new TierDataConstraint(TierDataConstraint.GROUP_START_COLUMN + i, 3);
-					contentPane.add(pmDisplay, pmConstraint);
-				}
-			}
-		}
-		contentPane.revalidate();
+//		contentPane.removeAll();
+//		final ImageIcon reloadIcn = IconManager.getInstance().getIcon("actions/reload", IconSize.SMALL);
+//
+//		if(showTarget) {
+//			final ResetSyllabificationCommand resetTargetAct = new ResetSyllabificationCommand(getEditor(), this, SystemTierType.IPATarget.getName());
+//			resetTargetAct.putValue(Action.NAME, null);
+//			resetTargetAct.putValue(Action.SMALL_ICON, reloadIcn);
+//			final JButton btn = new JButton(resetTargetAct);
+//
+//			final JLabel targetSyllLbl = new JLabel(SystemTierType.TargetSyllables.getName());
+//			targetSyllLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+//			targetSyllLbl.setHorizontalTextPosition(SwingConstants.RIGHT);
+//
+//			final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+//			panel.setOpaque(false);
+//			panel.add(btn);
+//			panel.add(targetSyllLbl);
+//
+//			final TierDataConstraint targetConstraint = new TierDataConstraint(TierDataConstraint.TIER_LABEL_COLUMN, 0);
+//			contentPane.add(panel, targetConstraint);
+//		}
+//
+//		if(showActual) {
+//			final ResetSyllabificationCommand resetActualAct = new ResetSyllabificationCommand(getEditor(), this, SystemTierType.IPAActual.getName());
+//			resetActualAct.putValue(Action.NAME, null);
+//			resetActualAct.putValue(Action.SMALL_ICON, reloadIcn);
+//			final JButton btn = new JButton(resetActualAct);
+//
+//			final JLabel actualSyllLbl = new JLabel(SystemTierType.ActualSyllables.getName());
+//			actualSyllLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+//			actualSyllLbl.setHorizontalTextPosition(SwingConstants.RIGHT);
+//
+//			final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+//			panel.setOpaque(false);
+//			panel.add(btn);
+//			panel.add(actualSyllLbl);
+//
+//			final TierDataConstraint actualConstraint = new TierDataConstraint(TierDataConstraint.TIER_LABEL_COLUMN, 1);
+//			contentPane.add(panel, actualConstraint);
+//		}
+//
+//		if(showAlignment) {
+//			final ResetAlignmentCommand resetAct = new ResetAlignmentCommand(getEditor(), this);
+//			resetAct.putValue(Action.NAME, null);
+//			resetAct.putValue(Action.SMALL_ICON, reloadIcn);
+//			final JButton btn = new JButton(resetAct);
+//
+//			final JSeparator separator = new JSeparator(SwingConstants.HORIZONTAL);
+//			separator.setForeground(Color.lightGray);
+//			final TierDataConstraint sepConstraint = new TierDataConstraint(TierDataConstraint.FULL_TIER_COLUMN, 2);
+//			contentPane.add(separator, sepConstraint);
+//
+//			final JLabel alignSyllLbl = new JLabel(SystemTierType.PhoneAlignment.getName());
+//			alignSyllLbl.setHorizontalAlignment(SwingConstants.RIGHT);
+//			alignSyllLbl.setHorizontalTextPosition(SwingConstants.RIGHT);
+//
+//			final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+//			panel.setOpaque(false);
+//			panel.add(btn);
+//			panel.add(alignSyllLbl);
+//
+//			final TierDataConstraint alignConstraint = new TierDataConstraint(TierDataConstraint.TIER_LABEL_COLUMN, 3);
+//			contentPane.add(panel, alignConstraint);
+//		}
+//
+//		final TierDataLayout layout = TierDataLayout.class.cast(contentPane.getLayout());
+//		if(showTarget) {
+//			// target
+//			final IPATranscript ipaTarget = record.getIPATarget();
+//			final SyllabificationDisplay ipaTargetDisplay = getIPATargetDisplay();
+//			ipaTargetDisplay.setFont(FontPreferences.getTierFont());
+//			ipaTargetDisplay.setTranscript(ipaTarget);
+//			ipaTargetDisplay.setShowDiacritics(showDiacritics);
+//
+//			if(!layout.hasLayoutComponent(ipaTargetDisplay)) {
+//				final TierDataConstraint ipaTargetConstraint =
+//						new TierDataConstraint(TierDataConstraint.FLAT_TIER_COLUMN, 0);
+//				contentPane.add(ipaTargetDisplay, ipaTargetConstraint);
+//			}
+//		}
+//
+//		if(showActual) {
+//			// actual
+//			final IPATranscript ipaActual = record.getIPAActual();
+//			final SyllabificationDisplay ipaActualDisplay = getIPAActualDisplay();
+//			ipaActualDisplay.setFont(FontPreferences.getTierFont());
+//			ipaActualDisplay.setTranscript(ipaActual);
+//			ipaActualDisplay.setShowDiacritics(showDiacritics);
+//
+//			if(!layout.hasLayoutComponent(ipaActualDisplay)) {
+//				final TierDataConstraint ipaActualConstraint =
+//						new TierDataConstraint(TierDataConstraint.FLAT_TIER_COLUMN, 1);
+//				contentPane.add(ipaActualDisplay, ipaActualConstraint);
+//			}
+//		}
+//
+//		if(showAlignment) {
+//			// alignment
+//			PhoneAlignment phoneAlignment = record.getPhoneAlignment();
+//			if(phoneAlignment == null) {
+//				phoneAlignment = PhoneAlignment.fromTiers(record.getIPATargetTier(), record.getIPAActualTier());
+//			}
+//			final PhoneMapDisplay pmDisplay = getAlignmentDisplay();
+//			pmDisplay.setFont(FontPreferences.getTierFont());
+//			for(int i = 0; i < phoneAlignment.getAlignments().size(); i++) {
+//				pmDisplay.setPhoneMapForWord(0, phoneAlignment.getAlignments().get(i));
+//				pmDisplay.setFocusedPosition(0);
+//				pmDisplay.setPaintPhoneBackground(colorInAlignment);
+//				pmDisplay.setShowDiacritics(showDiacritics);
+//
+//				if (!layout.hasLayoutComponent(pmDisplay)) {
+//					final TierDataConstraint pmConstraint =
+//							new TierDataConstraint(TierDataConstraint.GROUP_START_COLUMN + i, 3);
+//					contentPane.add(pmDisplay, pmConstraint);
+//				}
+//			}
+//		}
+//		contentPane.revalidate();
 	}
 
 	public void toggleCheckbox() {
