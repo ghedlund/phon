@@ -5,6 +5,7 @@ import ca.phon.app.session.editor.search.FindExpr;
 import ca.phon.app.session.editor.search.FindManager;
 import ca.phon.app.session.editor.search.SearchType;
 import ca.phon.app.session.editor.view.transcript.BoxSelectHighlightPainter;
+import ca.phon.app.session.editor.view.transcript.TranscriptEditor;
 import ca.phon.app.session.editor.view.transcript.TranscriptView;
 import ca.phon.session.Participant;
 import ca.phon.session.TierViewItem;
@@ -30,6 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * Search view for session editor.  Allows users to search for text in the session transcript.
+ * Includes options for case-sensitive, regex, and phonex searches as well as options for filtering
+ * search results based on tier and speaker.
+ */
 @EditorViewInfo(name=SearchView.VIEW_NAME, category= EditorViewCategory.UTILITIES, icon=SearchView.VIEW_ICON)
 public class SearchView extends EditorView {
 
@@ -147,23 +153,50 @@ public class SearchView extends EditorView {
                 final TranscriptElementRange range = table.getSearchViewTableModel().getRangeAt(row);
                 final TranscriptElementLocation start = range.start();
                 final TranscriptElementLocation end = range.end();
+                // add selection to model
+                if(currentSelection != null) {
+                    getEditor().getSelectionModel().removeSelection(currentSelection);
+                }
+
                 // move transcript view caret
                 if(getEditor().getViewModel().isShowing(TranscriptView.VIEW_NAME)) {
                     final TranscriptView transcriptView = (TranscriptView) getEditor().getViewModel().getView(TranscriptView.VIEW_NAME);
-                    final int caretLocation = transcriptView.getTranscriptEditor().sessionLocationToCharPos(start);
-                    final int endLocation = transcriptView.getTranscriptEditor().sessionLocationToCharPos(end);
-                    if(caretLocation >= 0 && endLocation >= caretLocation) {
-                        if(currentSelection != null) {
-                            getEditor().getSelectionModel().removeSelection(currentSelection);
+                    if(transcriptView.getTranscriptEditor().isSingleRecordView()) {
+                        final int recordIndex = transcriptView.getEditor().getSession().getTranscript().getRecordIndex(start.transcriptElementIndex());
+                        if(recordIndex >= 0) {
+                            getEditor().getEventManager().registerActionForEvent(
+                                    TranscriptEditor.recordChangedInSingleRecordMode,
+                                    new EditorAction<Void>() {
+                                        @Override
+                                        public void eventOccurred(EditorEvent<Void> ee) {
+                                            final SessionEditorSelection selection = new SessionEditorSelection(range);
+                                            getEditor().getSelectionModel().addSelection(selection);
+                                            currentSelection = selection;
+
+                                            getEditor().getEventManager().removeActionForEvent(
+                                                    TranscriptEditor.recordChangedInSingleRecordMode,
+                                                    this
+                                            );
+                                        }
+                                    },
+                                    EditorEventManager.RunOn.AWTEventDispatchThread
+                            );
+
+                            getEditor().setCurrentRecordIndex(recordIndex);
                         }
-                        // add selection to model
+                    } else {
                         final SessionEditorSelection selection = new SessionEditorSelection(range);
                         getEditor().getSelectionModel().addSelection(selection);
                         currentSelection = selection;
 
-                        // also select text
-                        transcriptView.getTranscriptEditor().getCaret().setDot(caretLocation);
-                        transcriptView.getTranscriptEditor().getCaret().moveDot(endLocation);
+                        // ??? is this necessary since we are already setting the selection?
+                        final int caretLocation = transcriptView.getTranscriptEditor().sessionLocationToCharPos(start);
+                        final int endLocation = transcriptView.getTranscriptEditor().sessionLocationToCharPos(end);
+                        if (caretLocation >= 0 && endLocation >= caretLocation) {
+                            // also select text
+                            transcriptView.getTranscriptEditor().getCaret().setDot(caretLocation);
+                            transcriptView.getTranscriptEditor().getCaret().moveDot(endLocation);
+                        }
                     }
                 }
             }

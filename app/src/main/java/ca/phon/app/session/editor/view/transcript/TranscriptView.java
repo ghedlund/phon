@@ -178,59 +178,6 @@ public class TranscriptView extends EditorView {
 
         centerPanel.add(transcriptScrollPane, BorderLayout.CENTER);
         centerPanel.add(new TranscriptStatusBar(transcriptEditor), BorderLayout.SOUTH);
-
-//        JToolBar toolbar = new JToolBar();
-//        add(toolbar, BorderLayout.NORTH);
-//
-//        var blankIcon = IconManager.getInstance().getIcon("blank", IconSize.SMALL);
-//
-//        JButton sessionInfoMenuButton = new JButton();
-//        PhonUIAction<Void> sessionInfoMenuAct = PhonUIAction.eventConsumer(this::showSessionInfoMenu);
-//        sessionInfoMenuAct.putValue(PhonUIAction.NAME, "Session Information");
-//        sessionInfoMenuButton.setAction(sessionInfoMenuAct);
-//        sessionInfoMenuButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        toolbar.add(sessionInfoMenuButton);
-//
-//        JButton mediaMenuButton = new JButton();
-//        PhonUIAction<Void> mediaMenuAct = PhonUIAction.eventConsumer(this::showMediaMenu);
-//        mediaMenuAct.putValue(PhonUIAction.NAME, "Media");
-//        mediaMenuButton.setAction(mediaMenuAct);
-//        mediaMenuButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        toolbar.add(mediaMenuButton);
-//
-//        JButton participantsMenuButton = new JButton();
-//        PhonUIAction<Void> participantsMenuAct = PhonUIAction.eventConsumer(this::showParticipantsMenu);
-//        participantsMenuAct.putValue(PhonUIAction.NAME, "Participants");
-//        participantsMenuButton.setAction(participantsMenuAct);
-//        participantsMenuButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        toolbar.add(participantsMenuButton);
-//
-//        JButton transcriptMenuButton = new JButton();
-//        PhonUIAction<Void> transcriptMenuAct = PhonUIAction.eventConsumer(this::showTranscriptMenu);
-//        transcriptMenuAct.putValue(PhonUIAction.NAME, "Transcript");
-//        transcriptMenuButton.setAction(transcriptMenuAct);
-//        transcriptMenuButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        toolbar.add(transcriptMenuButton);
-//
-//        JButton tiersMenuButton = new JButton();
-//        PhonUIAction<Void> tiersMenuAct = PhonUIAction.eventConsumer(this::showTiersMenu);
-//        tiersMenuAct.putValue(PhonUIAction.NAME, "Tiers");
-//        tiersMenuAct.putValue(PhonUIAction.SMALL_ICON, new DropDownIcon(blankIcon, SwingConstants.BOTTOM));
-//        tiersMenuAct.putValue(DropDownButton.ARROW_ICON_POSITION, SwingConstants.BOTTOM);
-//        tiersMenuAct.putValue(DropDownButton.ARROW_ICON_GAP, 2);
-//        tiersMenuButton.setAction(tiersMenuAct);
-//        tiersMenuButton.setHorizontalTextPosition(SwingConstants.LEFT);
-//        tiersMenuButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        toolbar.add(tiersMenuButton);
-//
-//
-//        JButton findReplaceButton = new JButton();
-//        findReplaceButton.setAction(new FindAndReplaceAction(getEditor()));
-//        findReplaceButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-//        toolbar.add(findReplaceButton);
-//
-//
-
     }
 
     /**
