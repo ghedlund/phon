@@ -250,13 +250,13 @@ public class TranscriptView extends EditorView {
 //        singleRecordModeAct.putValue(FlatButton.ICON_FONT_NAME_PROP, IconManager.GoogleMaterialDesignIconsFontName);
 //        singleRecordModeAct.putValue(FlatButton.ICON_NAME_PROP, "view_stream");
 //        singleRecordModeAct.putValue(FlatButton.ICON_SIZE_PROP, IconSize.MEDIUM);
-//        singleRecordModeAct.putValue(PhonUIAction.SELECTED_KEY, isSingleRecordActive());
+//        singleRecordModeAct.putValue(PhonUIAction.SELECTED_KEY, isSingleRecordView());
 //        final FlatButton singleRecordModeBtn = new FlatButton(singleRecordModeAct);
 //        singleRecordModeBtn.setPadding(2);
 //        singleRecordModeBtn.setIconColor(UIManager.getColor("textInactiveText"));
 //        singleRecordModeBtn.setIconSelectedColor(UIManager.getColor("Phon.darkBlue"));
 //        transcriptEditor.addPropertyChangeListener("singleRecordView", (e) ->
-//                singleRecordModeBtn.setSelected(isSingleRecordActive()));
+//                singleRecordModeBtn.setSelected(isSingleRecordView()));
 
 //        // find and replace button
 //        final PhonUIAction<Void> findReplaceAct = PhonUIAction.runnable(this::toggleFindAndReplace);
@@ -923,6 +923,14 @@ public class TranscriptView extends EditorView {
         menuBuilder.addItem(".", new PreviousRecordAction(getEditor()));
         menuBuilder.addItem(".", new NextRecordAction(getEditor()));
         menuBuilder.addItem(".", new LastRecordAction(getEditor()));
+
+        menuBuilder.addSeparator(".", "navigation");
+
+        final PhonUIAction<Void> toggleSingleRecordModeAct = PhonUIAction.runnable(transcriptEditor::toggleSingleRecordView);
+        toggleSingleRecordModeAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Toggle single record view");
+        toggleSingleRecordModeAct.putValue(PhonUIAction.NAME,
+                isSingleRecordView() ? "Show all records" : "Show one record at a time");
+        menuBuilder.addItem(".", toggleSingleRecordModeAct);
     }
 
     /**
