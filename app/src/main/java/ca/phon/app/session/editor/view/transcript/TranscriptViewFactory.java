@@ -81,7 +81,7 @@ public class TranscriptViewFactory implements ViewFactory {
             var lblText = tier.getTierName() + ": ";
             final float fontSizeDelta = PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f);
             var tierLabelWidth = g.getFontMetrics(FontPreferences.getTierFont().deriveFont(
-                    FontPreferences.getTierFont().getSize() + fontSizeDelta
+                    Font.BOLD, FontPreferences.getTierFont().getSize() + fontSizeDelta
             )).stringWidth(lblText);
             currentMax = Math.max(currentMax, tierLabelWidth);
         }
@@ -115,6 +115,10 @@ public class TranscriptViewFactory implements ViewFactory {
             labelColumnWidth = calculatePreferredLabelColumnWidth(g, this.session);
         }
         return labelColumnWidth;
+    }
+
+    public void setTierLabelWidth(int width) {
+        this.labelColumnWidth = width;
     }
 
     public int getPageWidth() {

@@ -17,6 +17,10 @@ public class TranscriptEditorKit extends StyledEditorKit {
         viewFactory = new TranscriptViewFactory(session);
     }
 
+    public void invalidateTierLabelWidth() {
+        viewFactory.setTierLabelWidth(-1);
+    }
+
     @Override
     public Document createDefaultDocument() {
         return new TranscriptDocument(viewFactory);

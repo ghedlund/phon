@@ -1640,7 +1640,6 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
                 // fix paragraph attributes
                 if (attrs != null) {
                     setParagraphAttributes(recordRange.start(), 0, attrs, true);
-                    updateGlobalParagraphAttributes();
                 }
 
                 if(getSingleRecordView()) {
@@ -1670,6 +1669,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
             final Tier<?> tier = tierSupplier.apply(record);
             if(tier == null) continue;
             final int recordParagraphIdx = findParagraphElementIndexForSessionElementIndex(sessionEleIdx);
+            if(recordParagraphIdx < 0) continue;
             int tierParagraphOffset = -1;
             if(tierIndex > 0) {
                 // find end of previous tier in view
@@ -1716,7 +1716,6 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
 
             try {
                 processBatchUpdates(insertPosition, builder.getBatch());
-                updateGlobalParagraphAttributes();
             } catch (BadLocationException e) {
                 LogUtil.severe(e);
             }
@@ -1767,7 +1766,6 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
             }
             if(madeChange) {
                 getInsertionHooks().forEach(hook -> hook.tierRemoved(this, tierName));
-                updateGlobalParagraphAttributes();
             }
         } catch (BadLocationException e) {
             LogUtil.severe(e);

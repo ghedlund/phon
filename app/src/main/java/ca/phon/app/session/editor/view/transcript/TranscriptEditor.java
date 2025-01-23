@@ -149,6 +149,11 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
     private TranscriptElementLocation currentTranscriptLocation = null;
 
     /**
+     * Reference to our custom transcript editor kit
+     */
+    private final TranscriptEditorKit editorKit;
+
+    /**
      * Constructor
      */
     public TranscriptEditor(Session session, EditorEventManager eventManager, SessionEditUndoSupport undoSupport, UndoManager undoManager) {
@@ -170,7 +175,8 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         this.undoManager = undoManager;
         initActions();
         registerEditorActions();
-        super.setEditorKitForContentType(TranscriptEditorKit.CONTENT_TYPE, new TranscriptEditorKit(dataModel.getSession()));
+        this.editorKit = new TranscriptEditorKit(dataModel.getSession());
+        super.setEditorKitForContentType(TranscriptEditorKit.CONTENT_TYPE, this.editorKit);
         setContentType(TranscriptEditorKit.CONTENT_TYPE);
         setNavigationFilter(new TranscriptNavigationFilter(this));
         TranscriptMouseAdapter mouseAdapter = new TranscriptMouseAdapter();
@@ -1619,10 +1625,25 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         var changeType = editorEvent.data().changeType();
         final Runnable runnable = switch (changeType) {
             case RELOAD -> () -> getTranscriptDocument().reload();
-            case MOVE_TIER -> () -> moveTier(editorEvent.data());
-            case DELETE_TIER, HIDE_TIER -> () -> hideTier(editorEvent.data());
-            case ADD_TIER, SHOW_TIER -> () -> showTier(editorEvent.data());
-            case TIER_NAME_CHANGE, TIER_FONT_CHANGE -> () -> tierFontOrNameChanged(editorEvent.data());
+            case MOVE_TIER -> () -> {
+                moveTier(editorEvent.data());
+            };
+            case DELETE_TIER, HIDE_TIER -> () -> {
+                hideTier(editorEvent.data());
+                editorKit.invalidateTierLabelWidth();
+                getTranscriptDocument().updateGlobalParagraphAttributes();
+            };
+            case ADD_TIER, SHOW_TIER -> () -> {
+                showTier(editorEvent.data());
+                // recalculate tier label width
+                editorKit.invalidateTierLabelWidth();
+                getTranscriptDocument().updateGlobalParagraphAttributes();
+            };
+            case TIER_NAME_CHANGE, TIER_FONT_CHANGE -> () -> {
+                tierFontOrNameChanged(editorEvent.data());
+                editorKit.invalidateTierLabelWidth();
+                getTranscriptDocument().updateGlobalParagraphAttributes();
+            };
             default -> () -> {
                 LogUtil.info("Unhandled tier view change type: " + changeType);
             };
