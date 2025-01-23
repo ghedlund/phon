@@ -1,2 +1,3 @@
 ca.phon.app.actions.TextFileOpenHandler
 ca.phon.app.actions.XMLFileOpenHandler
+ca.phon.app.project.ProjectOpenFileHandler
