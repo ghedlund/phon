@@ -12,6 +12,8 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The {@link ViewFactory} used by the {@link TranscriptEditor}
@@ -20,7 +22,7 @@ public class TranscriptViewFactory implements ViewFactory {
 
     public final static int LABEL_COLUMN_WIDTH = 150;
 
-    public final static int LABEL_COLUMN_PADDING = 10;
+    public final static int LABEL_COLUMN_PADDING = 5;
 
     public final static int PAGE_WIDTH = (int)(8.5 * 96);
 
@@ -31,6 +33,8 @@ public class TranscriptViewFactory implements ViewFactory {
     public int pageWidth = PAGE_WIDTH;
 
     private int labelColumnWidth = -1;
+
+    private List<String> additionalTiers = new ArrayList<>();
 
     /**
      * The spacing between the lines of the document
@@ -73,20 +77,30 @@ public class TranscriptViewFactory implements ViewFactory {
         }
     }
 
-    private static int calculatePreferredLabelColumnWidth(Graphics g, Session session) {
+    private static int calculatePreferredLabelColumnWidth(Graphics g, Session session, List<String> additionalTiers) {
         int currentMax = 0;
 
         for (var tier : session.getTierView()) {
             if(!tier.isVisible()) continue;
             var lblText = tier.getTierName() + ": ";
-            final float fontSizeDelta = PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f);
-            var tierLabelWidth = g.getFontMetrics(FontPreferences.getTierFont().deriveFont(
-                    Font.BOLD, FontPreferences.getTierFont().getSize() + fontSizeDelta
-            )).stringWidth(lblText);
+            var tierLabelWidth = calculateLabelTextWidth(g, lblText);
+            currentMax = Math.max(currentMax, tierLabelWidth);
+        }
+
+        for(var tierName: additionalTiers) {
+            var lblText = tierName + ": ";
+            var tierLabelWidth = calculateLabelTextWidth(g, lblText);
             currentMax = Math.max(currentMax, tierLabelWidth);
         }
 
         return currentMax + LABEL_COLUMN_PADDING;
+    }
+
+    private static int calculateLabelTextWidth(Graphics g, String lblText) {
+        final float fontSizeDelta = PrefHelper.getFloat(TranscriptView.FONT_SIZE_DELTA_PROP, 0.0f);
+        return g.getFontMetrics(FontPreferences.getTierFont().deriveFont(
+                Font.BOLD, FontPreferences.getTierFont().getSize() + fontSizeDelta
+        )).stringWidth(lblText);
     }
 
     private final Session session;
@@ -102,7 +116,7 @@ public class TranscriptViewFactory implements ViewFactory {
 
     public int getLabelColumnWidth(Graphics g, TranscriptDocument transcriptDocument) {
         if(labelColumnWidth < 0) {
-            labelColumnWidth = Math.min(calculatePreferredLabelColumnWidth(g, this.session), MAX_LABEL_COLUMN_WIDTH);
+            labelColumnWidth = Math.min(calculatePreferredLabelColumnWidth(g, this.session, this.additionalTiers), MAX_LABEL_COLUMN_WIDTH);
         }
         return labelColumnWidth;
     }
@@ -112,13 +126,18 @@ public class TranscriptViewFactory implements ViewFactory {
             // create a buffered image, get the graphics and calculate preferred label column width
             var bi = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             var g = bi.createGraphics();
-            labelColumnWidth = calculatePreferredLabelColumnWidth(g, this.session);
+            labelColumnWidth = calculatePreferredLabelColumnWidth(g, this.session, this.additionalTiers);
         }
         return labelColumnWidth;
     }
 
     public void setTierLabelWidth(int width) {
         this.labelColumnWidth = width;
+    }
+
+    public void setAdditionalTiers(List<String> additionalTiers) {
+        this.additionalTiers.clear();
+        this.additionalTiers.addAll(additionalTiers);
     }
 
     public int getPageWidth() {

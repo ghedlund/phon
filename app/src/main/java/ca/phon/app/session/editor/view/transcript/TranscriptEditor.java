@@ -1653,10 +1653,19 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
     /**
      * Recalculates the width of the tier labels and updates all paragraph attributes
+     *
+     * @param additionalTierNames additional tier names to consider when recalculating the tier label width
+     */
+    public void recalculateTierLabelWidth(List<String> additionalTierNames) {
+        editorKit.invalidateTierLabelWidth(additionalTierNames);
+        getTranscriptDocument().updateGlobalParagraphAttributes();
+    }
+
+    /**
+     * Recalculates the width of the tier labels and updates all paragraph attributes
      */
     public void recalculateTierLabelWidth() {
-        editorKit.invalidateTierLabelWidth();
-        getTranscriptDocument().updateGlobalParagraphAttributes();
+        recalculateTierLabelWidth(Collections.emptyList());
     }
 
     /**

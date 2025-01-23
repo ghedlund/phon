@@ -5,6 +5,7 @@ import ca.phon.session.Session;
 import javax.swing.text.Document;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.ViewFactory;
+import java.util.List;
 
 /**
  * The {@link javax.swing.text.EditorKit} used by the {@link TranscriptEditor}
@@ -17,7 +18,8 @@ public class TranscriptEditorKit extends StyledEditorKit {
         viewFactory = new TranscriptViewFactory(session);
     }
 
-    public void invalidateTierLabelWidth() {
+    public void invalidateTierLabelWidth(List<String> additionalTiers) {
+        viewFactory.setAdditionalTiers(additionalTiers);
         viewFactory.setTierLabelWidth(-1);
     }
 
