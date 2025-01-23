@@ -21,10 +21,14 @@ public final class PhonUIDefaults implements UIDefaultsHandler, IPluginExtension
     public final static String DARK_BLUE = "Phon.darkBlue";
     public final static Color DEFAULT_DARK_BLUE = new Color(17, 75, 122);
 
+    public final static String SELECTION_BLUE = "Phon.selectionBlue";
+    public final static Color DEFAULT_SELECTION_BLUE = Color.decode("#1E88E5");
+
     @Override
     public void setupDefaults(UIDefaults defaults) {
         defaults.put(LIGHT_BLUE, DEFAULT_LIGHT_BLUE);
         defaults.put(DARK_BLUE, DEFAULT_DARK_BLUE);
+        defaults.put(SELECTION_BLUE, DEFAULT_SELECTION_BLUE);
 
         defaults.put("CalloutWindow.background", Color.WHITE);
     }

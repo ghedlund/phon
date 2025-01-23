@@ -1,5 +1,7 @@
 package ca.phon.app.session.editor.view.transcript;
 
+import ca.phon.plugin.Rank;
+import ca.phon.ui.theme.PhonUIDefaults;
 import ca.phon.ui.theme.UIDefaults;
 import ca.phon.ui.theme.UIDefaultsHandler;
 import ca.phon.plugin.IPluginExtensionFactory;
@@ -9,6 +11,7 @@ import ca.phon.ui.PhonGuiConstants;
 import javax.swing.*;
 import java.awt.*;
 
+@Rank(10)
 public class TranscriptEditorUIProps implements UIDefaultsHandler, IPluginExtensionPoint<UIDefaultsHandler> {
     public final static String BACKGROUND = "TranscriptEditor.background";
     public final static Color DEFAULT_BACKGROUND = UIManager.getColor("EditorPane.background");
@@ -183,11 +186,11 @@ public class TranscriptEditorUIProps implements UIDefaultsHandler, IPluginExtens
     public final static Font DEFAULT_SCROLL_PANE_GUTTER_FONT = UIManager.getFont("Label.font");
 
     public final static String SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND = "TranscriptScrollPaneGutter.currentRecordBackground";
-    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND = Color.decode("#e0e0e0");
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND = Color.decode("#f8f8f8");
             // Color.decode("#e0e0e0");
 
     public final static String SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND = "TranscriptScrollPaneGutter.currentTierBackground";
-    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND = Color.decode("#d0d0d0");
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND = Color.decode("#e0e0e0");
 
     public final static String SCROLL_PANE_GUTTER_BORDER_COLOR = "TranscriptScrollPaneGutter.borderColor";
     public final static Color DEFAULT_SCROLL_PANE_GUTTER_BORDER_COLOR = UIManager.getColor("controlShadow");
