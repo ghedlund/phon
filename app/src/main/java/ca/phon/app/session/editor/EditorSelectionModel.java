@@ -74,15 +74,23 @@ public interface EditorSelectionModel {
 	public void addSelection(SessionEditorSelection selection);
 	
 	/**
-	 * Get selections for the specified record.
+	 * Get selections for the specified transcript element index.
 	 * 
-	 * @param recordIndex
+	 * @param elementIndex
 	 * 
 	 * @return selections for record index
 	 */
-	public List<SessionEditorSelection> getSelectionsForRecord(int recordIndex);
-	
-	public List<SessionEditorSelection> getSelectionsForTier(int recordIndex, String tierName);
+	public List<SessionEditorSelection> getSelectionsForElement(int elementIndex);
+
+	/**
+	 * Get selections for the specified element index and tier name.  If the element index is a comment or
+	 * gem tier, the tier name is ignored.
+	 *
+	 * @param elementIndex
+	 * @param tierName
+	 * @return
+	 */
+	public List<SessionEditorSelection> getSelectionsForTier(int elementIndex, String tierName);
 	
 	/**
 	 * Add a listener for this model.

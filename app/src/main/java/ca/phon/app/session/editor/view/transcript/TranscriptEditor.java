@@ -45,6 +45,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
+/**
+ * A custom JEditorPane implementation for displaying and modifying Phon session transcripts.
+ *
+ */
 public class TranscriptEditor extends JEditorPane implements IExtendable, ClipboardOwner {
 
     public final static EditorEventType<Void> transcriptDocumentPopulated = new EditorEventType<>("transcriptDocumentPopulated", Void.class);
@@ -1661,6 +1665,10 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         if (doc.getSingleRecordView()) {
             final EditorEvent<Void> e = new EditorEvent<>(recordChangedInSingleRecordMode, this, null);
             eventManager.queueEvent(e);
+
+            // update highlights for the new record
+            updateSelectionHighlights();
+
             return;
         }
 
@@ -1680,6 +1688,47 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             super.scrollRectToVisible(scrollToRect);
         } catch (BadLocationException e) {
             LogUtil.severe(e);
+        }
+    }
+
+    private void updateSelectionHighlights() {
+        if(!isSingleRecordView()) return;
+
+        // clear old highlights
+        selectionHighlightList.clear();
+        selectionMap.clear();
+
+        // get selections for the currently display transcript elements
+        final TranscriptDocument doc = getTranscriptDocument();
+        final List<Integer> selectedTranscriptElementIndices = new ArrayList<>();
+        for(int i = 0; i < doc.getDefaultRootElement().getElementCount(); i++) {
+            final Element elem = doc.getDefaultRootElement().getElement(i);
+            final AttributeSet attrs = elem.getElementCount() > 0 ? elem.getElement(0).getAttributes() : new SimpleAttributeSet();
+            final String elementType = TranscriptStyleConstants.getElementType(attrs);
+            if(elementType == null) continue;
+            if(TranscriptStyleConstants.ELEMENT_TYPE_RECORD.equals(elementType)) {
+                final Record record = TranscriptStyleConstants.getRecord(attrs);
+                if(record == null) continue;
+                final int elementIndex = getSession().getTranscript().getElementIndex(record);
+                if(elementIndex < 0) continue;
+                selectedTranscriptElementIndices.add(elementIndex);
+            } else if(TranscriptStyleConstants.ELEMENT_TYPE_GEM.equals(elementType)) {
+                final Gem gem = TranscriptStyleConstants.getGEM(attrs);
+                if(gem == null) continue;
+                final int elementIndex = getSession().getTranscript().getElementIndex(gem);
+                if(elementIndex < 0) continue;
+                selectedTranscriptElementIndices.add(elementIndex);
+            } else if(TranscriptStyleConstants.ELEMENT_TYPE_COMMENT.equals(elementType)) {
+                final Comment comment = TranscriptStyleConstants.getComment(attrs);
+                if(comment == null) continue;
+                final int elementIndex = getSession().getTranscript().getElementIndex(comment);
+                if(elementIndex < 0) continue;
+                selectedTranscriptElementIndices.add(elementIndex);
+            }
+        }
+
+        for(int elementIndex:selectedTranscriptElementIndices) {
+            selectionModel.getSelectionsForElement(elementIndex).forEach(this::addHighlightForSelection);
         }
     }
 
@@ -2780,6 +2829,51 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         }
     }
 
+    private void addHighlightForSelection(SessionEditorSelection selection) {
+        Highlighter.HighlightPainter painter = selection.getExtension(Highlighter.HighlightPainter.class);
+        if (painter == null) {
+            painter = new DefaultHighlighter.DefaultHighlightPainter(UIManager.getColor("TextArea.selectionBackground"));
+        }
+
+        final Transcript.Element transcriptElement = getSession().getTranscript().getElementAt(selection.getElementIndex());
+        if (transcriptElement.isRecord()) {
+            final int recordIndex = getSession().getTranscript().getRecordIndex(selection.getElementIndex());
+            int tierStart = getTranscriptDocument().getTierContentStart(recordIndex, selection.getTierName());
+            if (tierStart == -1) return;
+            try {
+                var selectionHighlight = getHighlighter().addHighlight(selection.getRange().getFirst() + tierStart, selection.getRange().getLast() + tierStart + 1, painter);
+                selectionHighlightList.add(selectionHighlight);
+                selectionMap.put(selection, selectionHighlight);
+            } catch (BadLocationException e) {
+                LogUtil.warning(e);
+            }
+        } else if (transcriptElement.isComment()) {
+            final Comment comment = transcriptElement.asComment();
+            final TranscriptDocument.StartEnd commentRange = getTranscriptDocument().getCommentContentStartEnd(comment);
+            if (commentRange.valid()) {
+                try {
+                    var selectionHighlight = getHighlighter().addHighlight(commentRange.start() + selection.getRange().getFirst(), commentRange.start() + selection.getRange().getLast() + 1, painter);
+                    selectionHighlightList.add(selectionHighlight);
+                    selectionMap.put(selection, selectionHighlight);
+                } catch (BadLocationException e) {
+                    LogUtil.warning(e);
+                }
+            }
+        } else if (transcriptElement.isGem()) {
+            final Gem gem = transcriptElement.asGem();
+            final TranscriptDocument.StartEnd gemRange = getTranscriptDocument().getGemContentStartEnd(gem);
+            if (gemRange.valid()) {
+                try {
+                    var selectionHighlight = getHighlighter().addHighlight(gemRange.start() + selection.getRange().getFirst(), gemRange.start() + selection.getRange().getLast() + 1, painter);
+                    selectionHighlightList.add(selectionHighlight);
+                    selectionMap.put(selection, selectionHighlight);
+                } catch (BadLocationException e) {
+                    LogUtil.warning(e);
+                }
+            }
+        }
+    }
+
     /**
      * The {@link EditorSelectionModelListener} that listens for selections for the transcript editor
      */
@@ -2787,48 +2881,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
         @Override
         public void selectionAdded(EditorSelectionModel model, SessionEditorSelection selection) {
-            Highlighter.HighlightPainter painter = selection.getExtension(Highlighter.HighlightPainter.class);
-            if (painter == null) {
-                painter = new DefaultHighlighter.DefaultHighlightPainter(UIManager.getColor("TextArea.selectionBackground"));
-            }
-
-            final Transcript.Element transcriptElement = getSession().getTranscript().getElementAt(selection.getElementIndex());
-            if (transcriptElement.isRecord()) {
-                final int recordIndex = getSession().getTranscript().getRecordIndex(selection.getElementIndex());
-                int tierStart = getTranscriptDocument().getTierContentStart(recordIndex, selection.getTierName());
-                if (tierStart == -1) return;
-                try {
-                    var selectionHighlight = getHighlighter().addHighlight(selection.getRange().getFirst() + tierStart, selection.getRange().getLast() + tierStart + 1, painter);
-                    selectionHighlightList.add(selectionHighlight);
-                    selectionMap.put(selection, selectionHighlight);
-                } catch (BadLocationException e) {
-                    LogUtil.warning(e);
-                }
-            } else if (transcriptElement.isComment()) {
-                final Comment comment = transcriptElement.asComment();
-                final TranscriptDocument.StartEnd commentRange = getTranscriptDocument().getCommentContentStartEnd(comment);
-                if (commentRange.valid()) {
-                    try {
-                        var selectionHighlight = getHighlighter().addHighlight(commentRange.start() + selection.getRange().getFirst(), commentRange.start() + selection.getRange().getLast() + 1, painter);
-                        selectionHighlightList.add(selectionHighlight);
-                        selectionMap.put(selection, selectionHighlight);
-                    } catch (BadLocationException e) {
-                        LogUtil.warning(e);
-                    }
-                }
-            } else if (transcriptElement.isGem()) {
-                final Gem gem = transcriptElement.asGem();
-                final TranscriptDocument.StartEnd gemRange = getTranscriptDocument().getGemContentStartEnd(gem);
-                if (gemRange.valid()) {
-                    try {
-                        var selectionHighlight = getHighlighter().addHighlight(gemRange.start() + selection.getRange().getFirst(), gemRange.start() + selection.getRange().getLast() + 1, painter);
-                        selectionHighlightList.add(selectionHighlight);
-                        selectionMap.put(selection, selectionHighlight);
-                    } catch (BadLocationException e) {
-                        LogUtil.warning(e);
-                    }
-                }
-            }
+            addHighlightForSelection(selection);
         }
 
         @Override

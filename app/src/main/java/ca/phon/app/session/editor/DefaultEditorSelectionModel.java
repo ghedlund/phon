@@ -77,18 +77,18 @@ public class DefaultEditorSelectionModel implements EditorSelectionModel {
 	}
 	
 	@Override
-	public List<SessionEditorSelection> getSelectionsForRecord(int recordIndex) {
-		return getSelectionsForTier(recordIndex, null);
+	public List<SessionEditorSelection> getSelectionsForElement(int elementIndex) {
+		return getSelectionsForTier(elementIndex, null);
 	}
 	
 	@Override
-	public List<SessionEditorSelection> getSelectionsForTier(int recordIndex, String tierName) {
+	public List<SessionEditorSelection> getSelectionsForTier(int elementIndex, String tierName) {
 		final List<SessionEditorSelection> retVal = new ArrayList<SessionEditorSelection>();
 		for(SessionEditorSelection selection:getSelections()) {
 			boolean keep = true;
 
-			if(recordIndex >= 0) {
-				keep &= selection.getElementIndex() == recordIndex;
+			if(elementIndex >= 0) {
+				keep &= selection.getElementIndex() == elementIndex;
 			}
 
 			if(tierName != null) {
