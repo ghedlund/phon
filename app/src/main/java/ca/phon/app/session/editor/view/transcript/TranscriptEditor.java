@@ -1695,12 +1695,15 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         if(!isSingleRecordView()) return;
 
         // clear old highlights
+        for(var highlight:selectionHighlightList) {
+            getHighlighter().removeHighlight(highlight);
+        }
         selectionHighlightList.clear();
         selectionMap.clear();
 
         // get selections for the currently display transcript elements
         final TranscriptDocument doc = getTranscriptDocument();
-        final List<Integer> selectedTranscriptElementIndices = new ArrayList<>();
+        final Set<Integer> selectedTranscriptElementIndices = new HashSet<>();
         for(int i = 0; i < doc.getDefaultRootElement().getElementCount(); i++) {
             final Element elem = doc.getDefaultRootElement().getElement(i);
             final AttributeSet attrs = elem.getElementCount() > 0 ? elem.getElement(0).getAttributes() : new SimpleAttributeSet();
@@ -1911,34 +1914,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
     public EditorEventManager getEventManager() {
         return eventManager;
-    }
-
-    /**
-     * Highlights the document element at the given point
-     *
-     * @param point the point on the editor
-     */
-    private void highlightElementAtPoint(Point2D point) {
-        int mousePosInDoc = viewToModel2D(point);
-        var elem = getTranscriptDocument().getCharacterElement(mousePosInDoc);
-        try {
-            removeCurrentHighlight();
-            currentHighlight = getHighlighter().addHighlight(elem.getStartOffset(), elem.getEndOffset(), highlightPainter);
-            repaint();
-        } catch (BadLocationException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * Removes the current highlight
-     */
-    private void removeCurrentHighlight() {
-        if (currentHighlight != null) {
-            getHighlighter().removeHighlight(currentHighlight);
-            currentHighlight = null;
-            SwingUtilities.invokeLater(this::repaint);
-        }
     }
 
     /**
@@ -2363,6 +2338,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
         return -1;
     }
+
 
     /**
      * Underlines the given document element
@@ -2902,11 +2878,12 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
         @Override
         public void selectionsCleared(EditorSelectionModel model) {
-            for (Object selectionHighLight : selectionHighlightList) {
-                getHighlighter().removeHighlight(selectionHighLight);
+            for(Object highlight : selectionHighlightList) {
+                getHighlighter().removeHighlight(highlight);
             }
             selectionHighlightList.clear();
             selectionMap.clear();
+            repaint();
         }
 
         @Override

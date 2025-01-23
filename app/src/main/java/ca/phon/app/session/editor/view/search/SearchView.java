@@ -153,11 +153,6 @@ public class SearchView extends EditorView {
     }
 
     private void setupEditorActions() {
-        getEditor().getEventManager().registerActionForEvent(
-                TranscriptEditor.recordChangedInSingleRecordMode,
-                this::onRecordChangedInSingleRecordMode,
-                EditorEventManager.RunOn.AWTEventDispatchThread
-        );
     }
 
     private void clearResults() {
@@ -373,23 +368,6 @@ public class SearchView extends EditorView {
         return null;
     }
 
-    private void onRecordChangedInSingleRecordMode(EditorEvent<Void> ee) {
-        updateTranscriptHighlights();
-    }
-
-    /**
-     * Update transcript view highlights in single record mode
-     *
-     */
-    private void updateTranscriptHighlights() {
-        if (getEditor().getViewModel().isShowing(TranscriptView.VIEW_NAME)) {
-            final TranscriptView transcriptView = (TranscriptView) getEditor().getViewModel().getView(TranscriptView.VIEW_NAME);
-            if(!transcriptView.isSingleRecordView()) return;
-
-
-        }
-    }
-
     /**
      * Listener for table selection and update transcript view
      */
@@ -414,24 +392,6 @@ public class SearchView extends EditorView {
                 if(transcriptView.getTranscriptEditor().isSingleRecordView()) {
                     final int recordIndex = transcriptView.getEditor().getSession().getTranscript().getRecordIndex(start.transcriptElementIndex());
                     if(recordIndex >= 0) {
-//                        getEditor().getEventManager().registerActionForEvent(
-//                                TranscriptEditor.recordChangedInSingleRecordMode,
-//                                new EditorAction<Void>() {
-//                                    @Override
-//                                    public void eventOccurred(EditorEvent<Void> ee) {
-//                                        final SessionEditorSelection selection = new SessionEditorSelection(range);
-//                                        getEditor().getSelectionModel().addSelection(selection);
-//                                        currentSelection = selection;
-//
-//                                        getEditor().getEventManager().removeActionForEvent(
-//                                                TranscriptEditor.recordChangedInSingleRecordMode,
-//                                                this
-//                                        );
-//                                    }
-//                                },
-//                                EditorEventManager.RunOn.AWTEventDispatchThread
-//                        );
-
                         getEditor().setCurrentRecordIndex(recordIndex);
                     }
                 } else {

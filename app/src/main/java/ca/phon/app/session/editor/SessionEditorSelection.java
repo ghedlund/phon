@@ -16,10 +16,12 @@
 package ca.phon.app.session.editor;
 
 import ca.phon.extensions.*;
+import ca.phon.session.position.TranscriptElementLocation;
 import ca.phon.session.position.TranscriptElementRange;
 import ca.phon.util.Range;
 
 import javax.swing.text.Highlighter.HighlightPainter;
+import java.util.Comparator;
 import java.util.Set;
 
 /**

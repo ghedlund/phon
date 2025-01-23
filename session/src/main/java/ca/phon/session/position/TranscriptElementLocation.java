@@ -28,4 +28,15 @@ public record TranscriptElementLocation(int transcriptElementIndex, String tier,
     public boolean valid() {
         return transcriptElementIndex >= -1 && tier != null && charPosition >= 0;
     }
+
+    public int compareTo(TranscriptElementLocation other) {
+        int retVal = Integer.compare(transcriptElementIndex, other.transcriptElementIndex);
+        if(retVal == 0) {
+            retVal = tier.compareTo(other.tier);
+        }
+        if(retVal == 0) {
+            retVal = Integer.compare(charPosition, other.charPosition);
+        }
+        return retVal;
+    }
 }
