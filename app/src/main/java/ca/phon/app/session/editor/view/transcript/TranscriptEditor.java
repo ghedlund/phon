@@ -1630,19 +1630,15 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             };
             case DELETE_TIER, HIDE_TIER -> () -> {
                 hideTier(editorEvent.data());
-                editorKit.invalidateTierLabelWidth();
-                getTranscriptDocument().updateGlobalParagraphAttributes();
+                recalculateTierLabelWidth();
             };
             case ADD_TIER, SHOW_TIER -> () -> {
                 showTier(editorEvent.data());
-                // recalculate tier label width
-                editorKit.invalidateTierLabelWidth();
-                getTranscriptDocument().updateGlobalParagraphAttributes();
+                recalculateTierLabelWidth();
             };
             case TIER_NAME_CHANGE, TIER_FONT_CHANGE -> () -> {
                 tierFontOrNameChanged(editorEvent.data());
-                editorKit.invalidateTierLabelWidth();
-                getTranscriptDocument().updateGlobalParagraphAttributes();
+                recalculateTierLabelWidth();
             };
             default -> () -> {
                 LogUtil.info("Unhandled tier view change type: " + changeType);
@@ -1653,6 +1649,14 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         } else {
             SwingUtilities.invokeLater(runnable);
         }
+    }
+
+    /**
+     * Recalculates the width of the tier labels and updates all paragraph attributes
+     */
+    public void recalculateTierLabelWidth() {
+        editorKit.invalidateTierLabelWidth();
+        getTranscriptDocument().updateGlobalParagraphAttributes();
     }
 
     /**

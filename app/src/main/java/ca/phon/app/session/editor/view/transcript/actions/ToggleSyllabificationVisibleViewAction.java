@@ -18,5 +18,6 @@ public class ToggleSyllabificationVisibleViewAction extends TranscriptViewAction
     @Override
     public void hookableActionPerformed(ActionEvent e) {
         this.getView().toggleSyllabificationVisible();
+        this.getView().getTranscriptEditor().recalculateTierLabelWidth();
     }
 }

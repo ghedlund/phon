@@ -108,7 +108,7 @@ public class TranscriptView extends EditorView {
 
         addPropertyChangeListener("fontSizeDelta", e -> {
             PrefHelper.getUserPreferences().putFloat(FONT_SIZE_DELTA_PROP, getFontSizeDelta());
-            transcriptEditor.getTranscriptDocument().updateGlobalParagraphAttributes();
+            transcriptEditor.recalculateTierLabelWidth();
         });
         setupKeyboardShortcuts();
     }
