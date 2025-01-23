@@ -584,6 +584,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
     public StartEnd getCommentLabelStartEnd(Comment comment) {
         final int commentEleIdx = getSession().getTranscript().getElementIndex(comment);
         final int paraEleIdx = findParagraphElementIndexForSessionElementIndex(commentEleIdx);
+        if(paraEleIdx < 0) return new StartEnd(-1, -1);
         final Element paraEle = getDefaultRootElement().getElement(paraEleIdx);
 
         for(int i = 0; i < paraEle.getElementCount(); i++) {
@@ -609,6 +610,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
     public StartEnd getCommentContentStartEnd(Comment comment) {
         final int commentEleIdx = getSession().getTranscript().getElementIndex(comment);
         final int paraEleIdx = findParagraphElementIndexForSessionElementIndex(commentEleIdx);
+        if(paraEleIdx < 0) return new StartEnd(-1, -1);
         final Element paraEle = getDefaultRootElement().getElement(paraEleIdx);
 
         int commentStart = paraEle.getStartOffset();
@@ -679,6 +681,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
     public StartEnd getGemContentStartEnd(Gem gem) {
         final int gemEleIdx = getSession().getTranscript().getElementIndex(gem);
         final int paraEleIdx = findParagraphElementIndexForSessionElementIndex(gemEleIdx);
+        if(paraEleIdx < 0) return new StartEnd(-1, -1);
         final Element paraEle = getDefaultRootElement().getElement(paraEleIdx);
 
         int gemStart = paraEle.getStartOffset();
@@ -1031,6 +1034,7 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
     public StartEnd getGemLabelStartEnd(Gem gem) {
         final int gemEleIdx = getSession().getTranscript().getElementIndex(gem);
         final int paraEleIdx = findParagraphElementIndexForSessionElementIndex(gemEleIdx);
+        if(paraEleIdx < 0) return new StartEnd(-1, -1);
         final Element paraEle = getDefaultRootElement().getElement(paraEleIdx);
 
         for(int i = 0; i < paraEle.getElementCount(); i++) {

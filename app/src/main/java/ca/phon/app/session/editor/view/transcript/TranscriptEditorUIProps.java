@@ -174,7 +174,7 @@ public class TranscriptEditorUIProps implements UIDefaultsHandler, IPluginExtens
 
     // region TranscriptScrollPaneGutter
     public final static String SCROLL_PANE_GUTTER_BACKGROUND = "TranscriptScrollPaneGutter.background";
-    public final static Color DEFAULT_SCROLL_PANE_GUTTER_BACKGROUND = UIManager.getColor("TextArea.background");
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_BACKGROUND = UIManager.getColor("control");
 
     public final static String SCROLL_PANE_GUTTER_FOREGROUND = "TranscriptScrollPaneGutter.foreground";
     public final static Color DEFAULT_SCROLL_PANE_GUTTER_FOREGROUND = UIManager.getColor("controlText");
@@ -183,11 +183,11 @@ public class TranscriptEditorUIProps implements UIDefaultsHandler, IPluginExtens
     public final static Font DEFAULT_SCROLL_PANE_GUTTER_FONT = UIManager.getFont("Label.font");
 
     public final static String SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND = "TranscriptScrollPaneGutter.currentRecordBackground";
-    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND = UIManager.getColor("control");
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_RECORD_BACKGROUND = Color.decode("#e0e0e0");
             // Color.decode("#e0e0e0");
 
     public final static String SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND = "TranscriptScrollPaneGutter.currentTierBackground";
-    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND = Color.decode("#e0e0e0");
+    public final static Color DEFAULT_SCROLL_PANE_GUTTER_CURRENT_TIER_BACKGROUND = Color.decode("#d0d0d0");
 
     public final static String SCROLL_PANE_GUTTER_BORDER_COLOR = "TranscriptScrollPaneGutter.borderColor";
     public final static Color DEFAULT_SCROLL_PANE_GUTTER_BORDER_COLOR = UIManager.getColor("controlShadow");

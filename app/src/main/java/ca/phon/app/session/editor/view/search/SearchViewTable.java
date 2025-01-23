@@ -15,6 +15,9 @@ import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Table for displaying quick search results
+ */
 public class SearchViewTable extends JXTable {
 
     public final static String SEARCHING_PROP = SearchViewTable.class.getName() + ".searching";
