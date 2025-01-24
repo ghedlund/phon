@@ -74,7 +74,7 @@
             <property name="Unicode">0x6b</property>
         </cell>
         <cell y="0" x="30" h="2" w="2">
-            <text>ɡ</text>
+            <text>g</text>
             <property name="Name">Opentail lower-case G</property>
             <property name="Description">Voiced velar stop</property>
             <property name="Unicode">0x261</property>
