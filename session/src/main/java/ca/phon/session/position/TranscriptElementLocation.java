@@ -15,6 +15,8 @@
  */
 package ca.phon.session.position;
 
+import java.util.List;
+
 /**
  * Represents a specific character location withing a transcript element.  If the transcript element is
  * a record, tier will be the name of the specific tier.  If the transcript element is a comment, the
@@ -33,6 +35,17 @@ public record TranscriptElementLocation(int transcriptElementIndex, String tier,
         int retVal = Integer.compare(transcriptElementIndex, other.transcriptElementIndex);
         if(retVal == 0) {
             retVal = tier.compareTo(other.tier);
+        }
+        if(retVal == 0) {
+            retVal = Integer.compare(charPosition, other.charPosition);
+        }
+        return retVal;
+    }
+
+    public int compareTo(TranscriptElementLocation other, List<String> tierList) {
+        int retVal = Integer.compare(transcriptElementIndex, other.transcriptElementIndex);
+        if(retVal == 0) {
+            retVal = Integer.compare(tierList.indexOf(tier), tierList.indexOf(other.tier));
         }
         if(retVal == 0) {
             retVal = Integer.compare(charPosition, other.charPosition);

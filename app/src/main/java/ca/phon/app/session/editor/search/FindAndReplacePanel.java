@@ -496,8 +496,11 @@ public class FindAndReplacePanel extends JPanel {
 		if(currentLocation.valid()) {
 			for(int i = 0; i < searchResults.size(); i++) {
 				final TranscriptElementRange range = searchResults.get(i);
-				if(currentLocation.compareTo(range.start()) <= 0) {
-					currentResultIdx = i;
+				final int comparison = range.start().compareTo(currentLocation, Arrays.asList(findManager.getSearchTiers()));
+
+				// if the current location is before the current search result, set the current result index to the previous result
+				if(comparison >= 0) {
+					currentResultIdx = i - 1;
 					break;
 				}
 			}
