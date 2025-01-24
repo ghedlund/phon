@@ -459,13 +459,9 @@ public class FindAndReplacePanel extends JPanel {
 
 		final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
 		if(transcriptView == null) return;
-		final TranscriptElementLocation startLocation = new TranscriptElementLocation(0, findManager.getSearchTiers()[0], 0);
 		final TranscriptElementLocation currentLocation = transcriptView.getTranscriptEditor().getCurrentSessionLocation();
-//		if(currentLocation.valid()) {
-//			findManager.setCurrentLocation(currentLocation);
-//		} else {
-			findManager.setCurrentLocation(startLocation);
-//		}
+		final TranscriptElementLocation startLocation = new TranscriptElementLocation(0, findManager.getSearchTiers()[0], 0);
+		findManager.setCurrentLocation(startLocation);
 
 		final FindExpr findExpr = new FindExpr(queryText);
 		findExpr.setCaseSensitive(caseSensitiveButton.isSelected());
@@ -493,6 +489,17 @@ public class FindAndReplacePanel extends JPanel {
 			final SessionEditorSelection selection = new SessionEditorSelection(range);
 			selection.putExtension(Highlighter.HighlightPainter.class, new BoxSelectHighlightPainter());
 			getSelectionModel().addSelection(selection);
+		}
+
+		// find out where the current location is in the search results
+		if(currentLocation.valid()) {
+			for(int i = 0; i < searchResults.size(); i++) {
+				final TranscriptElementRange range = searchResults.get(i);
+				if(currentLocation.compareTo(range.start()) <= 0) {
+					currentResultIdx = i;
+					break;
+				}
+			}
 		}
 
 		findNext();
@@ -654,7 +661,20 @@ public class FindAndReplacePanel extends JPanel {
 			getSelectionModel().addSelection(selection);
 			currentSelection = selection;
 
+			int elementIndex = range.transcriptElementIndex();
+			while(elementIndex < getEditorDataModel().getSession().getTranscript().getNumberOfElements()
+					&& !getEditorDataModel().getSession().getTranscript().getElementAt(elementIndex).isRecord()) {
+				elementIndex++;
+			}
+			int recordIndex = -1;
+			if(elementIndex < getEditorDataModel().getSession().getTranscript().getNumberOfElements()) {
+				recordIndex = getEditorDataModel().getSession().getTranscript().getRecordIndex(elementIndex);
+			}
+
 			final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
+			if(transcriptView.isSingleRecordView() && recordIndex >= 0) {
+				selectionModel.requestSwitchToRecord(recordIndex);
+			}
 			final int charPos = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
 			if(charPos >= 0)
 				transcriptView.getTranscriptEditor().setCaretPosition(charPos);
@@ -676,7 +696,20 @@ public class FindAndReplacePanel extends JPanel {
 			getSelectionModel().addSelection(selection);
 			currentSelection = selection;
 
+			int elementIndex = range.transcriptElementIndex();
+			while(elementIndex < getEditorDataModel().getSession().getTranscript().getNumberOfElements()
+					&& !getEditorDataModel().getSession().getTranscript().getElementAt(elementIndex).isRecord()) {
+				elementIndex++;
+			}
+			int recordIndex = -1;
+			if(elementIndex < getEditorDataModel().getSession().getTranscript().getNumberOfElements()) {
+				recordIndex = getEditorDataModel().getSession().getTranscript().getRecordIndex(elementIndex);
+			}
+
 			final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
+			if(transcriptView.isSingleRecordView() && recordIndex >= 0) {
+				selectionModel.requestSwitchToRecord(recordIndex);
+			}
 			final int charPos = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
 			if (charPos >= 0)
 				transcriptView.getTranscriptEditor().setCaretPosition(charPos);
