@@ -175,18 +175,42 @@ public class SessionCheckView extends EditorView {
 					int row = sessionCheckTable.rowAtPoint(e.getPoint());
 					if(row >= 0) {
 						ValidationEvent ve = tableModel.events.get(row);
-						if(ve.getElementIndex() >= 0) {
-							Transcript.Element element = getEditor().getSession().getTranscript().getElementAt(ve.getElementIndex());
-							if(element.isRecord()) {
-								TranscriptElementLocation loc = new TranscriptElementLocation(ve.getElementIndex(), ve.getTierName(), 0);
-								TranscriptView tv = (TranscriptView) getEditor().getViewModel().getView(TranscriptView.VIEW_NAME);
+						TranscriptView tv = (TranscriptView) getEditor().getViewModel().getView(TranscriptView.VIEW_NAME);
+						if(ve.getElementIndex() >= -1) {
+							final TranscriptElementLocation loc = new TranscriptElementLocation(ve.getElementIndex(), ve.getTierName(), 0);
+
+							int elementIndex = ve.getElementIndex();
+							while(elementIndex < getEditor().getDataModel().getSession().getTranscript().getNumberOfElements()
+									&& !getEditor().getDataModel().getSession().getTranscript().getElementAt(elementIndex).isRecord()) {
+								elementIndex++;
+							}
+							int recordIndex = -1;
+							if(elementIndex < getEditor().getDataModel().getSession().getTranscript().getNumberOfElements()) {
+								recordIndex = getEditor().getDataModel().getSession().getTranscript().getRecordIndex(elementIndex);
+							}
+
+							if(ve.getElementIndex() >= 0 && tv.isSingleRecordView()) {
+								getEditor().getEventManager().registerActionForEvent(TranscriptEditor.recordChangedInSingleRecordMode,
+										new EditorAction<Void>() {
+											@Override
+											public void eventOccurred(EditorEvent<Void> ee) {
+												int charPos = tv.getTranscriptEditor().sessionLocationToCharPos(loc);
+												if (charPos >= 0) {
+													tv.getTranscriptEditor().setCaretPosition(charPos);
+													tv.getTranscriptEditor().requestFocus();
+												}
+
+												getEditor().getEventManager().removeActionForEvent(TranscriptEditor.recordChangedInSingleRecordMode, this);
+											}
+										}, EditorEventManager.RunOn.AWTEventDispatchThread);
+
+								getEditor().getSelectionModel().requestSwitchToRecord(recordIndex);
+							} else {
 								int charPos = tv.getTranscriptEditor().sessionLocationToCharPos(loc);
-								if(charPos >= 0) {
+								if (charPos >= 0) {
 									tv.getTranscriptEditor().setCaretPosition(charPos);
 									tv.getTranscriptEditor().requestFocus();
 								}
-							} else {
-
 							}
 						}
 					}
