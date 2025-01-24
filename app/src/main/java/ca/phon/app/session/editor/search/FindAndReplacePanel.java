@@ -24,6 +24,7 @@ import ca.phon.app.session.editor.undo.SessionEditUndoSupport;
 import ca.phon.app.session.editor.undo.TierEdit;
 import ca.phon.app.session.editor.view.common.*;
 import ca.phon.app.session.editor.view.transcript.BoxSelectHighlightPainter;
+import ca.phon.app.session.editor.view.transcript.TranscriptEditor;
 import ca.phon.app.session.editor.view.transcript.TranscriptView;
 import ca.phon.extensions.UnvalidatedValue;
 import ca.phon.session.Record;
@@ -673,11 +674,23 @@ public class FindAndReplacePanel extends JPanel {
 
 			final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
 			if(transcriptView.isSingleRecordView() && recordIndex >= 0) {
+				editorEventManager.registerActionForEvent(TranscriptEditor.recordChangedInSingleRecordMode,
+						new EditorAction<Void>() {
+							@Override
+							public void eventOccurred(EditorEvent<Void> ee) {
+								final int charPos = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
+								if(charPos >= 0)
+									transcriptView.getTranscriptEditor().setCaretPosition(charPos);
+								editorEventManager.removeActionForEvent(TranscriptEditor.recordChangedInSingleRecordMode, this);
+							}
+						}, EditorEventManager.RunOn.AWTEventDispatchThread);
+
 				selectionModel.requestSwitchToRecord(recordIndex);
+			} else {
+				final int charPos = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
+				if (charPos >= 0)
+					transcriptView.getTranscriptEditor().setCaretPosition(charPos);
 			}
-			final int charPos = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
-			if(charPos >= 0)
-				transcriptView.getTranscriptEditor().setCaretPosition(charPos);
 		} else {
 			currentResultIdx = -1;
 			if(searchResults.size() > 0) {
@@ -708,6 +721,17 @@ public class FindAndReplacePanel extends JPanel {
 
 			final TranscriptView transcriptView = (TranscriptView) editorViewModel.getView(TranscriptView.VIEW_NAME);
 			if(transcriptView.isSingleRecordView() && recordIndex >= 0) {
+				editorEventManager.registerActionForEvent(TranscriptEditor.recordChangedInSingleRecordMode,
+						new EditorAction<Void>() {
+							@Override
+							public void eventOccurred(EditorEvent<Void> ee) {
+								final int charPos = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
+								if(charPos >= 0)
+									transcriptView.getTranscriptEditor().setCaretPosition(charPos);
+								editorEventManager.removeActionForEvent(TranscriptEditor.recordChangedInSingleRecordMode, this);
+							}
+						}, EditorEventManager.RunOn.AWTEventDispatchThread);
+
 				selectionModel.requestSwitchToRecord(recordIndex);
 			}
 			final int charPos = transcriptView.getTranscriptEditor().sessionLocationToCharPos(range.start());
