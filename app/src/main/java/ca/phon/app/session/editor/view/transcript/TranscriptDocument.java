@@ -2068,6 +2068,8 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
 
         @Override
         protected void done() {
+            // for some reason the first paragraph needs updated attributes to properly setup line spacing, etc.
+            updateParagraphAttributes(getDefaultRootElement().getElement(0));
             propertyChangeSupport.firePropertyChange("populate", true, false);
         }
 
