@@ -209,12 +209,24 @@ public class TranscriptViewFactory implements ViewFactory {
         @Override
         protected Component createComponent() {
             AttributeSet attrs = getAttributes();
+            final SimpleAttributeSet mutAttrs = new SimpleAttributeSet(attrs);
+            mutAttrs.addAttribute("TranscriptViewFactory.tierWidth", PAGE_WIDTH - LABEL_COLUMN_WIDTH);
             var componentFactory = TranscriptStyleConstants.getComponentFactory(attrs);
             if (componentFactory != null) {
-                return componentFactory.createComponent(attrs);
+                return componentFactory.createComponent(mutAttrs);
             }
 
             return null;
+        }
+
+        @Override
+        public int getBreakWeight(int axis, float pos, float len) {
+            return View.ExcellentBreakWeight;
+        }
+
+        @Override
+        public View breakView(int axis, int p0, float pos, float len) {
+            return super.breakView(axis, p0, pos, len);
         }
     }
 

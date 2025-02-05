@@ -33,7 +33,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
     public final static String SYLLABIFICATION_IS_VISIBLE = "isSyllabificationVisible";
     public final static boolean SYLLABIFICATION_IS_VISIBLE_DEFAULT = false;
     public final static String SYLLABIFICATION_IS_COMPONENT = "isSyllabificationComponent";
-    public final static boolean SYLLABIFICATION_IS_COMPONENT_DEFAULT = false;
+    public final static boolean SYLLABIFICATION_IS_COMPONENT_DEFAULT = true;
 
     /* State */
 
@@ -70,9 +70,6 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                 if (tier != null && tier.getDeclaredType().equals(IPATranscript.class)) {
                     Tier<IPATranscript> ipaTier = (Tier<IPATranscript>) tier;
 
-                    // Add a newline at the end of the regular tier content
-                    builder.appendEOL();
-
                     // Create a dummy tier for the syllabification
                     IPATranscript ipa = ipaTier.getValue();
                     Tier<IPATranscript> syllableTier = doc.getSessionFactory().createTier(getTierNameForSyllabification(tier), IPATranscript.class);
@@ -95,6 +92,20 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                     } else {
                         builder.appendAll(getFormattedSyllabification(ipa, tierAttrs));
                     }
+
+                    final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(builder.getTrailingAttributes());
+                    TranscriptStyleConstants.setTier(finalAttrs, syllableTier);
+                    TranscriptStyleConstants.setNotEditable(finalAttrs, true);
+                    TranscriptStyleConstants.setComponentFactory(finalAttrs, new ComponentFactory() {
+                        @Override
+                        public JComponent createComponent(AttributeSet attrs) {
+                            final JPanel retVal = new JPanel();
+                            retVal.setPreferredSize(new Dimension(0, 0));
+                            return retVal;
+                        }
+                    });
+
+                    builder.appendEOL(finalAttrs);
                 }
 
                 return builder.getBatch();
