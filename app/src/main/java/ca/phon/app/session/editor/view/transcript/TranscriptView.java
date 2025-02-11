@@ -93,7 +93,7 @@ public class TranscriptView extends EditorView {
         this.transcriptEditor.addPropertyChangeListener(
             "currentRecordIndex", e -> {
                 if(!isSingleRecordView()) {
-                    editor.setCurrentRecordIndex((Integer) e.getNewValue());
+                    editor.setCurrentRecordIndex((Integer) e.getNewValue(), transcriptEditor);
                 }
             }
         );

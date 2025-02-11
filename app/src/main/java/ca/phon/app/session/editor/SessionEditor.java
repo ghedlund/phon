@@ -432,11 +432,23 @@ public class SessionEditor extends JPanel implements IExtendable, ClipboardOwner
 	 * @throws ArrayIndexOutOfBoundsException
 	 */
 	public void setCurrentRecordIndex(int index) {
+		setCurrentRecordIndex(index, this);
+	}
+
+	/**
+	 * Set current record index and indicate a different source for the event
+	 *
+	 * @param index
+	 * @param source
+	 *
+	 * @throws ArrayIndexOutOfBoundsException
+	 */
+	public void setCurrentRecordIndex(int index, Component source) {
 		if(getDataModel().getRecordCount() > 0 && (index < 0 || index >= getDataModel().getRecordCount())) {
 			throw new ArrayIndexOutOfBoundsException(index);
 		}
 		this.currentRecord = index;
-		final EditorEvent<EditorEventType.RecordChangedData> ee = new EditorEvent<>(EditorEventType.RecordChanged, this,
+		final EditorEvent<EditorEventType.RecordChangedData> ee = new EditorEvent<>(EditorEventType.RecordChanged, source,
 				new EditorEventType.RecordChangedData(currentRecord(), getSession().getRecordElementIndex(this.currentRecord), this.currentRecord));
 		getEventManager().queueEvent(ee);
 	}

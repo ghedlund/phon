@@ -1638,7 +1638,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         getTranscriptEditorCaret().unfreeze();
 
         // set dot to start of currently selected record tier
-        if(currentLocation.transcriptElementIndex() >= 0) {
+        if(editorEvent.source() != this && currentLocation.transcriptElementIndex() >= 0) {
             final int transcriptElementIndex = editorEvent.data().elementIndex();
             final TranscriptElementLocation newLocation = new TranscriptElementLocation(transcriptElementIndex,
                     currentLocation.tier(), 0);
