@@ -18,6 +18,7 @@ package ca.phon.app.project;
 import ca.phon.app.log.LogUtil;
 import ca.phon.app.modules.EntryPointArgs;
 import ca.phon.app.session.editor.SessionEditorEP;
+import ca.phon.app.welcome.WelcomeWindow;
 import ca.phon.plugin.*;
 import ca.phon.project.*;
 import ca.phon.session.Session;
@@ -158,6 +159,14 @@ public class OpenProjectEP implements IPluginEntryPoint {
 
     		pwindow.setLocationRelativeTo(CommonModuleFrame.getCurrentFrame());
     		pwindow.setVisible(true);
+
+			// close the welcome window
+			for(CommonModuleFrame cmf:CommonModuleFrame.getOpenWindows()) {
+				if(cmf instanceof WelcomeWindow) {
+					cmf.setVisible(false);
+					cmf.dispose();
+				}
+			}
     		
     		return true;
 		} catch (Exception e) {
