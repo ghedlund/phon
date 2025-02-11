@@ -1200,7 +1200,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                             final URL docUrl = new URL(docUri);
                             currentDocUrl.set(docUrl);
 
-                            sb.append(" (F1 for more info)");
+                            sb.append(" (F2 for more info)");
                         } catch (MalformedURLException e) {
                             LogUtil.warning(e);
                         }
@@ -1269,7 +1269,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                         final KeyEvent ke = (KeyEvent)event;
                         if(ke.getID() == KeyEvent.KEY_PRESSED && ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                             closeAct.actionPerformed(null);
-                        } else if(ke.getID() == KeyEvent.KEY_PRESSED && ke.getKeyCode() == KeyEvent.VK_F1) {
+                        } else if(ke.getID() == KeyEvent.KEY_PRESSED && ke.getKeyCode() == KeyEvent.VK_F2) {
                             if(currentDocUrl.get() != null) {
                                 try {
                                     Desktop.getDesktop().browse(currentDocUrl.get().toURI());
