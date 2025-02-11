@@ -2054,12 +2054,9 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
                         ElementSpec nextEnd = chunk.remove(chunk.size() - 1);
                         nextEndStart = new EndStart(nextEnd, nextStart);
                     }
-                    int currentNumParagraphs = getDefaultRootElement().getElementCount();
+//                    int currentNumParagraphs = getDefaultRootElement().getElementCount();
                     processBatchUpdates(getLength(), chunk);
-                    for(int i = currentNumParagraphs; i < getDefaultRootElement().getElementCount(); i++) {
-                        Element paraEle = getDefaultRootElement().getElement(i);
-                        updateParagraphAttributes(paraEle);
-                    }
+
                 } catch (BadLocationException e) {
                     throw new RuntimeException(e);
                 }
@@ -2068,9 +2065,15 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
 
         @Override
         protected void done() {
-            // for some reason the first paragraph needs updated attributes to properly setup line spacing, etc.
-            updateParagraphAttributes(getDefaultRootElement().getElement(0));
-            propertyChangeSupport.firePropertyChange("populate", true, false);
+            try {
+                if(isCancelled()) return;
+                updateGlobalParagraphAttributes();
+            } catch (Exception e) {
+                LogUtil.severe(e);
+            } finally {
+                populateWorker = null;
+                propertyChangeSupport.firePropertyChange("populate", true, false);
+            }
         }
 
     }

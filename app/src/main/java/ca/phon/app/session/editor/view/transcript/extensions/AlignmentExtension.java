@@ -8,7 +8,9 @@ import ca.phon.app.session.editor.view.transcript.*;
 import ca.phon.session.*;
 import ca.phon.session.Record;
 
+import javax.swing.*;
 import javax.swing.text.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class AlignmentExtension implements TranscriptEditorExtension {
     public final static boolean ALIGNMENT_IS_VISIBLE_DEFAULT = false;
 
     public final static String ALIGNMENT_IS_COMPONENT = "isAlignmentComponent";
-    public final static boolean ALIGNMENT_IS_COMPONENT_DEFAULT = false;
+    public final static boolean ALIGNMENT_IS_COMPONENT_DEFAULT = true;
 
     public final static String ALIGNMENT_PARENT = "alignmentParent";
     public final static TierViewItem ALIGNMENT_PARENT_DEFAULT = null;
@@ -46,7 +48,7 @@ public class AlignmentExtension implements TranscriptEditorExtension {
                 if (tier != null && isAlignmentVisible() && alignmentParent != null && tier.getName().equals(alignmentParent.getTierName())) {
                     Record record = TranscriptStyleConstants.getRecord(attrs);
                     final TranscriptBatchBuilder batchBuilder = new TranscriptBatchBuilder(doc);
-                    batchBuilder.appendEOL();
+//                    batchBuilder.appendEOL();
                     final SimpleAttributeSet tierAttrs = new SimpleAttributeSet();
                     TranscriptStyleConstants.setElementType(tierAttrs, TranscriptStyleConstants.ELEMENT_TYPE_RECORD);
                     TranscriptStyleConstants.setRecord(tierAttrs, record);
@@ -54,6 +56,18 @@ public class AlignmentExtension implements TranscriptEditorExtension {
                     TranscriptStyleConstants.setTier(tierAttrs, record.getPhoneAlignmentTier());
                     batchBuilder.appendTierLabel(editor.getSession(), record, record.getPhoneAlignmentTier(), record.getPhoneAlignmentTier().getName(), null, doc.isChatTierNamesShown(), tierAttrs);
                     batchBuilder.appendAll(getFormattedAlignment(record, record.getPhoneAlignmentTier(), editor.getDataModel().getTranscriber(), tierAttrs));
+                    final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(batchBuilder.getTrailingAttributes());
+                    TranscriptStyleConstants.setTier(finalAttrs, record.getPhoneAlignmentTier());
+                    TranscriptStyleConstants.setNotEditable(finalAttrs, true);
+                    TranscriptStyleConstants.setComponentFactory(finalAttrs, new ComponentFactory() {
+                        @Override
+                        public JComponent createComponent(AttributeSet attrs) {
+                            final JPanel retVal = new JPanel();
+                            retVal.setPreferredSize(new Dimension(0, 0));
+                            return retVal;
+                        }
+                    });
+                    batchBuilder.appendEOL(finalAttrs);
                     return batchBuilder.getBatch();
                 }
 
