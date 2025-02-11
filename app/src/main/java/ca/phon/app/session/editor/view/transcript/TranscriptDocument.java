@@ -8,6 +8,8 @@ import ca.phon.extensions.IExtendable;
 import ca.phon.plugin.PluginManager;
 import ca.phon.session.Record;
 import ca.phon.session.*;
+import ca.phon.session.io.OriginalFormat;
+import ca.phon.session.io.SessionIO;
 import ca.phon.util.Language;
 
 import javax.swing.*;
@@ -149,6 +151,16 @@ public class TranscriptDocument extends DefaultStyledDocument implements IExtend
      */
     public void setSession(Session session) {
         this.session = session;
+
+        // set chat tier names shown if original format is chat
+        final OriginalFormat originalFormat = session.getExtension(OriginalFormat.class);
+        if(originalFormat != null) {
+            final SessionIO io = originalFormat.getSessionIO();
+            if("CHAT".equals(io.id())) {
+               this.chatTierNamesShown = true;
+            }
+        }
+
         try {
             if (getLength() > 0) {
                 remove(0, getLength());
