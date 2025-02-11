@@ -815,23 +815,21 @@ public class TranscriptView extends EditorView {
 
         menuBuilder.addSeparator(".", "existing_tiers");
 
-        JMenuItem toggleAlignmentVisibleItem = new JMenuItem();
-        toggleAlignmentVisibleItem.setAction(new ToggleAlignmentVisibleViewAction(getEditor(), TranscriptView.this));
-        menuBuilder.addItem(".", toggleAlignmentVisibleItem);
-
-        JMenuItem toggleAlignmentComponentItem = new JMenuItem();
-        toggleAlignmentComponentItem.setAction(new ToggleAlignmentIsComponentViewAction(getEditor(), TranscriptView.this));
-        menuBuilder.addItem(".", toggleAlignmentComponentItem);
-
-        menuBuilder.addSeparator(".", "");
-
         JMenuItem toggleSyllabificationVisibleItem = new JMenuItem();
         toggleSyllabificationVisibleItem.setAction(new ToggleSyllabificationVisibleViewAction(getEditor(), TranscriptView.this));
         menuBuilder.addItem(".", toggleSyllabificationVisibleItem);
 
-        JMenuItem toggleSyllabificationComponentItem = new JMenuItem();
-        toggleSyllabificationComponentItem.setAction(new ToggleSyllabificationIsComponent(getEditor(), TranscriptView.this));
-        menuBuilder.addItem(".", toggleSyllabificationComponentItem);
+//        JMenuItem toggleSyllabificationComponentItem = new JMenuItem();
+//        toggleSyllabificationComponentItem.setAction(new ToggleSyllabificationIsComponent(getEditor(), TranscriptView.this));
+//        menuBuilder.addItem(".", toggleSyllabificationComponentItem);
+
+        JMenuItem toggleAlignmentVisibleItem = new JMenuItem();
+        toggleAlignmentVisibleItem.setAction(new ToggleAlignmentVisibleViewAction(getEditor(), TranscriptView.this));
+        menuBuilder.addItem(".", toggleAlignmentVisibleItem);
+
+//        JMenuItem toggleAlignmentComponentItem = new JMenuItem();
+//        toggleAlignmentComponentItem.setAction(new ToggleAlignmentIsComponentViewAction(getEditor(), TranscriptView.this));
+//        menuBuilder.addItem(".", toggleAlignmentComponentItem);
 
         menuBuilder.addSeparator(".", "");
 
