@@ -511,8 +511,11 @@ public class LocalProject extends AbstractProject implements ProjectRefresh {
 			retVal.setSessionPath(sp);
 
 			// set original format extension
-			final OriginalFormat origFormat = new OriginalFormat(reader.getClass().getAnnotation(SessionIO.class));
-			retVal.putExtension(OriginalFormat.class, origFormat);
+			final SessionIO origIO = reader.getClass().getAnnotation(SessionIO.class);
+			if(origIO != null) {
+				final OriginalFormat origFormat = new OriginalFormat(origIO);
+				retVal.putExtension(OriginalFormat.class, origFormat);
+			}
 
 			return retVal;
 		} catch (Exception e) {
