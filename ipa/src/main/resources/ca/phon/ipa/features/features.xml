@@ -581,7 +581,7 @@
     <feature_set char="ʄ">consonant palatal coronal lingual posterior voiced stop obstruent implosive oral
     </feature_set>
 	<!--ʅ (0x285)-->
-    <feature_set char="ʅ">vowel apical retroflex</feature_set>
+    <feature_set char="ʅ">vowel unrounded apical retroflex front high tense</feature_set>
 	<!--k (0x6b)-->
     <feature_set char="k">consonant dorsal velar lingual voiceless stop obstruent oral</feature_set>
 	<!--g (0x67)-->
@@ -750,7 +750,7 @@
     <feature_set char="ɣ">consonant dorsal velar lingual voiced continuant obstruent fricative oral
     </feature_set>
 	<!--ɧ (0x267)-->
-    <feature_set char="ɧ">consonant dorsal velar coronal lingual posterior alveopalatal voiceless continuant obstruent
+    <feature_set char="ɧ">consonant dorsal velar coronal lingual posterior voiceless continuant obstruent
         fricative oral
     </feature_set>
 	<!--χ (0x3c7)-->
@@ -865,7 +865,7 @@
         sonorant flap oral
     </feature_set>
 	<!--ɿ (0x27f)-->
-    <feature_set char="ɿ">vowel apical alveolar</feature_set>
+    <feature_set char="ɿ">vowel unrounded apical alveolar front high tense</feature_set>
 	<!--r (0x72)-->
     <feature_set char="r">consonant coronal lingual anterior alveolar voiced approximant liquid rhotic continuant
         sonorant trill oral

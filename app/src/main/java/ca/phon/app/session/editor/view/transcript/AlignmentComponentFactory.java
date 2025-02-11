@@ -14,14 +14,22 @@ public class AlignmentComponentFactory implements ComponentFactory {
     public JComponent createComponent(AttributeSet attrs) {
         Tier<PhoneAlignment> tier = (Tier<PhoneAlignment>) attrs.getAttribute("tier");
 
-        PhoneMapDisplay display = new PhoneMapDisplay();
-        int wordIndex = 0;
+        int breakWidth = -1;
+        if(attrs.getAttribute("TranscriptViewFactory.tierWidth") != null) {
+            breakWidth = (int)attrs.getAttribute("TranscriptViewFactory.tierWidth");
+        }
+        final BreakableFlowLayout layout = new BreakableFlowLayout();
+        layout.setBreakWidth(breakWidth);
+        final JPanel retVal = new JPanel(layout);
+        retVal.setBackground(UIManager.getColor("text"));
+
         for (Iterator<PhoneMap> i = tier.getValue().iterator(); i.hasNext();) {
             var phoneMap = i.next();
-            display.setPhoneMapForWord(wordIndex, phoneMap);
-            wordIndex++;
+            final PhoneMapDisplay display = new PhoneMapDisplay();
+            display.setPhoneMapForWord(0, phoneMap);
+            retVal.add(display);
         }
 
-        return display;
+        return retVal;
     }
 }
