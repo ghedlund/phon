@@ -186,9 +186,10 @@ public class CommonModuleFrame extends JFrame implements IExtendable {
 				CommonModuleFrame.this.removeWindowListener(this);
 				
 				if(CommonModuleFrame.getOpenWindows().size() == 0) {
+					final String nextEntryPt = arg0.getWindow().getClass().getName().endsWith("WelcomeWindow") ? "Exit" : "WelcomeWindow";
 					// exit application
 					try {
-						PluginEntryPointRunner.executePlugin("Exit");
+						PluginEntryPointRunner.executePlugin(nextEntryPt);
 					} catch (PluginException e) {
 						Logger.getLogger(getClass().getName()).log(Level.WARNING, e.getLocalizedMessage(), e);
 						System.exit(1);
