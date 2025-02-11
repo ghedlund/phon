@@ -1920,7 +1920,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
                         getEventManager().queueEvent(new EditorEvent<>(TranscriptEditor.transcriptDocumentPopulated, TranscriptEditor.this, null));
                         doc.removeDocumentPropertyChangeListener(this);
 
-                        if(isSingleRecordView() && getSession().getRecordCount() > 0) {
+                        if(isSingleRecordView() && getSession().getRecordCount() > 0 && doc.getSingleRecordIndex() < 0) {
                             doc.setSingleRecordIndex(0);
                         }
                     }
