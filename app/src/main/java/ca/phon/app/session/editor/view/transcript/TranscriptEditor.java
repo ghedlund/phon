@@ -154,6 +154,8 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      */
     private final TranscriptEditorKit editorKit;
 
+    private AtomicReference<CalloutWindow> currentCallout = new AtomicReference<>();
+
     /**
      * Constructor
      */
@@ -1090,6 +1092,11 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      *
      */
     private void showInputCallout() {
+        final CalloutWindow currentCallout = this.currentCallout.get();
+        if(currentCallout != null) {
+            currentCallout.dispose();
+        }
+
         final IPAMapGridContainer chatMap = new IPAMapGridContainer();
         for(var ipaGrid: ChatGrids.getInstance().loadGrids().getGrid()) {
             chatMap.addGrid(ipaGrid);
@@ -1255,6 +1262,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             final CalloutWindow window =
                     CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(), tabbedPane, SwingConstants.TOP, r);
             window.setAlwaysOnTop(true);
+            this.currentCallout.set(window);
 
             // escape closes window
             final PhonUIAction<Void> closeAct = PhonUIAction.runnable(() -> {
