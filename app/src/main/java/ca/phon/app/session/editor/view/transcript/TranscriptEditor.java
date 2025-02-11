@@ -19,6 +19,7 @@ import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.fonts.FontPreferences;
 import ca.phon.ui.ipamap.io.Cell;
 import ca.phon.ui.ipamap.io.CellProp;
+import ca.phon.ui.menu.MenuBuilder;
 import ca.phon.util.PrefHelper;
 
 import javax.management.Attribute;
@@ -351,8 +352,10 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 //        actionMap.put("deleteElement", deleteAct);
 
         // show ipa character map
-        KeyStroke ipaMap = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
-        inputMap.put(ipaMap, "showIpaMap");
+        KeyStroke inputCallout = KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0);
+        KeyStroke inputCalloutKs2 = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
+        inputMap.put(inputCallout, "showIpaMap");
+        inputMap.put(inputCalloutKs2, "showIpaMap");
 
         PhonUIAction<Void> showIpaMapAct = PhonUIAction.runnable(this::showInputCallout);
         actionMap.put("showIpaMap", showIpaMapAct);
@@ -1324,66 +1327,16 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
     }
 
     /**
-     * Shows a context menu with options to add comments and gems at positions relative to the
-     * specified transcript element
+     * Setup context menu items on provided menu builder
      *
-     * @param transcriptElementIndex the index of the transcript element that the comments and
-     *                               gems should be added relative to
-     * @param pos                    the position on the screen for the context menu to appear
+     * @param menuBuilder the menu builder to add the menu items to
      */
-    private void showContextMenu(int transcriptElementIndex, Point pos) {
-        JPopupMenu menu = new JPopupMenu();
-
-        JMenu addCommentMenu = new JMenu("Add comment");
-
-        JMenuItem addCommentAbove = new JMenuItem();
-        PhonUIAction<Void> addCommentAboveAct = PhonUIAction.runnable(() -> addComment(transcriptElementIndex, SwingConstants.PREVIOUS));
-        addCommentAboveAct.putValue(PhonUIAction.NAME, "Add comment above");
-        addCommentAbove.setAction(addCommentAboveAct);
-        addCommentMenu.add(addCommentAbove);
-
-        JMenuItem addCommentBelow = new JMenuItem();
-        PhonUIAction<Void> addCommentBelowAct = PhonUIAction.runnable(() -> addComment(transcriptElementIndex, SwingConstants.NEXT));
-        addCommentBelowAct.putValue(PhonUIAction.NAME, "Add comment below");
-        addCommentBelow.setAction(addCommentBelowAct);
-        addCommentMenu.add(addCommentBelow);
-
-        JMenuItem addCommentBottom = new JMenuItem();
-        PhonUIAction<Void> addCommentBottomAct = PhonUIAction.runnable(() -> addComment(transcriptElementIndex, SwingConstants.BOTTOM));
-        addCommentBottomAct.putValue(PhonUIAction.NAME, "Add comment at bottom");
-        addCommentBottom.setAction(addCommentBottomAct);
-        addCommentMenu.add(addCommentBottom);
-        menu.add(addCommentMenu);
-
-        JMenu addGemMenu = new JMenu("Add gem");
-
-        JMenuItem addGemAbove = new JMenuItem();
-        PhonUIAction<Void> addGemAboveAct = PhonUIAction.runnable(() -> addGem(transcriptElementIndex, SwingConstants.PREVIOUS));
-        addGemAboveAct.putValue(PhonUIAction.NAME, "Add gem above");
-        addGemAbove.setAction(addGemAboveAct);
-        addGemMenu.add(addGemAbove);
-
-        JMenuItem addGemBelow = new JMenuItem();
-        PhonUIAction<Void> addGemBelowAct = PhonUIAction.runnable(() -> addGem(transcriptElementIndex, SwingConstants.NEXT));
-        addGemBelowAct.putValue(PhonUIAction.NAME, "Add gem below");
-        addGemBelow.setAction(addGemBelowAct);
-        addGemMenu.add(addGemBelow);
-
-        JMenuItem addGemBottom = new JMenuItem();
-        PhonUIAction<Void> addGemBottomAct = PhonUIAction.runnable(() -> addGem(transcriptElementIndex, SwingConstants.BOTTOM));
-        addGemBottomAct.putValue(PhonUIAction.NAME, "Add gem at bottom");
-        addGemBottom.setAction(addGemBottomAct);
-        addGemMenu.add(addGemBottom);
-
-        menu.add(addGemMenu);
-
-//        JMenuItem deleteThis = new JMenuItem();
-//        PhonUIAction<Void> deleteThisAct = PhonUIAction.runnable(() -> deleteTranscriptElement(getSession().getTranscript().getElementAt(transcriptElementIndex)));
-//        deleteThisAct.putValue(PhonUIAction.NAME, "Delete this element");
-//        deleteThis.setAction(deleteThisAct);
-//        menu.add(deleteThis);
-
-        menu.show(this, (int) pos.getX(), (int) pos.getY());
+    void setupContextMenu(MenuBuilder menuBuilder) {
+        // add show input dialog item
+        final PhonUIAction<Void> showInputAct = PhonUIAction.runnable(this::showInputCallout);
+        showInputAct.putValue(PhonUIAction.NAME, "Show input dialog");
+        showInputAct.putValue(PhonUIAction.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
+        menuBuilder.addItem(".", showInputAct);
     }
 
     /**

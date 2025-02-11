@@ -97,6 +97,7 @@ public class TranscriptView extends EditorView {
                 }
             }
         );
+        this.transcriptEditor.addMouseListener(contextMouseHandler);
 
         initUI();
 
@@ -1512,7 +1513,7 @@ public class TranscriptView extends EditorView {
 
         /**
          * Adds an empty row to the metadata table
-         * */
+         */
         private void addRow() {
             metadataTableModel.addRow(new String[]{"",""});
         }
@@ -1583,4 +1584,37 @@ public class TranscriptView extends EditorView {
             return retVal;
         }
     }
+
+    /**
+     * Context mouse handler for transcript editor
+     */
+    private final MouseAdapter contextMouseHandler = new MouseAdapter() {
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if(e.isPopupTrigger()) {
+                final JPopupMenu menu = new JPopupMenu();
+                final MenuBuilder menuBuilder = new MenuBuilder(menu);
+                transcriptEditor.setupContextMenu(menuBuilder);
+
+                menuBuilder.addSeparator(".", "view_items");
+
+                final JMenu participantsMenu = menuBuilder.addMenu(".", "Participants");
+                setupParticipantsMenu(new MenuBuilder(participantsMenu));
+
+                final JMenu tiersMenu = menuBuilder.addMenu(".", "Tiers");
+                setupTiersMenu(new MenuBuilder(tiersMenu));
+
+                final JMenu recordsMenu = menuBuilder.addMenu(".", "Records");
+                setupRecordMenu(new MenuBuilder(recordsMenu));
+
+                final JMenu commentsMenu = menuBuilder.addMenu(".", "Comments");
+                setupCommentsMenu(new MenuBuilder(commentsMenu));
+
+                final JMenu gemsMenu = menuBuilder.addMenu(".", "Gems");
+                setupGemsMenu(new MenuBuilder(gemsMenu));
+
+                menu.show(transcriptEditor, e.getX(), e.getY());
+            }
+        }
+    };
 }
