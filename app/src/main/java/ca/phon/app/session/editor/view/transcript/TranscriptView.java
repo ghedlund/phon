@@ -928,7 +928,7 @@ public class TranscriptView extends EditorView {
         final PhonUIAction<Void> toggleSingleRecordModeAct = PhonUIAction.runnable(this::toggleSingleRecordView);
         toggleSingleRecordModeAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Toggle single record view");
         toggleSingleRecordModeAct.putValue(PhonUIAction.NAME,
-                isSingleRecordView() ? "Show all records" : "Show one record at a time");
+                isSingleRecordView() ? "Show full transcript" : "Show one record at a time");
         menuBuilder.addItem(".", toggleSingleRecordModeAct);
     }
 
