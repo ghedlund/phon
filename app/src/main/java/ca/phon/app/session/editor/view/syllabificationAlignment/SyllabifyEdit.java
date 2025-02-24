@@ -19,12 +19,16 @@ import ca.phon.app.log.LogUtil;
 import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.undo.SessionUndoableEdit;
 import ca.phon.ipa.IPATranscript;
+import ca.phon.session.Session;
 import ca.phon.session.Tier;
 import ca.phon.syllabifier.Syllabifier;
 import ca.phon.syllable.*;
 
 import java.text.ParseException;
 
+/**
+ * Modifies the syllabifier used for a specific tier.
+ */
 public class SyllabifyEdit extends SessionUndoableEdit {
 
 	private final Tier<IPATranscript> tier;
@@ -33,12 +37,16 @@ public class SyllabifyEdit extends SessionUndoableEdit {
 	
 	private String oldVal = null;
 	
-	public SyllabifyEdit(SessionEditor editor, Tier<IPATranscript> ipaTier,Syllabifier syllabifier) {
-		super(editor.getSession(), editor.getEventManager());
+	public SyllabifyEdit(SessionEditor editor, Tier<IPATranscript> ipaTier, Syllabifier syllabifier) {
+		this(editor.getSession(), editor.getEventManager(), ipaTier, syllabifier);
+	}
+
+	public SyllabifyEdit(Session session, EditorEventManager eventManager, Tier<IPATranscript> ipaTier, Syllabifier syllabifier) {
+		super(session, eventManager);
 		this.tier = ipaTier;
 		this.syllabifier = syllabifier;
 	}
-	
+
 	@Override
 	public void undo() {
 		if(oldVal == null) return;

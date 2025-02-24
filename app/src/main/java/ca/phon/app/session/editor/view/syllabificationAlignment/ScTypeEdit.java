@@ -18,6 +18,7 @@ package ca.phon.app.session.editor.view.syllabificationAlignment;
 import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.undo.SessionUndoableEdit;
 import ca.phon.ipa.IPATranscript;
+import ca.phon.session.Session;
 import ca.phon.syllable.SyllableConstituentType;
 
 public class ScTypeEdit extends SessionUndoableEdit {
@@ -31,7 +32,11 @@ public class ScTypeEdit extends SessionUndoableEdit {
 	private SyllableConstituentType prevScType;
 	
 	public ScTypeEdit(SessionEditor editor, IPATranscript transcript, int index, SyllableConstituentType scType) {
-		super(editor.getSession(), editor.getEventManager());
+		this(editor.getSession(), editor.getEventManager(), transcript, index, scType);
+	}
+
+	public ScTypeEdit(Session session, EditorEventManager eventManager, IPATranscript transcript, int index, SyllableConstituentType scType) {
+		super(session, eventManager);
 		this.transcript = transcript;
 		this.index = index;
 		this.scType = scType;
@@ -62,4 +67,8 @@ public class ScTypeEdit extends SessionUndoableEdit {
 		}
 	}
 
+	@Override
+	public String getPresentationName() {
+		return "Change syllable constituent type";
+	}
 }

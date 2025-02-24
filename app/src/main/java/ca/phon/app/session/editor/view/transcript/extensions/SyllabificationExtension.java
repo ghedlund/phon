@@ -4,15 +4,18 @@ import ca.phon.app.log.LogUtil;
 import ca.phon.app.session.editor.EditorEvent;
 import ca.phon.app.session.editor.EditorEventManager;
 import ca.phon.app.session.editor.EditorEventType;
+import ca.phon.app.session.editor.view.syllabificationAlignment.SyllabificationAlignmentEditorView;
 import ca.phon.app.session.editor.view.transcript.*;
 import ca.phon.ipa.IPAElement;
 import ca.phon.ipa.IPATranscript;
+import ca.phon.ipa.IPATranscriptBuilder;
 import ca.phon.session.*;
 import ca.phon.session.Record;
 import ca.phon.session.position.TranscriptElementLocation;
 import ca.phon.syllable.SyllabificationInfo;
 import ca.phon.syllable.SyllableConstituentType;
 import ca.phon.ui.action.PhonUIAction;
+import ca.phon.ui.ipa.SyllabificationDisplay;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -87,7 +90,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                     builder.appendTierLabel(doc.getSession(), record, syllableTier, syllableTier.getName(), null, doc.isChatTierNamesShown(), tierAttrs);
 
                     if(isSyllabificationComponent()) {
-                        tierAttrs.addAttributes(transcriptStyleContext.getSyllabificationAttributes());
+                        tierAttrs.addAttributes(getSyllabificationDisplayAttributes());
                         builder.appendBatchString(syllableTier.getValue().toString(true), tierAttrs);
                     } else {
                         builder.appendAll(getFormattedSyllabification(ipa, tierAttrs));
@@ -139,6 +142,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         });
 
         editor.getEventManager().registerActionForEvent(EditorEventType.TierChange, this::onTierDataChanged, EditorEventManager.RunOn.AWTEventDispatchThread);
+        editor.getEventManager().registerActionForEvent(SyllabificationAlignmentEditorView.ScEdit, this::onScEdit, EditorEventManager.RunOn.AWTEventDispatchThread);
 
         doc.addNotEditableAttribute(TranscriptStyleConstants.ATTR_KEY_SYLLABIFICATION);
     }
@@ -148,6 +152,19 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             return tier.getName();
         }
         return tier.getName() + " Syllables";
+    }
+
+    public void onScEdit(EditorEvent<SyllabificationAlignmentEditorView.ScEditData> event) {
+        if(event.source() instanceof SyllabificationDisplay display) {
+            final IPATranscript clonedTranscript = (new IPATranscriptBuilder()).append(event.data().ipa().toString(true)).toIPATranscript();
+            final Container parent = display.getParent();
+            final List<IPATranscript> words = clonedTranscript.words();
+            for(int i = 0 ; i < words.size() && i < parent.getComponentCount(); i++) {
+                if(parent.getComponent(i) instanceof SyllabificationDisplay wordDisplay) {
+                    wordDisplay.setTranscript(words.get(i));
+                }
+            }
+        }
     }
 
     /**
@@ -168,7 +185,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                     tierAttrs.addAttributes(editor.getTranscriptDocument().getTranscriptStyleContext().getRecordAttributes(event.data().record()));
                     TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
                     if(isSyllabificationComponent()) {
-                        tierAttrs.addAttributes(editor.getTranscriptDocument().getTranscriptStyleContext().getSyllabificationAttributes());
+                        tierAttrs.addAttributes(getSyllabificationDisplayAttributes());
                         builder.appendBatchString(((IPATranscript)tier.getValue()).toString(true), tierAttrs);
                     } else {
                         builder.appendAll(getFormattedSyllabification((IPATranscript)tier.getValue(), tierAttrs));
@@ -183,6 +200,19 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
     }
 
     // region Getters and Setters
+
+    /**
+     * Gets an attribute set containing a reference to the syllabification component factory.
+     * Adding the contents of this attribute set to the attributes of a syllabification tier will
+     * cause it to appear as the {@link ca.phon.ui.ipa.SyllabificationDisplay} component instead of text
+     *
+     * @return an attribute set containing a reference to the syllabification component factory
+     */
+    public SimpleAttributeSet getSyllabificationDisplayAttributes() {
+        final SimpleAttributeSet retVal = new SimpleAttributeSet();
+        retVal.addAttribute(TranscriptStyleConstants.ATTR_KEY_COMPONENT_FACTORY, new SyllabificationComponentFactory(editor.getSession(), editor.getEventManager(), editor.getUndoSupport()));
+        return retVal;
+    }
 
     public boolean isSyllabificationVisible() {
         return (boolean) doc.getDocumentPropertyOrDefault(

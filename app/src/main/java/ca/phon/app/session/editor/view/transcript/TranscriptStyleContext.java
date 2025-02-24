@@ -147,19 +147,6 @@ public class TranscriptStyleContext extends StyleContext {
     }
 
     /**
-     * Gets an attribute set containing a reference to the syllabification component factory.
-     * Adding the contents of this attribute set to the attributes of a syllabification tier will
-     * cause it to appear as the {@link ca.phon.ui.ipa.SyllabificationDisplay} component instead of text
-     *
-     * @return an attribute set containing a reference to the syllabification component factory
-     */
-    public SimpleAttributeSet getSyllabificationAttributes() {
-        final SimpleAttributeSet retVal = new SimpleAttributeSet(getStyle(TranscriptStyleContext.DEFAULT));
-        retVal.addAttribute(TranscriptStyleConstants.ATTR_KEY_COMPONENT_FACTORY, new SyllabificationComponentFactory());
-        return retVal;
-    }
-
-    /**
      * Gets an attribute set containing a reference to the alignment component factory.
      * Adding the contents of this attribute set to the attributes of an alignment tier will
      * cause it to appear as the {@link ca.phon.ui.ipa.PhoneMapDisplay} component instead of text

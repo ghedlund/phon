@@ -143,6 +143,8 @@ public class DefaultSyllabificationDisplayUI extends SyllabificationDisplayUI {
 		int prevFocus = pIdx - 1;
 		if (prevFocus >= 0) {
 			display.setFocusedPhone(prevFocus);
+		} else {
+			display.firePropertyChange("focusPrev", pIdx, prevFocus);
 		}
 	}
 
