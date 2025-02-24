@@ -152,6 +152,8 @@ public class DefaultSyllabificationDisplayUI extends SyllabificationDisplayUI {
 
 		if (nextFocus < display.getNumberOfDisplayedPhones()) {
 			display.setFocusedPhone(nextFocus);
+		} else {
+			display.firePropertyChange("focusNext", currentFocus, nextFocus);
 		}
 	}
 
@@ -160,6 +162,8 @@ public class DefaultSyllabificationDisplayUI extends SyllabificationDisplayUI {
 		int prevFocus = currentFocus - 1;
 		if (prevFocus >= 0) {
 			display.setFocusedPhone(prevFocus);
+		} else {
+			display.firePropertyChange("focusPrev", currentFocus, prevFocus);
 		}
 	}
 

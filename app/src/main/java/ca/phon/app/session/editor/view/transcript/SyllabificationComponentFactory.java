@@ -9,6 +9,7 @@ import org.jdesktop.swingx.VerticalLayout;
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import java.awt.*;
+import java.util.Arrays;
 
 public class SyllabificationComponentFactory implements ComponentFactory {
     @Override
@@ -28,6 +29,27 @@ public class SyllabificationComponentFactory implements ComponentFactory {
             final SyllabificationDisplay display = new SyllabificationDisplay();
             display.setTranscript(word);
             retVal.add(display);
+
+            display.addPropertyChangeListener("focusNext", (e) -> {
+                final int idx = Arrays.asList(retVal.getComponents()).indexOf(display);
+                if(idx < retVal.getComponentCount()-1) {
+                    final SyllabificationDisplay nextDisplay = (SyllabificationDisplay)retVal.getComponent(idx+1);
+                    if(nextDisplay != null) {
+                        nextDisplay.requestFocus();
+                        nextDisplay.setFocusedPhone(0);
+                    }
+                }
+            });
+            display.addPropertyChangeListener("focusPrev", (e) -> {
+                final int idx = Arrays.asList(retVal.getComponents()).indexOf(display);
+                if(idx > 0) {
+                    final SyllabificationDisplay prevDisplay = (SyllabificationDisplay)retVal.getComponent(idx-1);
+                    if(prevDisplay != null) {
+                        prevDisplay.requestFocus();
+                        prevDisplay.setFocusedPhone(prevDisplay.getDisplayedPhones().length()-1);
+                    }
+                }
+            });
         }
 //        retVal.setPreferredSize(new Dimension(100, retVal.getPreferredSize().height));
 
