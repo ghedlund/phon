@@ -52,8 +52,6 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
 
     private Supplier<IPADictionary> ipaDictionarySupplier;
 
-    private final AtomicReference<CalloutWindow> calloutWindowRef = new AtomicReference<>();
-
     private final AtomicReference<AutoTranscriptionOptionsContent> optionsContentRef = new AtomicReference<>();
 
     private TranscriptDocument.StartEnd ghostRange = null;
@@ -158,9 +156,9 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
      *
      */
     public void removeGhostRange() {
-        if(calloutWindowRef.get() != null) {
-            calloutWindowRef.get().dispose();
-            calloutWindowRef.set(null);
+        if(editor.getCurrentCallout() != null) {
+            editor.getCurrentCallout().dispose();
+            editor.setCurrentCallout(null);
             optionsContentRef.set(null);
         }
         if(ghostRange != null) {
@@ -353,7 +351,7 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
                             SwingConstants.NORTH,
                             r
                     );
-                    calloutWindowRef.set(calloutWindow);
+                    editor.setCurrentCallout(calloutWindow);
                 } catch (BadLocationException e) {
                     LogUtil.warning(e);
                 }
@@ -429,9 +427,10 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
             if(firstEle instanceof Word firstWord) {
                 if(automaticTranscription.getSelectedTranscriptionIndex(firstWord) == transcriptionIndex) return;
                 // keep our callout window if visible
-                final CalloutWindow calloutWindow = calloutWindowRef.getAndSet(null);
+                final CalloutWindow calloutWindow = editor.getCurrentCallout();
+                editor.setCurrentCallout(null);
                 removeGhostRange();
-                calloutWindowRef.set(calloutWindow);
+                editor.setCurrentCallout(calloutWindow);
                 automaticTranscription.setSelectedTranscriptionIndex(firstWord, transcriptionIndex);
                 insertGhostText(record, tier, automaticTranscription);
 
@@ -456,18 +455,19 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
             final TierAlignment alignment = TierAligner.alignTiers(record.getOrthographyTier(), tier);
             scanTierAlignment(alignment);
         } else if(tier.getDeclaredType().equals(Orthography.class)) {
-            if(ghostRange != null && ghostRange.valid()) {
-                final Element ele = editor.getTranscriptDocument().getCharacterElement(ghostRange.start());
-                final AttributeSet attrs = ele.getAttributes();
-                final Tier<IPATranscript> ipaTier = (Tier<IPATranscript>) TranscriptStyleConstants.getTier(attrs);
-                removeGhostRange();
-                final Record record = evt.data().record();
-                final Orthography orthography = (Orthography)evt.data().newValue();
-                final AutomaticTranscription autoTranscription = autoTranscriber.transcribe(orthography);
-                if(autoTranscription.getWords().size() > 0) {
-                    SwingUtilities.invokeLater(() -> insertAutomaticTranscription(record, ipaTier, autoTranscription));
-                }
-            }
+            // XXX removed because the SwingUtilities.invokeLater for tier changes has been removed, no longer necessary
+//            if(ghostRange != null && ghostRange.valid()) {
+//                final Element ele = editor.getTranscriptDocument().getCharacterElement(ghostRange.start());
+//                final AttributeSet attrs = ele.getAttributes();
+//                final Tier<IPATranscript> ipaTier = (Tier<IPATranscript>) TranscriptStyleConstants.getTier(attrs);
+//                removeGhostRange();
+//                final Record record = evt.data().record();
+//                final Orthography orthography = (Orthography)evt.data().newValue();
+//                final AutomaticTranscription autoTranscription = autoTranscriber.transcribe(orthography);
+//                if(autoTranscription.getWords().size() > 0) {
+//                    SwingUtilities.invokeLater(() -> insertAutomaticTranscription(record, ipaTier, autoTranscription));
+//                }
+//            }
         }
     }
 
@@ -585,7 +585,7 @@ public class AutoTranscriptionExtension implements TranscriptEditorExtension {
                 // only mouse click events
                 if(me.getID() != MouseEvent.MOUSE_PRESSED) return;
                 boolean clickOnEditor = SwingUtilities.isDescendingFrom(me.getComponent(), editor);
-                boolean clickOnCallout = calloutWindowRef.get() != null ? SwingUtilities.isDescendingFrom(me.getComponent(), calloutWindowRef.get()) : false;
+                boolean clickOnCallout = editor.getCurrentCallout() != null ? SwingUtilities.isDescendingFrom(me.getComponent(), editor.getCurrentCallout()) : false;
 
                 final Point p = me.getPoint();
 

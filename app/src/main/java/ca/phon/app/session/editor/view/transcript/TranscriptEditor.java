@@ -1,6 +1,7 @@
 package ca.phon.app.session.editor.view.transcript;
 
 import ca.phon.app.log.LogUtil;
+import ca.phon.app.prefs.PhonProperties;
 import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.undo.*;
 import ca.phon.extensions.ExtensionSupport;
@@ -154,6 +155,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      */
     private final TranscriptEditorKit editorKit;
 
+    /**
+     * The current callout window being displayed (if any)
+     */
     private AtomicReference<CalloutWindow> currentCallout = new AtomicReference<>();
 
     /**
@@ -356,11 +360,11 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         // show ipa character map
         KeyStroke inputCallout = KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0);
         KeyStroke inputCalloutKs2 = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
-        inputMap.put(inputCallout, "showIpaMap");
-        inputMap.put(inputCalloutKs2, "showIpaMap");
+        inputMap.put(inputCallout, "showInputCallout");
+        inputMap.put(inputCalloutKs2, "showInputCallout");
 
-        PhonUIAction<Void> showIpaMapAct = PhonUIAction.runnable(this::showInputCallout);
-        actionMap.put("showIpaMap", showIpaMapAct);
+        PhonUIAction<Void> showInputCalloutAct = PhonUIAction.runnable(this::showInputCallout);
+        actionMap.put("showInputCallout", showInputCalloutAct);
     }
 
     /**
@@ -993,6 +997,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         final TranscriptElementLocation caretLoc = getTranscriptEditorCaret().getTranscriptLocation();
         final int currentDot = getTranscriptEditorCaret().getDot();
 
+        if(PrefHelper.isDebugMode()) {
+            LogUtil.info("Updating tier text: " + changedTier.getName());
+        }
         boolean wasCaretFrozen = getTranscriptEditorCaret().isFreezeCaret();
         getTranscriptEditorCaret().freeze();
         // Update the changed tier data in the doc
@@ -1085,6 +1092,64 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             edit.setValueAdjusting(false);
             undoSupport.postEdit(edit);
         });
+    }
+
+    /**
+     * Get the current callout window (if any)
+     *
+     * @return the current callout window, null if none
+     */
+    public CalloutWindow getCurrentCallout() {
+        return this.currentCallout.get();
+    }
+
+    /**
+     * Set the current callout window
+     *
+     * @param callout
+     */
+    public void setCurrentCallout(CalloutWindow callout) {
+        this.currentCallout.set(callout);
+    }
+
+    /**
+     * Show a callout window with the provided contents.
+     * If a callout is already shown, it will be disposed.
+     *
+     * @param modal
+     * @param content
+     * @param sideOfWindow
+     * @param pointAtRect
+     */
+    public void showCallout(boolean modal, JComponent content, int sideOfWindow, Rectangle pointAtRect) {
+        final CalloutWindow currentCallout = this.currentCallout.get();
+        if (currentCallout != null) {
+            currentCallout.dispose();
+        }
+
+        final CalloutWindow callout = CalloutWindow.showCallout(CommonModuleFrame.getCurrentFrame(),
+                modal, content, sideOfWindow, pointAtRect);
+        setCurrentCallout(callout);
+    }
+
+    /**
+     * Show a callout window with the provided contents.
+     * If a callout is already shown, it will be disposed.
+     *
+     * @param modal
+     * @param content
+     * @param sideOfWindow
+     * @param pointAtRect
+     */
+    public void showNonFocusableCallout(boolean modal, JComponent content, int sideOfWindow, Rectangle pointAtRect) {
+        final CalloutWindow currentCallout = this.currentCallout.get();
+        if (currentCallout != null) {
+            currentCallout.dispose();
+        }
+
+        final CalloutWindow callout = CalloutWindow.showNonFocusableCallout(CommonModuleFrame.getCurrentFrame(),
+                content, sideOfWindow, pointAtRect);
+        setCurrentCallout(callout);
     }
 
     /**
@@ -1372,6 +1437,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      * @param newData the possible new data for the tier
      */
     public void changeTierData(Record record, Tier<?> tier, String newData) {
+        if(PrefHelper.isDebugMode()) {
+            LogUtil.info("Changing tier data for " + tier.getName() + " to " + newData);
+        }
         TranscriptDocument doc = getTranscriptDocument();
         String transcriber = dataModel.getTranscriber().getUsername();
 
