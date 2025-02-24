@@ -67,7 +67,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             public List<DefaultStyledDocument.ElementSpec> endTier(MutableAttributeSet attrs) {
                 TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
                 TranscriptStyleContext transcriptStyleContext = doc.getTranscriptStyleContext();
-                if (!isSyllabificationVisible()) return builder.getBatch();
+                if (!isSyllabificationVisible() || !doc.getSingleRecordView()) return builder.getBatch();
 
                 Tier<?> tier = (Tier<?>) attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_TIER);
                 if (tier != null && tier.getDeclaredType().equals(IPATranscript.class)) {
