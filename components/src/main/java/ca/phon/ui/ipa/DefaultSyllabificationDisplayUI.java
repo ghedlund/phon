@@ -178,6 +178,10 @@ public class DefaultSyllabificationDisplayUI extends SyllabificationDisplayUI {
 		int pIdx = display.getFocusedPhone();
 		display.setSyllabificationAtIndex(pIdx, pae.getData());
 		display.setFocusedPhone(pIdx + 1);
+
+		if(pIdx + 1 >= display.getNumberOfDisplayedPhones()) {
+			display.firePropertyChange("focusNext", pIdx, pIdx+1);
+		}
 	}
 
 	public void menuSetScType(PhonActionEvent<SyllableConstituentType> pae) {
