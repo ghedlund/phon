@@ -67,10 +67,37 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             }
         });
 
-        doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_VISIBLE, evt -> doc.reload());
-        doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_COMPONENT, evt -> {
-            if (isSyllabificationVisible()) {
+        doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_VISIBLE, evt -> {
+            if(editor.isSingleRecordView()) {
                 doc.reload();
+            } else {
+                final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
+                if(!currentLocation.valid() || currentLocation.transcriptElementIndex() < 0) return;
+                final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
+                if(!element.isRecord()) return;
+                if((boolean)evt.getNewValue()) {
+                    // insert syllabification tiers
+                    addSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
+                } else {
+                    removeSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
+                }
+            }
+        });
+        doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_COMPONENT, evt -> {
+            if(!isSyllabificationVisible()) return;
+            if(editor.isSingleRecordView()) {
+                doc.reload();
+            } else {
+                final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
+                if(!currentLocation.valid() || currentLocation.transcriptElementIndex() < 0) return;
+                final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
+                if(!element.isRecord()) return;
+                if((boolean)evt.getNewValue()) {
+                    // insert syllabification tiers
+                    addSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
+                } else {
+                    removeSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
+                }
             }
         });
 
@@ -158,15 +185,60 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         return tierName + " Syllables";
     }
 
-    public void onTranscriptLocationChanged(EditorEvent<TranscriptEditor.TranscriptLocationChangeData> event) {
-        // single record view is already handled
-        if(!isSyllabificationVisible() || editor.isSingleRecordView()) return;
+    private void addSyllabificationTiersForRecord(int transcriptElementIndex) {
+        for (TierViewItem tvi : editor.getSession().getTierView()) {
+            final TierDescription td = editor.getSession().getTier(tvi.getTierName());
+            if (td != null && td.getDeclaredType() == IPATranscript.class) {
+                final int paraEleIdx = editor.getTranscriptDocument().findParagraphElementIndexForTier(transcriptElementIndex, tvi.getTierName());
+                if (paraEleIdx >= 0) {
+                    final Element paraEle = editor.getTranscriptDocument().getDefaultRootElement().getElement(paraEleIdx);
+                    final MutableAttributeSet attrs = new SimpleAttributeSet(paraEle.getElement(paraEle.getElementCount() - 1).getAttributes());
+                    final TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
+                    buildSyllabificationBatch(builder, attrs);
+                    try {
+                        editor.getTranscriptDocument().processBatchUpdates(paraEle.getEndOffset(), builder.getBatch());
+                    } catch (BadLocationException e) {
+                        LogUtil.warning(e);
+                    }
+                }
+            }
+        }
+    }
 
+    private void removeSyllabificationTiersForRecord(int elementIndex) {
+        for (TierViewItem tvi : editor.getSession().getTierView()) {
+            final TierDescription td = editor.getSession().getTier(tvi.getTierName());
+            if (td != null && td.getDeclaredType() == IPATranscript.class) {
+                final String syllabificationTierName = getTierNameForSyllabification(td.getName());
+                final int paraEleIdx =
+                        editor.getTranscriptDocument().findParagraphElementIndexForTier(elementIndex, syllabificationTierName);
+                if (paraEleIdx >= 0) {
+                    final Element paraEle = editor.getTranscriptDocument().getDefaultRootElement().getElement(paraEleIdx);
+                    try {
+                        editor.getTranscriptDocument().setBypassDocumentFilter(true);
+                        editor.getTranscriptDocument().remove(paraEle.getStartOffset(), paraEle.getEndOffset() - paraEle.getStartOffset());
+                    } catch (BadLocationException e) {
+                        LogUtil.warning(e);
+                    } finally {
+                        editor.getTranscriptDocument().setBypassDocumentFilter(false);
+                    }
+                }
+            }
+        }
+    }
+
+    public void onTranscriptLocationChanged(EditorEvent<TranscriptEditor.TranscriptLocationChangeData> event) {
         final TranscriptElementLocation oldLocation = event.data().oldLoc();
         final TranscriptElementLocation newLocation = event.data().newLoc();
+        if(syllabificationEditMode) {
+            String tierName = newLocation.tier();
+            if (!SystemTierType.TargetSyllables.getName().equals(tierName) && !SystemTierType.ActualSyllables.getName().equals(tierName)) {
+                setSyllabificationEditMode(false);
+            }
+        }
 
-        LogUtil.info("[SyllabificationExtension] Transcript location changed: " + oldLocation + " -> " + newLocation);
-
+        // single record view is already handled
+        if(!isSyllabificationVisible() || editor.isSingleRecordView()) return;
         if(oldLocation.transcriptElementIndex() == newLocation.transcriptElementIndex()) return;
 
         // remove syllabification tiers from previous record (if any)
@@ -174,52 +246,18 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         if(oldLocation.transcriptElementIndex() >= 0) {
             final Transcript.Element prevElement = editor.getSession().getTranscript().getElementAt(oldLocation.transcriptElementIndex());
             if (prevElement.isRecord()) {
-                for (TierViewItem tvi : editor.getSession().getTierView()) {
-                    final TierDescription td = editor.getSession().getTier(tvi.getTierName());
-                    if (td != null && td.getDeclaredType() == IPATranscript.class) {
-                        final String syllabificationTierName = getTierNameForSyllabification(td.getName());
-                        final int paraEleIdx =
-                                editor.getTranscriptDocument().findParagraphElementIndexForTier(oldLocation.transcriptElementIndex(), syllabificationTierName);
-                        if (paraEleIdx >= 0) {
-                            final Element paraEle = editor.getTranscriptDocument().getDefaultRootElement().getElement(paraEleIdx);
-                            try {
-                                editor.getTranscriptDocument().setBypassDocumentFilter(true);
-                                editor.getTranscriptDocument().remove(paraEle.getStartOffset(), paraEle.getEndOffset() - paraEle.getStartOffset());
-                            } catch (BadLocationException e) {
-                                LogUtil.warning(e);
-                            } finally {
-                                editor.getTranscriptDocument().setBypassDocumentFilter(false);
-                            }
-                        }
-                    }
-                }
+                removeSyllabificationTiersForRecord(oldLocation.transcriptElementIndex());
             }
         }
 
         if(newLocation.transcriptElementIndex() >= 0) {
             final Transcript.Element newElement = editor.getSession().getTranscript().getElementAt(newLocation.transcriptElementIndex());
             if (newElement.isRecord()) {
-                for (TierViewItem tvi : editor.getSession().getTierView()) {
-                    final TierDescription td = editor.getSession().getTier(tvi.getTierName());
-                    if (td != null && td.getDeclaredType() == IPATranscript.class) {
-                        final int paraEleIdx = editor.getTranscriptDocument().findParagraphElementIndexForTier(newLocation.transcriptElementIndex(), tvi.getTierName());
-                        if (paraEleIdx >= 0) {
-                            final Element paraEle = editor.getTranscriptDocument().getDefaultRootElement().getElement(paraEleIdx);
-                            final MutableAttributeSet attrs = new SimpleAttributeSet(paraEle.getElement(paraEle.getElementCount() - 1).getAttributes());
-                            final TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
-                            buildSyllabificationBatch(builder, attrs);
-                            try {
-                                LogUtil.info("[SyllabificationExtension] Inserting syllabification for tier " + tvi.getTierName());
-                                editor.getTranscriptDocument().processBatchUpdates(paraEle.getEndOffset(), builder.getBatch());
-                            } catch (BadLocationException e) {
-                                LogUtil.warning(e);
-                            }
-                        }
-                    }
-                }
+                addSyllabificationTiersForRecord(newLocation.transcriptElementIndex());
             }
         }
 
+        // force update dot to new location without issuing a new location changed event by keeping caret frozen
         final int newCaretLoc = editor.sessionLocationToCharPos(newLocation);
         if(newCaretLoc >= 0) {
             editor.getTranscriptEditorCaret().setDot(newCaretLoc, true);
