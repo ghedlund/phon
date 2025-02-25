@@ -72,7 +72,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                 doc.reload();
             } else {
                 final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
-                if(!currentLocation.valid() || currentLocation.transcriptElementIndex() < 0) return;
+                if(currentLocation == null || !currentLocation.valid() || currentLocation.transcriptElementIndex() < 0) return;
                 final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
                 if(!element.isRecord()) return;
                 if((boolean)evt.getNewValue()) {
@@ -152,7 +152,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             TranscriptStyleConstants.setRecord(tierAttrs, record);
             TranscriptStyleConstants.setParentTier(tierAttrs, tier);
             TranscriptStyleConstants.setTier(tierAttrs, syllableTier);
-            TranscriptStyleConstants.setEnterAction(tierAttrs, syllabificationEditModeAct);
+//            TranscriptStyleConstants.setEnterAction(tierAttrs, syllabificationEditModeAct);
             builder.appendTierLabel(doc.getSession(), record, syllableTier, syllableTier.getName(), null, doc.isChatTierNamesShown(), tierAttrs);
 
             if(isSyllabificationComponent()) {
