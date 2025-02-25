@@ -172,6 +172,26 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                     retVal.setPreferredSize(new Dimension(0, 0));
                     return retVal;
                 }
+
+                @Override
+                public JComponent getComponent() {
+                    return null;
+                }
+
+                @Override
+                public void requestFocusStart() {
+
+                }
+
+                @Override
+                public void requestFocusEnd() {
+
+                }
+
+                @Override
+                public void requestFocusAtOffset(int offset) {
+
+                }
             });
 
             builder.appendEOL(finalAttrs);

@@ -51,6 +51,26 @@ public class TranscriptionSelectorComponentFactory implements ComponentFactory {
         return selectTranscriptionButton;
     }
 
+    @Override
+    public JComponent getComponent() {
+        return null;
+    }
+
+    @Override
+    public void requestFocusStart() {
+
+    }
+
+    @Override
+    public void requestFocusEnd() {
+
+    }
+
+    @Override
+    public void requestFocusAtOffset(int offset) {
+
+    }
+
     /**
      * Selects the transcription of the line the button is on
      * */

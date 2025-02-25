@@ -32,4 +32,24 @@ public class AlignmentComponentFactory implements ComponentFactory {
 
         return retVal;
     }
+
+    @Override
+    public JComponent getComponent() {
+        return null;
+    }
+
+    @Override
+    public void requestFocusStart() {
+
+    }
+
+    @Override
+    public void requestFocusEnd() {
+
+    }
+
+    @Override
+    public void requestFocusAtOffset(int offset) {
+
+    }
 }

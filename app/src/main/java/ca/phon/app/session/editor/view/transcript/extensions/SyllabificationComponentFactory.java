@@ -26,6 +26,8 @@ public class SyllabificationComponentFactory implements ComponentFactory {
 
     final UndoableEditSupport undoSupport;
 
+    private JPanel previousComponent;
+
     public SyllabificationComponentFactory(Session session, EditorEventManager eventManager, UndoableEditSupport undoSupport) {
         this.session = session;
         this.eventManager = eventManager;
@@ -87,7 +89,57 @@ public class SyllabificationComponentFactory implements ComponentFactory {
             currentIndex += word.length() + 1;
         }
 
+        previousComponent = retVal;
+
         return retVal;
+    }
+
+    @Override
+    public void requestFocusStart() {
+        if(previousComponent != null && previousComponent.getComponentCount() > 0) {
+            final SyllabificationDisplay display = (SyllabificationDisplay) previousComponent.getComponent(0);
+            if(display != null) {
+                display.requestFocus();
+                display.setFocusedPhone(0);
+            }
+        }
+    }
+
+    @Override
+    public void requestFocusEnd() {
+        if(previousComponent != null && previousComponent.getComponentCount() > 0) {
+            final SyllabificationDisplay display = (SyllabificationDisplay) previousComponent.getComponent(previousComponent.getComponentCount()-1);
+            if(display != null) {
+                display.requestFocus();
+                display.setFocusedPhone(display.getDisplayedPhones().length()-1);
+            }
+        }
+    }
+
+    @Override
+    public void requestFocusAtOffset(int offset) {
+        if(previousComponent != null) {
+            int currentOffset = 0;
+            for(int i = 0; i < previousComponent.getComponentCount(); i++) {
+                final SyllabificationDisplay display = (SyllabificationDisplay) previousComponent.getComponent(i);
+                if(currentOffset + display.getDisplayedPhones().length() >= offset) {
+                    display.requestFocus();
+                    display.setFocusedPhone(offset - currentOffset);
+                    return;
+                }
+                currentOffset += display.getDisplayedPhones().length();
+            }
+            if(offset >= currentOffset) {
+                requestFocusEnd();
+            } else if(offset <= 0) {
+                requestFocusStart();
+            }
+        }
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return previousComponent;
     }
 
     private static class BreakablePanel extends JPanel implements BreakableView {

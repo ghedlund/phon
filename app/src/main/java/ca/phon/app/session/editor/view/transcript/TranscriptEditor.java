@@ -611,6 +611,13 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         if (newCaretPos == -1) return;
 
         setCaretPosition(newCaretPos);
+
+        // get attributes at position
+        AttributeSet attrs = getTranscriptDocument().getCharacterElement(newCaretPos).getAttributes();
+        final ComponentFactory factory = TranscriptStyleConstants.getComponentFactory(attrs);
+        if(factory != null) {
+            factory.requestFocusStart();
+        }
     }
 
     /**
@@ -623,6 +630,13 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         if (newCaretPos == -1) return;
 
         setCaretPosition(newCaretPos);
+
+        // get attributes at position
+        AttributeSet attrs = getTranscriptDocument().getCharacterElement(newCaretPos).getAttributes();
+        final ComponentFactory factory = TranscriptStyleConstants.getComponentFactory(attrs);
+        if(factory != null) {
+            factory.requestFocusStart();
+        }
     }
 
     /**
@@ -2137,7 +2151,13 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         } else if (elementType.equals(TranscriptStyleConstants.ATTR_KEY_RECORD)) {
             final int recordIndex = getSession().getRecordPosition(TranscriptStyleConstants.getRecord(prevElementAttributes));
             final Tier<?> tier = TranscriptStyleConstants.getTier(prevElementAttributes);
-            end = doc.getTierEnd(recordIndex, tier.getName());
+            final ComponentFactory componentFactory = TranscriptStyleConstants.getComponentFactory(prevElementAttributes);
+            if(componentFactory != null) {
+                end = start;
+                componentFactory.requestFocusAtOffset(offsetInContent);
+            } else {
+                end = doc.getTierEnd(recordIndex, tier.getName());
+            }
         } else if (elementType.equals(TranscriptStyleConstants.ATTR_KEY_COMMENT)) {
             end = doc.getCommentEnd((Comment) prevElementAttributes.getAttribute(TranscriptStyleConstants.ATTR_KEY_COMMENT));
         } else if (elementType.equals(TranscriptStyleConstants.ATTR_KEY_GEM)) {
@@ -2187,7 +2207,13 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         } else if (elementType.equals(TranscriptStyleConstants.ELEMENT_TYPE_RECORD)) {
             final int recordIndex = getSession().getRecordPosition(TranscriptStyleConstants.getRecord(nextElementAttributes));
             final Tier<?> tier = TranscriptStyleConstants.getTier(nextElementAttributes);
-            end = doc.getTierEnd(recordIndex, tier.getName());
+            final ComponentFactory componentFactory = TranscriptStyleConstants.getComponentFactory(nextElementAttributes);
+            if(componentFactory != null) {
+                end = start;
+                componentFactory.requestFocusAtOffset(offsetInContent);
+            } else {
+                end = doc.getTierEnd(recordIndex, tier.getName());
+            }
         } else if (elementType.equals(TranscriptStyleConstants.ELEMENT_TYPE_COMMENT)) {
             end = doc.getCommentEnd(TranscriptStyleConstants.getComment(nextElementAttributes));
         } else if (elementType.equals(TranscriptStyleConstants.ELEMENT_TYPE_GEM)) {
