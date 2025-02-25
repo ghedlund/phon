@@ -6,6 +6,7 @@ import ca.phon.app.session.editor.view.syllabificationAlignment.ScTypeEdit;
 import ca.phon.app.session.editor.view.transcript.BreakableFlowLayout;
 import ca.phon.app.session.editor.view.transcript.BreakableView;
 import ca.phon.app.session.editor.view.transcript.ComponentFactory;
+import ca.phon.app.session.editor.view.transcript.TranscriptEditor;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.ipa.IPATranscriptBuilder;
 import ca.phon.session.Session;
@@ -16,9 +17,12 @@ import ca.phon.ui.ipa.SyllabificationDisplay;
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.undo.UndoableEditSupport;
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
 
 public class SyllabificationComponentFactory implements ComponentFactory {
+
+    final TranscriptEditor editor;
 
     final Session session;
 
@@ -28,10 +32,11 @@ public class SyllabificationComponentFactory implements ComponentFactory {
 
     private JPanel previousComponent;
 
-    public SyllabificationComponentFactory(Session session, EditorEventManager eventManager, UndoableEditSupport undoSupport) {
-        this.session = session;
-        this.eventManager = eventManager;
-        this.undoSupport = undoSupport;
+    public SyllabificationComponentFactory(TranscriptEditor editor) {
+        this.editor = editor;
+        this.session = editor.getSession();
+        this.eventManager = editor.getEventManager();
+        this.undoSupport = editor.getUndoSupport();
     }
 
     @Override
@@ -55,6 +60,36 @@ public class SyllabificationComponentFactory implements ComponentFactory {
             final SyllabificationDisplay display = new SyllabificationDisplay();
             display.setTranscript(word);
             retVal.add(display);
+
+            // setup tab, shift+tab, up/down key actions
+            final InputMap inputMap = display.getInputMap(JComponent.WHEN_FOCUSED);
+            final ActionMap actionMap = display.getActionMap();
+
+            final KeyStroke tabKey = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+            inputMap.put(tabKey, "focusNextTier");
+            actionMap.put("focusNextTier", new AbstractAction() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    editor.nextTierOrElement();
+                    editor.requestFocus();
+                }
+            });
+
+            final KeyStroke shiftTabKey = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
+            inputMap.put(shiftTabKey, "focusPrevTier");
+            actionMap.put("focusPrevTier", new AbstractAction() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    editor.prevTierOrElement();
+                    editor.requestFocus();
+                }
+            });
+
+            final KeyStroke upKey = KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0);
+            inputMap.put(upKey, "focusPrevTier");
+
+            final KeyStroke downKey = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0);
+            inputMap.put(downKey, "focusNextTier");
 
             display.addPropertyChangeListener("focusNext", (e) -> {
                 final int idx = Arrays.asList(retVal.getComponents()).indexOf(display);

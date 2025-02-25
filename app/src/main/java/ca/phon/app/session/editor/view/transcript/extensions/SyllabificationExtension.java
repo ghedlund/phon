@@ -341,7 +341,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
      */
     public SimpleAttributeSet getSyllabificationDisplayAttributes() {
         final SimpleAttributeSet retVal = new SimpleAttributeSet();
-        retVal.addAttribute(TranscriptStyleConstants.ATTR_KEY_COMPONENT_FACTORY, new SyllabificationComponentFactory(editor.getSession(), editor.getEventManager(), editor.getUndoSupport()));
+        retVal.addAttribute(TranscriptStyleConstants.ATTR_KEY_COMPONENT_FACTORY, new SyllabificationComponentFactory(editor));
         return retVal;
     }
 
