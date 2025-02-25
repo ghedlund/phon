@@ -27,14 +27,18 @@ public class ToggleSyllabificationVisibleViewAction extends TranscriptViewAction
         this.getView().toggleSyllabificationVisible();
         List<String> additionalTiers = new ArrayList<>();
         if(this.getView().isSyllabificationVisible()) {
-            additionalTiers.add(SystemTierType.TargetSyllables.getName());
-            additionalTiers.add(SystemTierType.ActualSyllables.getName());
-        }
-        for(TierViewItem tvi:this.getView().getEditor().getSession().getTierView()) {
-            if(tvi.isVisible()) {
-                TierDescription td = this.getView().getEditor().getSession().getTier(tvi.getTierName());
-                if(td != null && td.getDeclaredType() == IPATranscript.class) {
-                    additionalTiers.add(tvi.getTierName() + " Syllables");
+            for (TierViewItem tvi : this.getView().getEditor().getSession().getTierView()) {
+                if (tvi.isVisible()) {
+                    if (tvi.getTierName().equals(SystemTierType.IPATarget.getName())) {
+                        additionalTiers.add(SystemTierType.TargetSyllables.getName());
+                    } else if (tvi.getTierName().equals(SystemTierType.IPAActual.getName())) {
+                        additionalTiers.add(SystemTierType.ActualSyllables.getName());
+                    } else {
+                        TierDescription td = this.getView().getEditor().getSession().getTier(tvi.getTierName());
+                        if (td != null && td.getDeclaredType() == IPATranscript.class) {
+                            additionalTiers.add(tvi.getTierName() + " Syllables");
+                        }
+                    }
                 }
             }
         }
