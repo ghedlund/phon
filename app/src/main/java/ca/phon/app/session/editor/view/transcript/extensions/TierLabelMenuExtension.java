@@ -70,7 +70,8 @@ public class TierLabelMenuExtension implements TranscriptEditorExtension {
 
         final TierDescription td = getSession().getTier(tier.getName());
         final TierViewItem tvi = getSession().getTierView().stream().filter(tv -> tv.getTierName().equals(tier.getName())).findFirst().orElse(null);
-        TierMenuBuilder.setupTierMenu(getEditor().getDataModel(), getEditor().getEventManager(), getEditor().getUndoSupport(), td, tvi, builder);
+        if(tvi != null)
+            TierMenuBuilder.setupTierMenu(getEditor().getDataModel(), getEditor().getEventManager(), getEditor().getUndoSupport(), td, tvi, builder);
 
         var extPts = PluginManager.getInstance().getExtensionPoints(TierLabelMenuHandler.class);
 

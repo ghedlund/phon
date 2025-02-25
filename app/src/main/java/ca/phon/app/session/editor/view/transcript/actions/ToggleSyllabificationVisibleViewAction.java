@@ -2,7 +2,10 @@ package ca.phon.app.session.editor.view.transcript.actions;
 
 import ca.phon.app.session.editor.SessionEditor;
 import ca.phon.app.session.editor.view.transcript.TranscriptView;
+import ca.phon.ipa.IPATranscript;
 import ca.phon.session.SystemTierType;
+import ca.phon.session.TierDescription;
+import ca.phon.session.TierViewItem;
 import com.kitfox.svg.A;
 
 import java.awt.event.ActionEvent;
@@ -24,8 +27,16 @@ public class ToggleSyllabificationVisibleViewAction extends TranscriptViewAction
         this.getView().toggleSyllabificationVisible();
         List<String> additionalTiers = new ArrayList<>();
         if(this.getView().isSyllabificationVisible()) {
-            additionalTiers.add(SystemTierType.IPATarget.getName() + " Syllables");
-            additionalTiers.add(SystemTierType.IPAActual.getName() + " Syllables");
+            additionalTiers.add(SystemTierType.TargetSyllables.getName());
+            additionalTiers.add(SystemTierType.ActualSyllables.getName());
+        }
+        for(TierViewItem tvi:this.getView().getEditor().getSession().getTierView()) {
+            if(tvi.isVisible()) {
+                TierDescription td = this.getView().getEditor().getSession().getTier(tvi.getTierName());
+                if(td != null && td.getDeclaredType() == IPATranscript.class) {
+                    additionalTiers.add(tvi.getTierName() + " Syllables");
+                }
+            }
         }
         this.getView().getTranscriptEditor().recalculateTierLabelWidth(additionalTiers);
     }

@@ -14,16 +14,20 @@ import ca.phon.session.Record;
 import ca.phon.session.position.TranscriptElementLocation;
 import ca.phon.syllable.SyllabificationInfo;
 import ca.phon.syllable.SyllableConstituentType;
+import ca.phon.ui.action.PhonActionEvent;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.ipa.SyllabificationDisplay;
+import ca.phon.ui.menu.MenuBuilder;
 import org.apache.commons.logging.Log;
 
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * An extension that provides syllabification support to the {@link TranscriptEditor}
@@ -68,18 +72,25 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         });
 
         doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_VISIBLE, evt -> {
+            int transcriptElementIndex = -1;
             if(editor.isSingleRecordView()) {
-                doc.reload();
+                transcriptElementIndex = editor.getSession().getTranscript().getRecordElementIndex(
+                        editor.getTranscriptDocument().getSingleRecordIndex()
+                );
             } else {
                 final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
-                if(currentLocation == null || !currentLocation.valid() || currentLocation.transcriptElementIndex() < 0) return;
+                if (currentLocation == null || !currentLocation.valid() || currentLocation.transcriptElementIndex() < 0)
+                    return;
                 final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
-                if(!element.isRecord()) return;
+                if (!element.isRecord()) return;
+                transcriptElementIndex = currentLocation.transcriptElementIndex();
+            }
+            if(transcriptElementIndex >= 0) {
                 if((boolean)evt.getNewValue()) {
                     // insert syllabification tiers
-                    addSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
+                    addSyllabificationTiersForRecord(transcriptElementIndex);
                 } else {
-                    removeSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
+                    removeSyllabificationTiersForRecord(transcriptElementIndex);
                 }
             }
         });
@@ -101,24 +112,24 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             }
         });
 
-        InputMap inputMap = editor.getInputMap();
-        ActionMap actionMap = editor.getActionMap();
+//        InputMap inputMap = editor.getInputMap();
+//        ActionMap actionMap = editor.getActionMap();
+//
+//        KeyStroke esc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+//        inputMap.put(esc, "pressedEsc");
+//        PhonUIAction<Void> escAct = PhonUIAction.runnable(() -> {
+//            if (syllabificationEditMode) setSyllabificationEditMode(false);
+//        });
+//        actionMap.put("pressedEsc", escAct);
 
-        KeyStroke esc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        inputMap.put(esc, "pressedEsc");
-        PhonUIAction<Void> escAct = PhonUIAction.runnable(() -> {
-            if (syllabificationEditMode) setSyllabificationEditMode(false);
-        });
-        actionMap.put("pressedEsc", escAct);
-
-        editor.addCaretListener(e -> {
-            if (!syllabificationEditMode) return;
-            TranscriptElementLocation location = editor.charPosToSessionLocation(e.getDot());
-            String tierName = location.tier();
-            if (!SystemTierType.TargetSyllables.getName().equals(tierName) && !SystemTierType.ActualSyllables.getName().equals(tierName)) {
-                setSyllabificationEditMode(false);
-            }
-        });
+//        editor.addCaretListener(e -> {
+//            if (!syllabificationEditMode) return;
+//            TranscriptElementLocation location = editor.charPosToSessionLocation(e.getDot());
+//            String tierName = location.tier();
+//            if (!SystemTierType.TargetSyllables.getName().equals(tierName) && !SystemTierType.ActualSyllables.getName().equals(tierName)) {
+//                setSyllabificationEditMode(false);
+//            }
+//        });
 
         editor.getEventManager().registerActionForEvent(EditorEventType.TierChange, this::onTierDataChanged, EditorEventManager.RunOn.AWTEventDispatchThread);
         editor.getEventManager().registerActionForEvent(SyllabificationAlignmentEditorView.ScEdit, this::onScEdit, EditorEventManager.RunOn.AWTEventDispatchThread);
@@ -152,6 +163,21 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             TranscriptStyleConstants.setRecord(tierAttrs, record);
             TranscriptStyleConstants.setParentTier(tierAttrs, tier);
             TranscriptStyleConstants.setTier(tierAttrs, syllableTier);
+//            TranscriptStyleConstants.setClickHandler(tierAttrs, new BiConsumer<MouseEvent, AttributeSet>() {
+//                @Override
+//                public void accept(MouseEvent mouseEvent, AttributeSet attributeSet) {
+//                    // show menu for syllabification tier
+//                    JPopupMenu popup = new JPopupMenu();
+//                    final MenuBuilder builder = new MenuBuilder(popup);
+//                    // reset syllabification for ipa tier
+//                    final PhonUIAction<ResetSyllabificationData> resetSyllabificationAct = PhonUIAction.eventConsumer(SyllabificationExtension.this::resetSyllabification,
+//                            new ResetSyllabificationData(record, ipaTier));
+//                    resetSyllabificationAct.putValue(PhonUIAction.NAME, "Reset syllabification");
+//                    builder.addItem(".", resetSyllabificationAct);
+//
+//                    popup.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+//                }
+//            });
 //            TranscriptStyleConstants.setEnterAction(tierAttrs, syllabificationEditModeAct);
             builder.appendTierLabel(doc.getSession(), record, syllableTier, syllableTier.getName(), null, doc.isChatTierNamesShown(), tierAttrs);
 
@@ -198,11 +224,19 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         }
     }
 
+    private record ResetSyllabificationData(Record record, Tier<IPATranscript> ipaTier) {}
+    private void resetSyllabification(PhonActionEvent<ResetSyllabificationData> ipaTier) {
+
+    }
+
     private String getTierNameForSyllabification(String tierName) {
-        if (tierName.equals(SystemTierType.TargetSyllables.getName()) || tierName.equals(SystemTierType.ActualSyllables.getName())) {
-            return tierName;
+        if (tierName.equals(SystemTierType.IPATarget.getName())) {
+            return SystemTierType.TargetSyllables.getName();
+        } else if (tierName.equals(SystemTierType.IPAActual.getName())) {
+            return SystemTierType.ActualSyllables.getName();
+        } else {
+            return tierName + " Syllables";
         }
-        return tierName + " Syllables";
     }
 
     private void addSyllabificationTiersForRecord(int transcriptElementIndex) {
