@@ -127,7 +127,7 @@ public class TranscriptNavigationFilter extends NavigationFilter {
                 editor.charPosToSessionLocation(prevCaretPos),
                 editor.charPosToSessionLocation(dot)
         );
-        if(!transcriptLocationChangeData.newLoc().equals(transcriptLocationChangeData.oldLoc())) {
+        if(!editor.getTranscriptEditorCaret().isFreezeCaret() && !transcriptLocationChangeData.newLoc().equals(transcriptLocationChangeData.oldLoc())) {
             final EditorEvent<TranscriptEditor.TranscriptLocationChangeData> e = new EditorEvent<>(
                     TranscriptEditor.transcriptLocationChanged,
                     editor,

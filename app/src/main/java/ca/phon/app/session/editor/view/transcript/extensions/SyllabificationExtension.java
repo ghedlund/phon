@@ -16,6 +16,7 @@ import ca.phon.syllable.SyllabificationInfo;
 import ca.phon.syllable.SyllableConstituentType;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.ipa.SyllabificationDisplay;
+import org.apache.commons.logging.Log;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -54,13 +55,6 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         this.editor = editor;
         this.doc = editor.getTranscriptDocument();
 
-        // Begin syllabification edit mode
-        PhonUIAction<Void> syllabificationEditModeAct = PhonUIAction.runnable(() -> {
-            String tierName = editor.getCurrentSessionLocation().tier();
-            if (!tierName.equals(SystemTierType.TargetSyllables.getName()) && !tierName.equals(SystemTierType.ActualSyllables.getName())) return;
-            setSyllabificationEditMode(!syllabificationEditMode);
-        });
-
         // add syllabification tier at the end of the regular IPA tier content
         doc.addInsertionHook(new DefaultInsertionHook() {
             @Override
@@ -68,49 +62,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                 TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
                 TranscriptStyleContext transcriptStyleContext = doc.getTranscriptStyleContext();
                 if (!isSyllabificationVisible() || !doc.getSingleRecordView()) return builder.getBatch();
-
-                Tier<?> tier = (Tier<?>) attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_TIER);
-                if (tier != null && tier.getDeclaredType().equals(IPATranscript.class)) {
-                    Tier<IPATranscript> ipaTier = (Tier<IPATranscript>) tier;
-
-                    // Create a dummy tier for the syllabification
-                    IPATranscript ipa = ipaTier.getValue();
-                    Tier<IPATranscript> syllableTier = doc.getSessionFactory().createTier(getTierNameForSyllabification(tier), IPATranscript.class);
-                    syllableTier.setValue(ipa);
-
-                    // Set up the tier attributes for the dummy tier
-                    final TierViewItem tierViewItem = doc.getSession().getTierView().stream().filter(item -> item.getTierName().equals(tier.getName())).findFirst().orElse(null);
-                    MutableAttributeSet tierAttrs = new SimpleAttributeSet(doc.getTranscriptStyleContext().getTierAttributes(tier, tierViewItem));
-                    Record record = TranscriptStyleConstants.getRecord(attrs);
-                    TranscriptStyleConstants.setElementType(tierAttrs, TranscriptStyleConstants.ELEMENT_TYPE_RECORD);
-                    TranscriptStyleConstants.setRecord(tierAttrs, record);
-                    TranscriptStyleConstants.setParentTier(tierAttrs, tier);
-                    TranscriptStyleConstants.setTier(tierAttrs, syllableTier);
-                    TranscriptStyleConstants.setEnterAction(tierAttrs, syllabificationEditModeAct);
-                    builder.appendTierLabel(doc.getSession(), record, syllableTier, syllableTier.getName(), null, doc.isChatTierNamesShown(), tierAttrs);
-
-                    if(isSyllabificationComponent()) {
-                        tierAttrs.addAttributes(getSyllabificationDisplayAttributes());
-                        builder.appendBatchString(syllableTier.getValue().toString(true), tierAttrs);
-                    } else {
-                        builder.appendAll(getFormattedSyllabification(ipa, tierAttrs));
-                    }
-
-                    final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(builder.getTrailingAttributes());
-                    TranscriptStyleConstants.setTier(finalAttrs, syllableTier);
-                    TranscriptStyleConstants.setNotEditable(finalAttrs, true);
-                    TranscriptStyleConstants.setComponentFactory(finalAttrs, new ComponentFactory() {
-                        @Override
-                        public JComponent createComponent(AttributeSet attrs) {
-                            final JPanel retVal = new JPanel();
-                            retVal.setPreferredSize(new Dimension(0, 0));
-                            return retVal;
-                        }
-                    });
-
-                    builder.appendEOL(finalAttrs);
-                }
-
+                buildSyllabificationBatch(builder, attrs);
                 return builder.getBatch();
             }
         });
@@ -143,15 +95,136 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
 
         editor.getEventManager().registerActionForEvent(EditorEventType.TierChange, this::onTierDataChanged, EditorEventManager.RunOn.AWTEventDispatchThread);
         editor.getEventManager().registerActionForEvent(SyllabificationAlignmentEditorView.ScEdit, this::onScEdit, EditorEventManager.RunOn.AWTEventDispatchThread);
+        editor.getEventManager().registerActionForEvent(TranscriptEditor.transcriptLocationChanged, this::onTranscriptLocationChanged, EditorEventManager.RunOn.AWTEventDispatchThread);
 
         doc.addNotEditableAttribute(TranscriptStyleConstants.ATTR_KEY_SYLLABIFICATION);
     }
 
-    private String getTierNameForSyllabification(Tier<?> tier) {
-        if (tier.getName().equals(SystemTierType.TargetSyllables.getName()) || tier.getName().equals(SystemTierType.ActualSyllables.getName())) {
-            return tier.getName();
+    private void buildSyllabificationBatch(TranscriptBatchBuilder builder, MutableAttributeSet attrs) {
+        // Begin syllabification edit mode
+        PhonUIAction<Void> syllabificationEditModeAct = PhonUIAction.runnable(() -> {
+            String tierName = editor.getCurrentSessionLocation().tier();
+            if (!tierName.equals(SystemTierType.TargetSyllables.getName()) && !tierName.equals(SystemTierType.ActualSyllables.getName())) return;
+            setSyllabificationEditMode(!syllabificationEditMode);
+        });
+
+        Tier<?> tier = (Tier<?>) attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_TIER);
+        if (tier != null && tier.getDeclaredType().equals(IPATranscript.class)) {
+            Tier<IPATranscript> ipaTier = (Tier<IPATranscript>) tier;
+
+            // Create a dummy tier for the syllabification
+            IPATranscript ipa = ipaTier.getValue();
+            Tier<IPATranscript> syllableTier = doc.getSessionFactory().createTier(getTierNameForSyllabification(tier.getName()), IPATranscript.class);
+            syllableTier.setValue(ipa);
+
+            // Set up the tier attributes for the dummy tier
+            final TierViewItem tierViewItem = doc.getSession().getTierView().stream().filter(item -> item.getTierName().equals(tier.getName())).findFirst().orElse(null);
+            MutableAttributeSet tierAttrs = new SimpleAttributeSet(doc.getTranscriptStyleContext().getTierAttributes(tier, tierViewItem));
+            Record record = TranscriptStyleConstants.getRecord(attrs);
+            TranscriptStyleConstants.setElementType(tierAttrs, TranscriptStyleConstants.ELEMENT_TYPE_RECORD);
+            TranscriptStyleConstants.setRecord(tierAttrs, record);
+            TranscriptStyleConstants.setParentTier(tierAttrs, tier);
+            TranscriptStyleConstants.setTier(tierAttrs, syllableTier);
+            TranscriptStyleConstants.setEnterAction(tierAttrs, syllabificationEditModeAct);
+            builder.appendTierLabel(doc.getSession(), record, syllableTier, syllableTier.getName(), null, doc.isChatTierNamesShown(), tierAttrs);
+
+            if(isSyllabificationComponent()) {
+                tierAttrs.addAttributes(getSyllabificationDisplayAttributes());
+                builder.appendBatchString(syllableTier.getValue().toString(true), tierAttrs);
+            } else {
+                builder.appendAll(getFormattedSyllabification(ipa, tierAttrs));
+            }
+
+            final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(builder.getTrailingAttributes());
+            TranscriptStyleConstants.setTier(finalAttrs, syllableTier);
+            TranscriptStyleConstants.setNotEditable(finalAttrs, true);
+            TranscriptStyleConstants.setComponentFactory(finalAttrs, new ComponentFactory() {
+                @Override
+                public JComponent createComponent(AttributeSet attrs) {
+                    final JPanel retVal = new JPanel();
+                    retVal.setPreferredSize(new Dimension(0, 0));
+                    return retVal;
+                }
+            });
+
+            builder.appendEOL(finalAttrs);
         }
-        return tier.getName() + " Syllables";
+    }
+
+    private String getTierNameForSyllabification(String tierName) {
+        if (tierName.equals(SystemTierType.TargetSyllables.getName()) || tierName.equals(SystemTierType.ActualSyllables.getName())) {
+            return tierName;
+        }
+        return tierName + " Syllables";
+    }
+
+    public void onTranscriptLocationChanged(EditorEvent<TranscriptEditor.TranscriptLocationChangeData> event) {
+        // single record view is already handled
+        if(!isSyllabificationVisible() || editor.isSingleRecordView()) return;
+
+        final TranscriptElementLocation oldLocation = event.data().oldLoc();
+        final TranscriptElementLocation newLocation = event.data().newLoc();
+
+        LogUtil.info("[SyllabificationExtension] Transcript location changed: " + oldLocation + " -> " + newLocation);
+
+        if(oldLocation.transcriptElementIndex() == newLocation.transcriptElementIndex()) return;
+
+        // remove syllabification tiers from previous record (if any)
+        editor.getTranscriptEditorCaret().freeze();
+        if(oldLocation.transcriptElementIndex() >= 0) {
+            final Transcript.Element prevElement = editor.getSession().getTranscript().getElementAt(oldLocation.transcriptElementIndex());
+            if (prevElement.isRecord()) {
+                for (TierViewItem tvi : editor.getSession().getTierView()) {
+                    final TierDescription td = editor.getSession().getTier(tvi.getTierName());
+                    if (td != null && td.getDeclaredType() == IPATranscript.class) {
+                        final String syllabificationTierName = getTierNameForSyllabification(td.getName());
+                        final int paraEleIdx =
+                                editor.getTranscriptDocument().findParagraphElementIndexForTier(oldLocation.transcriptElementIndex(), syllabificationTierName);
+                        if (paraEleIdx >= 0) {
+                            final Element paraEle = editor.getTranscriptDocument().getDefaultRootElement().getElement(paraEleIdx);
+                            try {
+                                editor.getTranscriptDocument().setBypassDocumentFilter(true);
+                                editor.getTranscriptDocument().remove(paraEle.getStartOffset(), paraEle.getEndOffset() - paraEle.getStartOffset());
+                            } catch (BadLocationException e) {
+                                LogUtil.warning(e);
+                            } finally {
+                                editor.getTranscriptDocument().setBypassDocumentFilter(false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if(newLocation.transcriptElementIndex() >= 0) {
+            final Transcript.Element newElement = editor.getSession().getTranscript().getElementAt(newLocation.transcriptElementIndex());
+            if (newElement.isRecord()) {
+                for (TierViewItem tvi : editor.getSession().getTierView()) {
+                    final TierDescription td = editor.getSession().getTier(tvi.getTierName());
+                    if (td != null && td.getDeclaredType() == IPATranscript.class) {
+                        final int paraEleIdx = editor.getTranscriptDocument().findParagraphElementIndexForTier(newLocation.transcriptElementIndex(), tvi.getTierName());
+                        if (paraEleIdx >= 0) {
+                            final Element paraEle = editor.getTranscriptDocument().getDefaultRootElement().getElement(paraEleIdx);
+                            final MutableAttributeSet attrs = new SimpleAttributeSet(paraEle.getElement(paraEle.getElementCount() - 1).getAttributes());
+                            final TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
+                            buildSyllabificationBatch(builder, attrs);
+                            try {
+                                LogUtil.info("[SyllabificationExtension] Inserting syllabification for tier " + tvi.getTierName());
+                                editor.getTranscriptDocument().processBatchUpdates(paraEle.getEndOffset(), builder.getBatch());
+                            } catch (BadLocationException e) {
+                                LogUtil.warning(e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        final int newCaretLoc = editor.sessionLocationToCharPos(newLocation);
+        if(newCaretLoc >= 0) {
+            editor.getTranscriptEditorCaret().setDot(newCaretLoc, true);
+        }
+        editor.getTranscriptEditorCaret().unfreeze();
     }
 
     public void onScEdit(EditorEvent<SyllabificationAlignmentEditorView.ScEditData> event) {
@@ -175,7 +248,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         final Tier<?> tier = event.data().tier();
         if(tier.getDeclaredType().equals(IPATranscript.class) && !event.data().valueAdjusting()) {
             if(isSyllabificationVisible()) {
-                final TranscriptDocument.StartEnd range = doc.getTierContentStartEnd(editor.getSession().getRecordPosition(event.data().record()), getTierNameForSyllabification(tier));
+                final TranscriptDocument.StartEnd range = doc.getTierContentStartEnd(editor.getSession().getRecordPosition(event.data().record()), getTierNameForSyllabification(tier.getName()));
                 if(!range.valid()) return;
                 editor.getTranscriptEditorCaret().freeze();
                 try {
