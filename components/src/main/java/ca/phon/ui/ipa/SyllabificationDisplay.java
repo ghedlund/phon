@@ -160,16 +160,17 @@ public class SyllabificationDisplay extends JComponent {
 		}
 	}
 
-	public void toggleHiatus(int pIdx) {
-		final IPAElement ele = getPhoneAtIndex(pIdx);
-		final IPAElement prevEle = getPhoneAtIndex(pIdx-1);
-		final SyllabificationInfo info = ele.getExtension(SyllabificationInfo.class);
-		final SyllabificationInfo prevInfo = prevEle.getExtension(SyllabificationInfo.class);
+	public void toggleHiatus(int pIdx1, int pIdx2) {
+		final IPAElement ele1 = getPhoneAtIndex(pIdx1);
+		final IPAElement ele2 = getPhoneAtIndex(pIdx2);
+		final SyllabificationInfo info = ele1.getExtension(SyllabificationInfo.class);
+		final SyllabificationInfo prevInfo = ele2.getExtension(SyllabificationInfo.class);
 		if(info != null) {
 			boolean wasHiatus = info.getConstituentType() == SyllableConstituentType.NUCLEUS && !info.isDiphthongMember();
-			final int eleIdx = getTranscript().indexOf(ele);
-			HiatusChangeData oldData = new HiatusChangeData(eleIdx, wasHiatus);
-			HiatusChangeData newData = new HiatusChangeData(eleIdx, !wasHiatus);
+			final int eleIdx1 = getTranscript().indexOf(ele1);
+			final int eleIdx2 = getTranscript().indexOf(ele2);
+			HiatusChangeData oldData = new HiatusChangeData(eleIdx1, eleIdx2, wasHiatus);
+			HiatusChangeData newData = new HiatusChangeData(eleIdx1, eleIdx2, !wasHiatus);
 			info.setDiphthongMember(wasHiatus);
 			prevInfo.setDiphthongMember(wasHiatus);
 			super.firePropertyChange(HIATUS_CHANGE_PROP_ID, oldData, newData);
@@ -193,9 +194,10 @@ public class SyllabificationDisplay extends JComponent {
 	/**
 	 * Hiatus change data.  Sent during hiatus change events.
 	 *
-	 * @param position
+	 * @param position1
+	 * @param position2
 	 * @param hiatus
 	 */
-	public record HiatusChangeData(int position, boolean hiatus) {}
+	public record HiatusChangeData(int position1, int position2, boolean hiatus) {}
 
 }

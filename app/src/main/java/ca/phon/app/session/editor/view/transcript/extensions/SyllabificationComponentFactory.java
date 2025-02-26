@@ -114,13 +114,15 @@ public class SyllabificationComponentFactory implements ComponentFactory {
 
                 display.addPropertyChangeListener(SyllabificationDisplay.HIATUS_CHANGE_PROP_ID, (e) -> {
                     final SyllabificationDisplay.HiatusChangeData data = (SyllabificationDisplay.HiatusChangeData) e.getNewValue();
-                    final int pIdx = phoneIndex + data.position();
-                    final ToggleDiphthongEdit diphthongEdit = new ToggleDiphthongEdit(this.session, this.eventManager, tier.getValue(), pIdx);
-                    diphthongEdit.setSource(display);
-                    final ToggleDiphthongEdit prevDiphthongEdit = new ToggleDiphthongEdit(this.session, this.eventManager, tier.getValue(), pIdx - 1);
+                    final int pIdx = phoneIndex + data.position1();
+                    final int pIdx2 = phoneIndex + data.position2();
+                    final ToggleDiphthongEdit diphthongEdit1 = new ToggleDiphthongEdit(this.session, this.eventManager, tier.getValue(), pIdx);
+                    diphthongEdit1.setSource(display);
+                    final ToggleDiphthongEdit diphthongEdit2 = new ToggleDiphthongEdit(this.session, this.eventManager, tier.getValue(), pIdx2);
+                    diphthongEdit2.setSource(display);
                     this.undoSupport.beginUpdate();
-                    this.undoSupport.postEdit(prevDiphthongEdit);
-                    this.undoSupport.postEdit(diphthongEdit);
+                    this.undoSupport.postEdit(diphthongEdit1);
+                    this.undoSupport.postEdit(diphthongEdit2);
                     this.undoSupport.endUpdate();
                 });
             }
