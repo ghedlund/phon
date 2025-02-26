@@ -165,12 +165,11 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             TranscriptStyleConstants.setParentTier(tierAttrs, tier);
             TranscriptStyleConstants.setTier(tierAttrs, syllableTier);
             TranscriptStyleConstants.setClickHandler(tierAttrs, SyllabificationExtension.this::syllabificationTierLabelClickHandler);
-//            TranscriptStyleConstants.setEnterAction(tierAttrs, syllabificationEditModeAct);
             builder.appendTierLabel(doc.getSession(), record, syllableTier, syllableTier.getName(), null, doc.isChatTierNamesShown(), tierAttrs);
 
             if(isSyllabificationComponent()) {
                 tierAttrs.addAttributes(getSyllabificationDisplayAttributes());
-                builder.appendBatchString(syllableTier.getValue().toString(true), tierAttrs);
+                builder.appendBatchString(syllableTier.getValue().toString(), tierAttrs);
             } else {
                 builder.appendAll(getFormattedSyllabification(ipa, tierAttrs));
             }

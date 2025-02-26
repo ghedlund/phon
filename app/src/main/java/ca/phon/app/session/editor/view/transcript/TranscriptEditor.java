@@ -2152,12 +2152,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             final int recordIndex = getSession().getRecordPosition(TranscriptStyleConstants.getRecord(prevElementAttributes));
             final Tier<?> tier = TranscriptStyleConstants.getTier(prevElementAttributes);
             final ComponentFactory componentFactory = TranscriptStyleConstants.getComponentFactory(prevElementAttributes);
-            if(componentFactory != null) {
-                end = start;
+            if(componentFactory != null)
                 componentFactory.requestFocusAtOffset(offsetInContent);
-            } else {
-                end = doc.getTierEnd(recordIndex, tier.getName());
-            }
+            end = doc.getTierEnd(recordIndex, tier.getName());
         } else if (elementType.equals(TranscriptStyleConstants.ATTR_KEY_COMMENT)) {
             end = doc.getCommentEnd((Comment) prevElementAttributes.getAttribute(TranscriptStyleConstants.ATTR_KEY_COMMENT));
         } else if (elementType.equals(TranscriptStyleConstants.ATTR_KEY_GEM)) {
@@ -2208,12 +2205,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             final int recordIndex = getSession().getRecordPosition(TranscriptStyleConstants.getRecord(nextElementAttributes));
             final Tier<?> tier = TranscriptStyleConstants.getTier(nextElementAttributes);
             final ComponentFactory componentFactory = TranscriptStyleConstants.getComponentFactory(nextElementAttributes);
-            if(componentFactory != null) {
-                end = start;
+            if(componentFactory != null)
                 componentFactory.requestFocusAtOffset(offsetInContent);
-            } else {
-                end = doc.getTierEnd(recordIndex, tier.getName());
-            }
+            end = doc.getTierEnd(recordIndex, tier.getName());
         } else if (elementType.equals(TranscriptStyleConstants.ELEMENT_TYPE_COMMENT)) {
             end = doc.getCommentEnd(TranscriptStyleConstants.getComment(nextElementAttributes));
         } else if (elementType.equals(TranscriptStyleConstants.ELEMENT_TYPE_GEM)) {

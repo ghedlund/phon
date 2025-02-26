@@ -7,8 +7,10 @@ import ca.phon.app.session.editor.view.transcript.BreakableFlowLayout;
 import ca.phon.app.session.editor.view.transcript.BreakableView;
 import ca.phon.app.session.editor.view.transcript.ComponentFactory;
 import ca.phon.app.session.editor.view.transcript.TranscriptEditor;
+import ca.phon.ipa.IPAElement;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.ipa.IPATranscriptBuilder;
+import ca.phon.ipa.Phone;
 import ca.phon.session.Session;
 import ca.phon.session.Tier;
 import ca.phon.syllable.SyllableConstituentType;
@@ -154,20 +156,33 @@ public class SyllabificationComponentFactory implements ComponentFactory {
     @Override
     public void requestFocusAtOffset(int offset) {
         if(previousComponent != null) {
-            int currentOffset = 0;
+            final IPATranscriptBuilder builder = new IPATranscriptBuilder();
+            for(int i = 0; i < previousComponent.getComponentCount(); i++) {
+                if(i > 0)
+                    builder.appendWordBoundary();
+                final SyllabificationDisplay display = (SyllabificationDisplay) previousComponent.getComponent(i);
+                builder.append(display.getTranscript());
+            }
+            final IPATranscript transcript = builder.toIPATranscript();
+            if(offset >= transcript.length()) {
+                requestFocusEnd();
+                return;
+            } else if(offset == 0) {
+                requestFocusStart();
+                return;
+            }
+
+            IPAElement selectedElement = null;
+            while(!((selectedElement = transcript.elementAt(offset)) instanceof Phone)) {
+                offset++;
+            }
             for(int i = 0; i < previousComponent.getComponentCount(); i++) {
                 final SyllabificationDisplay display = (SyllabificationDisplay) previousComponent.getComponent(i);
-                if(currentOffset + display.getDisplayedPhones().length() >= offset) {
+                if(display.getDisplayedPhones().indexOf(selectedElement) >= 0) {
                     display.requestFocus();
-                    display.setFocusedPhone(offset - currentOffset);
-                    return;
+                    display.setFocusedPhone(display.getDisplayedPhones().indexOf(selectedElement));
+                    break;
                 }
-                currentOffset += display.getDisplayedPhones().length();
-            }
-            if(offset >= currentOffset) {
-                requestFocusEnd();
-            } else if(offset <= 0) {
-                requestFocusStart();
             }
         }
     }
