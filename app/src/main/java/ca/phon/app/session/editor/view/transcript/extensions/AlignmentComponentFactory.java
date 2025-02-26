@@ -12,12 +12,16 @@ import ca.phon.ipa.alignment.PhoneMap;
 import ca.phon.session.PhoneAlignment;
 import ca.phon.session.Session;
 import ca.phon.session.Tier;
+import ca.phon.ui.action.PhonActionEvent;
+import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.ipa.PhoneMapDisplay;
 import ca.phon.ui.ipa.SyllabificationDisplay;
 
 import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.undo.UndoableEditSupport;
+import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import java.util.Iterator;
 
 public class AlignmentComponentFactory implements ComponentFactory {
@@ -57,11 +61,96 @@ public class AlignmentComponentFactory implements ComponentFactory {
             final PhoneMapDisplay display = new PhoneMapDisplay();
             display.setPhoneMapForWord(0, phoneMap);
             retVal.add(display);
+
+            // setup tab, shift+tab, up/down key actions
+            final InputMap inputMap = display.getInputMap(JComponent.WHEN_FOCUSED);
+            final ActionMap actionMap = display.getActionMap();
+
+            final KeyStroke tabKey = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+            inputMap.put(tabKey, "focusNextTier");
+            actionMap.put("focusNextTier", PhonUIAction.eventConsumer(this::focusNextTier, retVal));
+
+            final KeyStroke shiftTabKey = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
+            inputMap.put(shiftTabKey, "focusPrevTier");
+            actionMap.put("focusPrevTier", PhonUIAction.eventConsumer(this::focusPrevTier, retVal));
+
+            final KeyStroke upKey = KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0);
+            inputMap.put(upKey, "focusPrevTier");
+
+            final KeyStroke downKey = KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0);
+            inputMap.put(downKey, "focusNextTier");
+
+            display.addPropertyChangeListener("focusNext", (e) -> {
+                final int idx = Arrays.asList(retVal.getComponents()).indexOf(display);
+                if(idx < retVal.getComponentCount()-1) {
+                    if(retVal.getComponent(idx+1) instanceof PhoneMapDisplay nextDisplay) {
+                        nextDisplay.requestFocus();
+                        nextDisplay.setFocusedPosition(0);
+                    }
+                }
+            });
+            display.addPropertyChangeListener("focusPrev", (e) -> {
+                final int idx = Arrays.asList(retVal.getComponents()).indexOf(display);
+                if(idx > 0) {
+                    if(retVal.getComponent(idx-1) instanceof PhoneMapDisplay prevDisplay) {
+                        prevDisplay.requestFocus();
+                        prevDisplay.setFocusedPosition(prevDisplay.getNumberOfAlignmentPositions()-1);
+                    }
+                }
+            });
         }
 
         previousComponent = retVal;
 
         return retVal;
+    }
+
+    private void focusNextTier(PhonActionEvent<JPanel> pae) {
+        final IPATranscript transcript = buildTranscriptFromPanel(pae.getData());
+
+        // get focused element
+        int offset = -1;
+        for(int i = 0; i < pae.getData().getComponentCount(); i++) {
+            if(pae.getData().getComponent(i) instanceof PhoneMapDisplay display) {
+                if(display.hasFocus()) {
+                    final var alignedElements =
+                            display.getPhoneMapForWord(0).getAlignedElements(display.getFocusedPosition());
+                    IPAElement focusedElement = alignedElements.get(0) == null ? alignedElements.get(1) : alignedElements.get(0);
+                    offset = transcript.indexOf(focusedElement);
+                }
+            }
+        }
+
+        if(offset >= 0) {
+            editor.offsetInNextTierOrElement(transcript.stringIndexOfElement(offset));
+        } else {
+            editor.sameOffsetInNextTierOrElement();
+        }
+        editor.requestFocus();
+    }
+
+    private void focusPrevTier(PhonActionEvent<JPanel> pae) {
+        final IPATranscript transcript = buildTranscriptFromPanel(pae.getData());
+
+        // get focused element
+        int offset = -1;
+        for(int i = 0; i < pae.getData().getComponentCount(); i++) {
+            if(pae.getData().getComponent(i) instanceof PhoneMapDisplay display) {
+                if(display.hasFocus()) {
+                    final var alignedElements =
+                            display.getPhoneMapForWord(0).getAlignedElements(display.getFocusedPosition());
+                    IPAElement focusedElement = alignedElements.get(0) == null ? alignedElements.get(1) : alignedElements.get(0);
+                    offset = transcript.indexOf(focusedElement);
+                }
+            }
+        }
+
+        if(offset >= 0) {
+            editor.offsetInPrevTierOrElement(transcript.stringIndexOfElement(offset));
+        } else {
+            editor.sameOffsetInPrevTierOrElement();
+        }
+        editor.requestFocus();
     }
 
     @Override

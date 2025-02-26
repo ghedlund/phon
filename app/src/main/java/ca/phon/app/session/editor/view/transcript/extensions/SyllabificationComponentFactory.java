@@ -86,8 +86,7 @@ public class SyllabificationComponentFactory implements ComponentFactory {
             display.addPropertyChangeListener("focusNext", (e) -> {
                 final int idx = Arrays.asList(retVal.getComponents()).indexOf(display);
                 if(idx < retVal.getComponentCount()-1) {
-                    final SyllabificationDisplay nextDisplay = (SyllabificationDisplay)retVal.getComponent(idx+1);
-                    if(nextDisplay != null) {
+                    if(retVal.getComponent(idx+1) instanceof SyllabificationDisplay nextDisplay) {
                         nextDisplay.requestFocus();
                         nextDisplay.setFocusedPhone(0);
                     }
@@ -96,8 +95,7 @@ public class SyllabificationComponentFactory implements ComponentFactory {
             display.addPropertyChangeListener("focusPrev", (e) -> {
                 final int idx = Arrays.asList(retVal.getComponents()).indexOf(display);
                 if(idx > 0) {
-                    final SyllabificationDisplay prevDisplay = (SyllabificationDisplay)retVal.getComponent(idx-1);
-                    if(prevDisplay != null) {
+                    if(retVal.getComponent(idx-1) instanceof SyllabificationDisplay prevDisplay) {
                         prevDisplay.requestFocus();
                         prevDisplay.setFocusedPhone(prevDisplay.getDisplayedPhones().length()-1);
                     }

@@ -170,6 +170,8 @@ public class DefaultPhoneMapDisplayUI extends PhoneMapDisplayUI {
 
 		if(nextFocus < display.getNumberOfAlignmentPositions()) {
 			display.setFocusedPosition(nextFocus);
+		} else {
+			display.firePropertyChange("focusNext", currentFocus, nextFocus);
 		}
 	}
 
@@ -178,6 +180,8 @@ public class DefaultPhoneMapDisplayUI extends PhoneMapDisplayUI {
 		int prevFocus = currentFocus-1;
 		if(prevFocus >= 0) {
 			display.setFocusedPosition(prevFocus);
+		} else {
+			display.firePropertyChange("focusPrev", currentFocus, prevFocus);
 		}
 	}
 
