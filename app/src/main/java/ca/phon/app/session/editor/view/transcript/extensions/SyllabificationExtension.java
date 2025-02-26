@@ -5,6 +5,7 @@ import ca.phon.app.session.editor.EditorEvent;
 import ca.phon.app.session.editor.EditorEventManager;
 import ca.phon.app.session.editor.EditorEventType;
 import ca.phon.app.session.editor.view.syllabificationAlignment.SyllabificationAlignmentEditorView;
+import ca.phon.app.session.editor.view.syllabificationAlignment.SyllabifyEdit;
 import ca.phon.app.session.editor.view.transcript.*;
 import ca.phon.ipa.IPAElement;
 import ca.phon.ipa.IPATranscript;
@@ -12,22 +13,22 @@ import ca.phon.ipa.IPATranscriptBuilder;
 import ca.phon.session.*;
 import ca.phon.session.Record;
 import ca.phon.session.position.TranscriptElementLocation;
+import ca.phon.syllabifier.Syllabifier;
+import ca.phon.syllabifier.SyllabifierLibrary;
 import ca.phon.syllable.SyllabificationInfo;
 import ca.phon.syllable.SyllableConstituentType;
 import ca.phon.ui.action.PhonActionEvent;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.ipa.SyllabificationDisplay;
 import ca.phon.ui.menu.MenuBuilder;
-import org.apache.commons.logging.Log;
+import ca.phon.util.Language;
 
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 /**
  * An extension that provides syllabification support to the {@link TranscriptEditor}
@@ -152,7 +153,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
 
             // Create a dummy tier for the syllabification
             IPATranscript ipa = ipaTier.getValue();
-            Tier<IPATranscript> syllableTier = doc.getSessionFactory().createTier(getTierNameForSyllabification(tier.getName()), IPATranscript.class);
+            Tier<IPATranscript> syllableTier = doc.getSessionFactory().createTier(getSyllabifierTierNameForIPATier(tier.getName()), IPATranscript.class);
             syllableTier.setValue(ipa);
 
             // Set up the tier attributes for the dummy tier
@@ -163,21 +164,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             TranscriptStyleConstants.setRecord(tierAttrs, record);
             TranscriptStyleConstants.setParentTier(tierAttrs, tier);
             TranscriptStyleConstants.setTier(tierAttrs, syllableTier);
-//            TranscriptStyleConstants.setClickHandler(tierAttrs, new BiConsumer<MouseEvent, AttributeSet>() {
-//                @Override
-//                public void accept(MouseEvent mouseEvent, AttributeSet attributeSet) {
-//                    // show menu for syllabification tier
-//                    JPopupMenu popup = new JPopupMenu();
-//                    final MenuBuilder builder = new MenuBuilder(popup);
-//                    // reset syllabification for ipa tier
-//                    final PhonUIAction<ResetSyllabificationData> resetSyllabificationAct = PhonUIAction.eventConsumer(SyllabificationExtension.this::resetSyllabification,
-//                            new ResetSyllabificationData(record, ipaTier));
-//                    resetSyllabificationAct.putValue(PhonUIAction.NAME, "Reset syllabification");
-//                    builder.addItem(".", resetSyllabificationAct);
-//
-//                    popup.show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
-//                }
-//            });
+            TranscriptStyleConstants.setClickHandler(tierAttrs, SyllabificationExtension.this::syllabificationTierLabelClickHandler);
 //            TranscriptStyleConstants.setEnterAction(tierAttrs, syllabificationEditModeAct);
             builder.appendTierLabel(doc.getSession(), record, syllableTier, syllableTier.getName(), null, doc.isChatTierNamesShown(), tierAttrs);
 
@@ -224,18 +211,78 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         }
     }
 
-    private record ResetSyllabificationData(Record record, Tier<IPATranscript> ipaTier) {}
-    private void resetSyllabification(PhonActionEvent<ResetSyllabificationData> ipaTier) {
+    private void syllabificationTierLabelClickHandler(MouseEvent e, AttributeSet attrs) {
+        // show menu for syllabification tier
+        JPopupMenu popup = new JPopupMenu();
+        final MenuBuilder builder = new MenuBuilder(popup);
 
+        final Record record = TranscriptStyleConstants.getRecord(attrs);
+        final Tier<IPATranscript> syllabifierTier = (Tier<IPATranscript>) TranscriptStyleConstants.getTier(attrs);
+        final String ipaTierName = getIPATierForSyllabifierTier(syllabifierTier.getName());
+        final Tier<IPATranscript> ipaTier = record.getTier(ipaTierName, IPATranscript.class);
+
+        // reset syllabification for ipa tier
+        final PhonUIAction<ResetSyllabificationData> resetSyllabificationAct = PhonUIAction.eventConsumer(this::resetSyllabification,
+                new ResetSyllabificationData(TranscriptStyleConstants.getRecord(attrs), ipaTier, syllabifierTier));
+        resetSyllabificationAct.putValue(PhonUIAction.NAME, "Reset syllabification");
+        builder.addItem(".", resetSyllabificationAct);
+
+        popup.show(e.getComponent(), e.getX(), e.getY());
     }
 
-    private String getTierNameForSyllabification(String tierName) {
+    private Syllabifier syllabifierForTier(Tier<IPATranscript> tier) {
+        final SyllabifierLibrary library = SyllabifierLibrary.getInstance();
+        final SyllabifierInfo info = editor.getSession().getExtension(SyllabifierInfo.class);
+        Language syllabifierLanguage = info.getSyllabifierLanguageForTier(tier.getName());
+        if(syllabifierLanguage == null)
+            syllabifierLanguage = library.defaultSyllabifierLanguage();
+        return library.getSyllabifierForLanguage(syllabifierLanguage);
+    }
+
+    private record ResetSyllabificationData(Record record, Tier<IPATranscript> ipaTier, Tier<IPATranscript> syllabifierTier) {}
+    private void resetSyllabification(PhonActionEvent<ResetSyllabificationData> resetData) {
+        final Tier<IPATranscript> ipaTier = resetData.getData().ipaTier();
+        final Tier<IPATranscript> syllabifierTier = resetData.getData().syllabifierTier();
+        final Syllabifier syllabifier = syllabifierForTier(ipaTier);
+
+        final SyllabifyEdit edit = new SyllabifyEdit(editor.getSession(), editor.getEventManager(), ipaTier, syllabifier);
+
+        // find component to use as source for edit
+        final int recordIndex = editor.getSession().getRecordPosition(resetData.getData().record());
+        final String tierName = getSyllabifierTierNameForIPATier(resetData.getData().ipaTier().getName());
+        final TranscriptDocument.StartEnd syllabificationTierStartEnd =
+                editor.getTranscriptDocument().getTierContentStartEnd(recordIndex, syllabifierTier.getName());
+        if(syllabificationTierStartEnd.valid()) {
+            final AttributeSet attrs = editor.getTranscriptDocument().getCharacterElement(syllabificationTierStartEnd.start()).getAttributes();
+            final ComponentFactory componentFactory = TranscriptStyleConstants.getComponentFactory(attrs);
+            if(componentFactory instanceof SyllabificationComponentFactory) {
+                final JPanel parent = (JPanel)componentFactory.getComponent();
+                if(parent.getComponentCount() > 0 && parent.getComponent(0) instanceof SyllabificationDisplay display) {
+                    edit.setSource(display);
+                }
+            }
+        }
+
+        editor.getUndoSupport().postEdit(edit);
+    }
+
+    private String getSyllabifierTierNameForIPATier(String tierName) {
         if (tierName.equals(SystemTierType.IPATarget.getName())) {
             return SystemTierType.TargetSyllables.getName();
         } else if (tierName.equals(SystemTierType.IPAActual.getName())) {
             return SystemTierType.ActualSyllables.getName();
         } else {
             return tierName + " Syllables";
+        }
+    }
+
+    private String getIPATierForSyllabifierTier(String tierName) {
+        if (SystemTierType.TargetSyllables.getName().equals(tierName)) {
+            return SystemTierType.IPATarget.getName();
+        } else if (SystemTierType.ActualSyllables.getName().equals(tierName)) {
+            return SystemTierType.IPAActual.getName();
+        } else {
+            return tierName.replace(" Syllables", "");
         }
     }
 
@@ -263,7 +310,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         for (TierViewItem tvi : editor.getSession().getTierView()) {
             final TierDescription td = editor.getSession().getTier(tvi.getTierName());
             if (td != null && td.getDeclaredType() == IPATranscript.class) {
-                final String syllabificationTierName = getTierNameForSyllabification(td.getName());
+                final String syllabificationTierName = getSyllabifierTierNameForIPATier(td.getName());
                 final int paraEleIdx =
                         editor.getTranscriptDocument().findParagraphElementIndexForTier(elementIndex, syllabificationTierName);
                 if (paraEleIdx >= 0) {
@@ -340,7 +387,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         final Tier<?> tier = event.data().tier();
         if(tier.getDeclaredType().equals(IPATranscript.class) && !event.data().valueAdjusting()) {
             if(isSyllabificationVisible()) {
-                final TranscriptDocument.StartEnd range = doc.getTierContentStartEnd(editor.getSession().getRecordPosition(event.data().record()), getTierNameForSyllabification(tier.getName()));
+                final TranscriptDocument.StartEnd range = doc.getTierContentStartEnd(editor.getSession().getRecordPosition(event.data().record()), getSyllabifierTierNameForIPATier(tier.getName()));
                 if(!range.valid()) return;
                 editor.getTranscriptEditorCaret().freeze();
                 try {

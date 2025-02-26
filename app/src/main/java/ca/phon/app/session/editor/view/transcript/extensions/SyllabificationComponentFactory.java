@@ -177,20 +177,4 @@ public class SyllabificationComponentFactory implements ComponentFactory {
         return previousComponent;
     }
 
-    private static class BreakablePanel extends JPanel implements BreakableView {
-
-        public BreakablePanel() {
-            super(new BreakableFlowLayout());
-        }
-
-        @Override
-        public void breakView(int axis, float pos) {
-            final BreakableFlowLayout layout = (BreakableFlowLayout) getLayout();
-            if(axis == SwingConstants.HORIZONTAL) {
-                System.out.println("Break width: " + pos);
-                layout.setBreakWidth((int)pos);
-            }
-        }
-    }
-
 }

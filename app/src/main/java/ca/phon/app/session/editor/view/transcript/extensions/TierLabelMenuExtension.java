@@ -233,19 +233,21 @@ public class TierLabelMenuExtension implements TranscriptEditorExtension {
 
             if(TranscriptStyleConstants.isLabel(attrs) && TranscriptStyleConstants.isUnderlineOnHover(attrs)) {
                 final String elementType = TranscriptStyleConstants.getElementType(attrs);
-                switch (elementType) {
-                    case TranscriptStyleConstants.ELEMENT_TYPE_RECORD ->
-                        TranscriptStyleConstants.setClickHandler(attrs, TierLabelMenuExtension.this::tierLabelClickHandler);
-                    case TranscriptStyleConstants.ELEMENT_TYPE_COMMENT ->
-                        TranscriptStyleConstants.setClickHandler(attrs, TierLabelMenuExtension.this::commentLabelClickHandler);
-                    case TranscriptStyleConstants.ELEMENT_TYPE_GEM ->
-                        TranscriptStyleConstants.setClickHandler(attrs, TierLabelMenuExtension.this::gemLabelClickHandler);
+                if(TranscriptStyleConstants.getClickHandler(attrs) == null) {
+                    switch (elementType) {
+                        case TranscriptStyleConstants.ELEMENT_TYPE_RECORD ->
+                                TranscriptStyleConstants.setClickHandler(attrs, TierLabelMenuExtension.this::tierLabelClickHandler);
+                        case TranscriptStyleConstants.ELEMENT_TYPE_COMMENT ->
+                                TranscriptStyleConstants.setClickHandler(attrs, TierLabelMenuExtension.this::commentLabelClickHandler);
+                        case TranscriptStyleConstants.ELEMENT_TYPE_GEM ->
+                                TranscriptStyleConstants.setClickHandler(attrs, TierLabelMenuExtension.this::gemLabelClickHandler);
 //                    case TranscriptStyleConstants.ELEMENT_TYPE_BLIND_TRANSCRIPTION -> {
 //                        Record record = TranscriptStyleConstants.getRecord(attrs);
 //                        Tier<?> tier = TranscriptStyleConstants.getTier(attrs);
 //                        String transcriber = TranscriptStyleConstants.getTranscriber(attrs);
 //                        onClickBlindTranscriptionLabel(e.getPoint(), record, tier, transcriber);
 //                    }
+                    }
                 }
             }
 
