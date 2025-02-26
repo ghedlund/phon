@@ -1,5 +1,7 @@
-package ca.phon.app.session.editor.view.transcript;
+package ca.phon.app.session.editor.view.transcript.extensions;
 
+import ca.phon.app.session.editor.view.transcript.BreakableFlowLayout;
+import ca.phon.app.session.editor.view.transcript.ComponentFactory;
 import ca.phon.ipa.alignment.PhoneMap;
 import ca.phon.session.PhoneAlignment;
 import ca.phon.session.Tier;
@@ -10,6 +12,9 @@ import javax.swing.text.AttributeSet;
 import java.util.Iterator;
 
 public class AlignmentComponentFactory implements ComponentFactory {
+
+    private JPanel previousComponent;
+
     @Override
     public JComponent createComponent(AttributeSet attrs) {
         Tier<PhoneAlignment> tier = (Tier<PhoneAlignment>) attrs.getAttribute("tier");
@@ -35,7 +40,7 @@ public class AlignmentComponentFactory implements ComponentFactory {
 
     @Override
     public JComponent getComponent() {
-        return null;
+        return previousComponent;
     }
 
     @Override

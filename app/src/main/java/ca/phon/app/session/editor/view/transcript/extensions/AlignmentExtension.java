@@ -5,12 +5,15 @@ import ca.phon.app.session.editor.EditorEvent;
 import ca.phon.app.session.editor.EditorEventManager;
 import ca.phon.app.session.editor.EditorEventType;
 import ca.phon.app.session.editor.view.transcript.*;
+import ca.phon.ipa.IPATranscript;
 import ca.phon.session.*;
 import ca.phon.session.Record;
+import ca.phon.session.position.TranscriptElementLocation;
 
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,80 +45,86 @@ public class AlignmentExtension implements TranscriptEditorExtension {
         doc.addInsertionHook(new DefaultInsertionHook() {
             @Override
             public List<DefaultStyledDocument.ElementSpec> endTier(MutableAttributeSet attrs) {
-                Tier<?> tier = (Tier<?>) attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_TIER);
-                TierViewItem alignmentParent = getAlignmentParent();
-
-                if (tier != null && isAlignmentVisible() && alignmentParent != null && tier.getName().equals(alignmentParent.getTierName())) {
-                    Record record = TranscriptStyleConstants.getRecord(attrs);
-                    final TranscriptBatchBuilder batchBuilder = new TranscriptBatchBuilder(doc);
-//                    batchBuilder.appendEOL();
-                    final SimpleAttributeSet tierAttrs = new SimpleAttributeSet();
-                    TranscriptStyleConstants.setElementType(tierAttrs, TranscriptStyleConstants.ELEMENT_TYPE_RECORD);
-                    TranscriptStyleConstants.setRecord(tierAttrs, record);
-                    TranscriptStyleConstants.setParentTier(tierAttrs, tier);
-                    TranscriptStyleConstants.setTier(tierAttrs, record.getPhoneAlignmentTier());
-                    batchBuilder.appendTierLabel(editor.getSession(), record, record.getPhoneAlignmentTier(), record.getPhoneAlignmentTier().getName(), null, doc.isChatTierNamesShown(), tierAttrs);
-                    batchBuilder.appendAll(getFormattedAlignment(record, record.getPhoneAlignmentTier(), editor.getDataModel().getTranscriber(), tierAttrs));
-                    final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(batchBuilder.getTrailingAttributes());
-                    TranscriptStyleConstants.setTier(finalAttrs, record.getPhoneAlignmentTier());
-                    TranscriptStyleConstants.setNotEditable(finalAttrs, true);
-                    TranscriptStyleConstants.setComponentFactory(finalAttrs, new ComponentFactory() {
-                        @Override
-                        public JComponent createComponent(AttributeSet attrs) {
-                            final JPanel retVal = new JPanel();
-                            retVal.setPreferredSize(new Dimension(0, 0));
-                            return retVal;
-                        }
-
-                        @Override
-                        public JComponent getComponent() {
-                            return null;
-                        }
-
-                        @Override
-                        public void requestFocusStart() {
-
-                        }
-
-                        @Override
-                        public void requestFocusEnd() {
-
-                        }
-
-                        @Override
-                        public void requestFocusAtOffset(int offset) {
-
-                        }
-                    });
-                    batchBuilder.appendEOL(finalAttrs);
-                    return batchBuilder.getBatch();
-                }
-
-                return new ArrayList<>();
+                TranscriptBatchBuilder builder = new TranscriptBatchBuilder(doc);
+                if(!isAlignmentVisible() || !doc.getSingleRecordView()) return builder.getBatch();
+                buildAlignmentBatch(builder, attrs);
+                return builder.getBatch();
             }
         });
 
-        EditorEventManager eventManager = editor.getEventManager();
-        eventManager.registerActionForEvent(EditorEventType.TierChange, this::onTierDataChanged, EditorEventManager.RunOn.AWTEventDispatchThread);
 
-        doc.addDocumentPropertyChangeListener(ALIGNMENT_IS_VISIBLE, evt -> {
-            if (isAlignmentVisible()) {
-                doc.putDocumentProperty(ALIGNMENT_PARENT, calculateAlignmentParent());
-            }
-            else {
-                doc.putDocumentProperty(ALIGNMENT_PARENT, ALIGNMENT_PARENT_DEFAULT);
-            }
-            doc.reload();
-        });
-        doc.addDocumentPropertyChangeListener(ALIGNMENT_IS_COMPONENT, evt -> {
-            if (isAlignmentVisible()) {
-                doc.reload();
-            }
-        });
+        doc.addDocumentPropertyChangeListener(ALIGNMENT_IS_VISIBLE, this::alignmentVisiblePropertyChangeHandler);
+        doc.addDocumentPropertyChangeListener(ALIGNMENT_IS_COMPONENT, this::alignmentComponentPropertyChangeHandler);
 
         editor.getEventManager().registerActionForEvent(EditorEventType.TierViewChanged, (event) -> {
             doc.putDocumentProperty(ALIGNMENT_PARENT, calculateAlignmentParent());
         }, EditorEventManager.RunOn.AWTEventDispatchThread);
+        editor.getEventManager().registerActionForEvent(EditorEventType.TierChange, this::onTierDataChanged, EditorEventManager.RunOn.AWTEventDispatchThread);
+        editor.getEventManager().registerActionForEvent(TranscriptEditor.transcriptLocationChanged, this::onTranscriptLocationChanged, EditorEventManager.RunOn.AWTEventDispatchThread);
+    }
+
+    private void alignmentVisiblePropertyChangeHandler(PropertyChangeEvent evt) {
+        if (isAlignmentVisible()) {
+            doc.putDocumentProperty(ALIGNMENT_PARENT, calculateAlignmentParent());
+        }
+        else {
+            doc.putDocumentProperty(ALIGNMENT_PARENT, ALIGNMENT_PARENT_DEFAULT);
+        }
+        doc.reload();
+    }
+
+    private void alignmentComponentPropertyChangeHandler(PropertyChangeEvent evt) {
+        if (isAlignmentVisible()) {
+            doc.reload();
+        }
+    }
+
+    private void buildAlignmentBatch(TranscriptBatchBuilder batchBuilder, AttributeSet attrs) {
+        Tier<?> tier = (Tier<?>) attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_TIER);
+        TierViewItem alignmentParent = getAlignmentParent();
+
+        if (tier != null && isAlignmentVisible() && alignmentParent != null && tier.getName().equals(alignmentParent.getTierName())) {
+            Record record = TranscriptStyleConstants.getRecord(attrs);
+            final SimpleAttributeSet tierAttrs = new SimpleAttributeSet();
+            TranscriptStyleConstants.setElementType(tierAttrs, TranscriptStyleConstants.ELEMENT_TYPE_RECORD);
+            TranscriptStyleConstants.setRecord(tierAttrs, record);
+            TranscriptStyleConstants.setParentTier(tierAttrs, tier);
+            TranscriptStyleConstants.setTier(tierAttrs, record.getPhoneAlignmentTier());
+            batchBuilder.appendTierLabel(editor.getSession(), record, record.getPhoneAlignmentTier(), record.getPhoneAlignmentTier().getName(), null, doc.isChatTierNamesShown(), tierAttrs);
+            batchBuilder.appendAll(getFormattedAlignment(record, record.getPhoneAlignmentTier(), editor.getDataModel().getTranscriber(), tierAttrs));
+            final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(batchBuilder.getTrailingAttributes());
+            TranscriptStyleConstants.setTier(finalAttrs, record.getPhoneAlignmentTier());
+            TranscriptStyleConstants.setNotEditable(finalAttrs, true);
+            TranscriptStyleConstants.setComponentFactory(finalAttrs, new ComponentFactory() {
+                @Override
+                public JComponent createComponent(AttributeSet attrs) {
+                    final JPanel retVal = new JPanel();
+                    retVal.setPreferredSize(new Dimension(0, 0));
+                    return retVal;
+                }
+
+                @Override
+                public JComponent getComponent() {
+                    return null;
+                }
+
+                @Override
+                public void requestFocusStart() {
+
+                }
+
+                @Override
+                public void requestFocusEnd() {
+
+                }
+
+                @Override
+                public void requestFocusAtOffset(int offset) {
+
+                }
+            });
+            batchBuilder.appendEOL(finalAttrs);
+        }
     }
 
     /**
@@ -174,6 +183,73 @@ public class AlignmentExtension implements TranscriptEditorExtension {
         batchBuilder.appendTierContent(record, alignmentTier, editor.getDataModel().getTranscriber(), tierAttrs);
 
         return batchBuilder.getBatch();
+    }
+
+    private void addAlignmentTiersForRecord(int transcriptElementIndex) {
+        final TierViewItem alignmentParent = getAlignmentParent();
+        if (alignmentParent == null) return;
+
+        final int paraEleIdx = editor.getTranscriptDocument().findParagraphElementIndexForTier(transcriptElementIndex, alignmentParent.getTierName());
+        if (paraEleIdx >= 0) {
+            final Element paraEle = editor.getTranscriptDocument().getDefaultRootElement().getElement(paraEleIdx);
+            final MutableAttributeSet attrs = new SimpleAttributeSet(paraEle.getElement(paraEle.getElementCount() - 1).getAttributes());
+            final TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
+            buildAlignmentBatch(builder, attrs);
+            try {
+                editor.getTranscriptDocument().processBatchUpdates(paraEle.getEndOffset(), builder.getBatch());
+            } catch (BadLocationException e) {
+                LogUtil.warning(e);
+            }
+        }
+    }
+
+    private void removeAlignmentTiersForRecord(int transcriptElementIndex) {
+        final int paraEleIdx = editor.getTranscriptDocument().findParagraphElementIndexForTier(transcriptElementIndex, SystemTierType.PhoneAlignment.getName());
+        if (paraEleIdx >= 0) {
+            final Element paraEle = editor.getTranscriptDocument().getDefaultRootElement().getElement(paraEleIdx);
+            editor.getTranscriptDocument().setBypassDocumentFilter(true);
+            editor.getTranscriptEditorCaret().freeze();
+            try {
+                editor.getTranscriptDocument().remove(paraEle.getStartOffset(), paraEle.getEndOffset() - paraEle.getStartOffset());
+            } catch (BadLocationException e) {
+                LogUtil.warning(e);
+            } finally {
+                editor.getTranscriptDocument().setBypassDocumentFilter(false);
+                editor.getTranscriptEditorCaret().unfreeze();
+            }
+        }
+    }
+
+    public void onTranscriptLocationChanged(EditorEvent<TranscriptEditor.TranscriptLocationChangeData> event) {
+        final TranscriptElementLocation oldLocation = event.data().oldLoc();
+        final TranscriptElementLocation newLocation = event.data().newLoc();
+
+        // single record view is already handled
+        if(!isAlignmentVisible() || editor.isSingleRecordView()) return;
+        if(oldLocation.transcriptElementIndex() == newLocation.transcriptElementIndex()) return;
+
+        // remove syllabification tiers from previous record (if any)
+        editor.getTranscriptEditorCaret().freeze();
+        if(oldLocation.transcriptElementIndex() >= 0) {
+            final Transcript.Element prevElement = editor.getSession().getTranscript().getElementAt(oldLocation.transcriptElementIndex());
+            if (prevElement.isRecord()) {
+                removeAlignmentTiersForRecord(oldLocation.transcriptElementIndex());
+            }
+        }
+
+        if(newLocation.transcriptElementIndex() >= 0) {
+            final Transcript.Element newElement = editor.getSession().getTranscript().getElementAt(newLocation.transcriptElementIndex());
+            if (newElement.isRecord()) {
+                addAlignmentTiersForRecord(newLocation.transcriptElementIndex());
+            }
+        }
+
+        // force update dot to new location without issuing a new location changed event by keeping caret frozen
+        final int newCaretLoc = editor.sessionLocationToCharPos(newLocation);
+        if(newCaretLoc >= 0) {
+            editor.getTranscriptEditorCaret().setDot(newCaretLoc, true);
+        }
+        editor.getTranscriptEditorCaret().unfreeze();
     }
 
     /**

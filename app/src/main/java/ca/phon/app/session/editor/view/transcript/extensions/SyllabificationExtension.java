@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.List;
 
@@ -65,54 +66,16 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             @Override
             public List<DefaultStyledDocument.ElementSpec> endTier(MutableAttributeSet attrs) {
                 TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
-                TranscriptStyleContext transcriptStyleContext = doc.getTranscriptStyleContext();
                 if (!isSyllabificationVisible() || !doc.getSingleRecordView()) return builder.getBatch();
                 buildSyllabificationBatch(builder, attrs);
                 return builder.getBatch();
             }
         });
 
-        doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_VISIBLE, evt -> {
-            int transcriptElementIndex = -1;
-            if(editor.isSingleRecordView()) {
-                transcriptElementIndex = editor.getSession().getTranscript().getRecordElementIndex(
-                        editor.getTranscriptDocument().getSingleRecordIndex()
-                );
-            } else {
-                final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
-                if (currentLocation == null || !currentLocation.valid() || currentLocation.transcriptElementIndex() < 0)
-                    return;
-                final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
-                if (!element.isRecord()) return;
-                transcriptElementIndex = currentLocation.transcriptElementIndex();
-            }
-            if(transcriptElementIndex >= 0) {
-                if((boolean)evt.getNewValue()) {
-                    // insert syllabification tiers
-                    addSyllabificationTiersForRecord(transcriptElementIndex);
-                } else {
-                    removeSyllabificationTiersForRecord(transcriptElementIndex);
-                }
-            }
-        });
-        doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_COMPONENT, evt -> {
-            if(!isSyllabificationVisible()) return;
-            if(editor.isSingleRecordView()) {
-                doc.reload();
-            } else {
-                final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
-                if(!currentLocation.valid() || currentLocation.transcriptElementIndex() < 0) return;
-                final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
-                if(!element.isRecord()) return;
-                if((boolean)evt.getNewValue()) {
-                    // insert syllabification tiers
-                    addSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
-                } else {
-                    removeSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
-                }
-            }
-        });
+        doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_VISIBLE, this::syllabificationVisiblePropertyChangeHandler);
+        doc.addDocumentPropertyChangeListener(SYLLABIFICATION_IS_COMPONENT, this::setSyllabificationIsComponentPropertyChangeHandler);
 
+        // XXX remove due to complications with other key bindings
 //        InputMap inputMap = editor.getInputMap();
 //        ActionMap actionMap = editor.getActionMap();
 //
@@ -137,6 +100,48 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         editor.getEventManager().registerActionForEvent(TranscriptEditor.transcriptLocationChanged, this::onTranscriptLocationChanged, EditorEventManager.RunOn.AWTEventDispatchThread);
 
         doc.addNotEditableAttribute(TranscriptStyleConstants.ATTR_KEY_SYLLABIFICATION);
+    }
+
+    private void setSyllabificationIsComponentPropertyChangeHandler(PropertyChangeEvent evt) {
+        if(!isSyllabificationVisible()) return;
+        if(editor.isSingleRecordView()) {
+            doc.reload();
+        } else {
+            final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
+            if(!currentLocation.valid() || currentLocation.transcriptElementIndex() < 0) return;
+            final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
+            if(!element.isRecord()) return;
+            if((boolean)evt.getNewValue()) {
+                // insert syllabification tiers
+                addSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
+            } else {
+                removeSyllabificationTiersForRecord(currentLocation.transcriptElementIndex());
+            }
+        }
+    }
+
+    private void syllabificationVisiblePropertyChangeHandler(PropertyChangeEvent evt) {
+        int transcriptElementIndex = -1;
+        if(editor.isSingleRecordView()) {
+            transcriptElementIndex = editor.getSession().getTranscript().getRecordElementIndex(
+                    editor.getTranscriptDocument().getSingleRecordIndex()
+            );
+        } else {
+            final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
+            if (currentLocation == null || !currentLocation.valid() || currentLocation.transcriptElementIndex() < 0)
+                return;
+            final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
+            if (!element.isRecord()) return;
+            transcriptElementIndex = currentLocation.transcriptElementIndex();
+        }
+        if(transcriptElementIndex >= 0) {
+            if((boolean)evt.getNewValue()) {
+                // insert syllabification tiers
+                addSyllabificationTiersForRecord(transcriptElementIndex);
+            } else {
+                removeSyllabificationTiersForRecord(transcriptElementIndex);
+            }
+        }
     }
 
     private void buildSyllabificationBatch(TranscriptBatchBuilder builder, MutableAttributeSet attrs) {

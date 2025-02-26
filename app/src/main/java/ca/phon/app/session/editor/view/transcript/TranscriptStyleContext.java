@@ -2,12 +2,12 @@ package ca.phon.app.session.editor.view.transcript;
 
 import ca.phon.app.session.editor.EditorEventManager;
 import ca.phon.app.session.editor.undo.SessionEditUndoSupport;
+import ca.phon.app.session.editor.view.transcript.extensions.AlignmentComponentFactory;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.session.*;
 import ca.phon.session.Record;
 import ca.phon.session.tierdata.*;
 import ca.phon.ui.fonts.FontPreferences;
-import ca.phon.util.PrefHelper;
 
 import javax.swing.*;
 import javax.swing.border.Border;
