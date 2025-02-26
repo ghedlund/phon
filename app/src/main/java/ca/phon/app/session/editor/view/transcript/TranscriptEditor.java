@@ -654,6 +654,7 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         if(elem.isRecord()) {
             final Record record = elem.asRecord();
             final Tier<?> tier = TranscriptStyleConstants.getTier(attrs);
+            if(tier.getDeclaredType() == PhoneAlignment.class) return;
             final int recordIndex = getSession().getRecordPosition(record);
             final TranscriptDocument.StartEnd startEnd = getTranscriptDocument().getTierContentStartEnd(recordIndex, loc.tier());
             if(!startEnd.valid()) return;
@@ -1451,9 +1452,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
      * @param newData the possible new data for the tier
      */
     public void changeTierData(Record record, Tier<?> tier, String newData) {
-        if(PrefHelper.isDebugMode()) {
-            LogUtil.info("Changing tier data for " + tier.getName() + " to " + newData);
-        }
         TranscriptDocument doc = getTranscriptDocument();
         String transcriber = dataModel.getTranscriber().getUsername();
 
@@ -1462,6 +1460,10 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
         if (tier.getDeclaredType() == MediaSegment.class) return;
         if (doc.getTierText(tier, transcriber).equals(doc.getTierText(dummy, transcriber))) return;
+
+        if(PrefHelper.isDebugMode()) {
+            LogUtil.info("Changing tier data for " + tier.getName() + " to " + newData);
+        }
 
 //        SwingUtilities.invokeLater(() -> {
             TierEdit<?> edit = new TierEdit(getSession(), eventManager, dataModel.getTranscriber(), record, tier, dummy.getValue());

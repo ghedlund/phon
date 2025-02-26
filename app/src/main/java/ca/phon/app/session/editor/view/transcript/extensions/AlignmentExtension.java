@@ -99,6 +99,19 @@ public class AlignmentExtension implements TranscriptEditorExtension {
         }
     }
 
+    /**
+     * Gets an attribute set containing a reference to the alignment component factory.
+     * Adding the contents of this attribute set to the attributes of an alignment tier will
+     * cause it to appear as the {@link ca.phon.ui.ipa.PhoneMapDisplay} component instead of text
+     *
+     * @return an attribute set containing a reference to the alignment component factory
+     */
+    public SimpleAttributeSet getAlignmentAttributes() {
+        final SimpleAttributeSet retVal = new SimpleAttributeSet();
+        retVal.addAttribute(TranscriptStyleConstants.ATTR_KEY_COMPONENT_FACTORY, new AlignmentComponentFactory(editor));
+        return retVal;
+    }
+
     private void buildAlignmentBatch(TranscriptBatchBuilder batchBuilder, AttributeSet attrs) {
         Tier<?> tier = (Tier<?>) attrs.getAttribute(TranscriptStyleConstants.ATTR_KEY_TIER);
         TierViewItem alignmentParent = getAlignmentParent();
@@ -198,7 +211,7 @@ public class AlignmentExtension implements TranscriptEditorExtension {
         // Get the string version of the alignment
         // Add component factory if needed
         if (isAlignmentComponent()) {
-            tierAttrs.addAttributes(transcriptStyleContext.getAlignmentAttributes());
+            tierAttrs.addAttributes(getAlignmentAttributes());
         }
         batchBuilder.appendTierContent(record, alignmentTier, editor.getDataModel().getTranscriber(), tierAttrs);
 
@@ -243,6 +256,20 @@ public class AlignmentExtension implements TranscriptEditorExtension {
     public void onTranscriptLocationChanged(EditorEvent<TranscriptEditor.TranscriptLocationChangeData> event) {
         final TranscriptElementLocation oldLocation = event.data().oldLoc();
         final TranscriptElementLocation newLocation = event.data().newLoc();
+
+        // handle caret movements into syllabifier tiers
+        if (newLocation.tier().equals(SystemTierType.PhoneAlignment.getName())) {
+            final TranscriptDocument.StartEnd tierStartEnd = doc.getTierContentStartEnd(
+                    editor.getSession().getTranscript().getRecordIndex(newLocation.transcriptElementIndex()), newLocation.tier());
+            if (tierStartEnd.valid()) {
+                final AttributeSet attrs = doc.getCharacterElement(tierStartEnd.start()).getAttributes();
+                final ComponentFactory componentFactory = TranscriptStyleConstants.getComponentFactory(attrs);
+                if (componentFactory instanceof AlignmentComponentFactory) {
+                    componentFactory.requestFocusAtOffset(newLocation.charPosition());
+                }
+            }
+            return;
+        }
 
         // single record view is already handled
         if(!isAlignmentVisible() || editor.isSingleRecordView()) return;

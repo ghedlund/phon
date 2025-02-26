@@ -124,10 +124,11 @@ public class SyllabificationComponentFactory implements ComponentFactory {
     private IPATranscript buildTranscriptFromPanel(JPanel panel) {
         final IPATranscriptBuilder builder = new IPATranscriptBuilder();
         for(int i = 0; i < panel.getComponentCount(); i++) {
-            if(i > 0)
-                builder.appendWordBoundary();
-            final SyllabificationDisplay display = (SyllabificationDisplay) panel.getComponent(i);
-            builder.append(display.getTranscript());
+            if(panel.getComponent(i) instanceof SyllabificationDisplay display) {
+                if (i > 0)
+                    builder.appendWordBoundary();
+                builder.append(display.getTranscript());
+            }
         }
         return builder.toIPATranscript();
     }
@@ -216,11 +217,12 @@ public class SyllabificationComponentFactory implements ComponentFactory {
                 ipaOffset++;
             }
             for(int i = 0; i < previousComponent.getComponentCount(); i++) {
-                final SyllabificationDisplay display = (SyllabificationDisplay) previousComponent.getComponent(i);
-                if(display.getDisplayedPhones().indexOf(selectedElement) >= 0) {
-                    display.requestFocus();
-                    display.setFocusedPhone(display.getDisplayedPhones().indexOf(selectedElement));
-                    break;
+                if(previousComponent.getComponent(i) instanceof SyllabificationDisplay display) {
+                    if(display.getDisplayedPhones().indexOf(selectedElement) >= 0) {
+                        display.requestFocus();
+                        display.setFocusedPhone(display.getDisplayedPhones().indexOf(selectedElement));
+                        break;
+                    }
                 }
             }
         }
