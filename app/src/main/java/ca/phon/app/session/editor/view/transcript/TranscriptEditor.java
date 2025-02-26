@@ -2120,6 +2120,8 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         return currentPos;
     }
 
+
+
     /**
      * Moves the caret to the position in the previous line with the same offset from the labels
      * (or the end of the line if it's not long enough)
@@ -2136,14 +2138,21 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
             offsetInContent = upDownOffset;
         }
 
+        offsetInPrevTierOrElement(offsetInContent);
+    }
+
+    /**
+     * Moves the caret to the position in the previous line with the same offset from the labels
+     *
+     * @param offsetInContent
+     */
+    public void offsetInPrevTierOrElement(int offsetInContent) {
+        TranscriptDocument doc = getTranscriptDocument();
+        int caretPos = getCaretPosition();
         int start = getStartOfPrevTierOrElement(caretPos);
-
         if (start == -1) return;
-
         int end;
-
         AttributeSet prevElementAttributes = doc.getCharacterElement(start).getAttributes();
-
         String elementType = (String) prevElementAttributes.getAttribute(TranscriptStyleConstants.ATTR_KEY_ELEMENT_TYPE);
 
         if (elementType == null) {
@@ -2175,7 +2184,6 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
 
     /**
      * Moves the caret to the position in the next line with the same offset from the labels
-     * (or the end of the line if it's not long enough)
      */
     public void sameOffsetInNextTierOrElement() {
         TranscriptDocument doc = getTranscriptDocument();
@@ -2188,6 +2196,19 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         } else {
             offsetInContent = upDownOffset;
         }
+        offsetInNextTierOrElement(offsetInContent);
+    }
+
+    /**
+     * Moves the caret to the position in the next line with the offset from the labels
+     * (or the end of the line if it's not long enough)
+     *
+     * @param offsetInContent the offset in the content
+     */
+    public void offsetInNextTierOrElement(int offsetInContent) {
+        TranscriptDocument doc = getTranscriptDocument();
+
+        int caretPos = getCaretPosition();
 
         int start = getStartOfNextTierOrElement(caretPos);
 

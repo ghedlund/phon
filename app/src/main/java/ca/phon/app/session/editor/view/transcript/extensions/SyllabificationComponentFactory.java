@@ -14,6 +14,8 @@ import ca.phon.ipa.Phone;
 import ca.phon.session.Session;
 import ca.phon.session.Tier;
 import ca.phon.syllable.SyllableConstituentType;
+import ca.phon.ui.action.PhonActionEvent;
+import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.ipa.SyllabificationDisplay;
 
 import javax.swing.*;
@@ -69,23 +71,11 @@ public class SyllabificationComponentFactory implements ComponentFactory {
 
             final KeyStroke tabKey = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
             inputMap.put(tabKey, "focusNextTier");
-            actionMap.put("focusNextTier", new AbstractAction() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    editor.nextTierOrElement();
-                    editor.requestFocus();
-                }
-            });
+            actionMap.put("focusNextTier", PhonUIAction.eventConsumer(this::focusNextTier, retVal));
 
             final KeyStroke shiftTabKey = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, KeyEvent.SHIFT_DOWN_MASK);
             inputMap.put(shiftTabKey, "focusPrevTier");
-            actionMap.put("focusPrevTier", new AbstractAction() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    editor.prevTierOrElement();
-                    editor.requestFocus();
-                }
-            });
+            actionMap.put("focusPrevTier", PhonUIAction.eventConsumer(this::focusPrevTier, retVal));
 
             final KeyStroke upKey = KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0);
             inputMap.put(upKey, "focusPrevTier");
@@ -131,6 +121,61 @@ public class SyllabificationComponentFactory implements ComponentFactory {
         return retVal;
     }
 
+    private IPATranscript buildTranscriptFromPanel(JPanel panel) {
+        final IPATranscriptBuilder builder = new IPATranscriptBuilder();
+        for(int i = 0; i < panel.getComponentCount(); i++) {
+            if(i > 0)
+                builder.appendWordBoundary();
+            final SyllabificationDisplay display = (SyllabificationDisplay) panel.getComponent(i);
+            builder.append(display.getTranscript());
+        }
+        return builder.toIPATranscript();
+    }
+
+    private void focusNextTier(PhonActionEvent<JPanel> pae) {
+        final IPATranscript transcript = buildTranscriptFromPanel(pae.getData());
+
+        // get focused element
+        int offset = -1;
+        for(int i = 0; i < pae.getData().getComponentCount(); i++) {
+            if(pae.getData().getComponent(i) instanceof SyllabificationDisplay display) {
+                if(display.hasFocus()) {
+                    IPAElement focusedElement = display.getDisplayedPhones().elementAt(display.getFocusedPhone());
+                    offset = transcript.indexOf(focusedElement);
+                }
+            }
+        }
+
+        if(offset >= 0) {
+            editor.offsetInNextTierOrElement(transcript.stringIndexOfElement(offset));
+        } else {
+            editor.sameOffsetInNextTierOrElement();
+        }
+        editor.requestFocus();
+    }
+
+    private void focusPrevTier(PhonActionEvent<JPanel> pae) {
+        final IPATranscript transcript = buildTranscriptFromPanel(pae.getData());
+
+        // get focused element
+        int offset = -1;
+        for(int i = 0; i < pae.getData().getComponentCount(); i++) {
+            if(pae.getData().getComponent(i) instanceof SyllabificationDisplay display) {
+                if(display.hasFocus()) {
+                    IPAElement focusedElement = display.getDisplayedPhones().elementAt(display.getFocusedPhone());
+                    offset = transcript.indexOf(focusedElement);
+                }
+            }
+        }
+
+        if(offset >= 0) {
+            editor.offsetInPrevTierOrElement(transcript.stringIndexOfElement(offset));
+        } else {
+            editor.sameOffsetInPrevTierOrElement();
+        }
+        editor.requestFocus();
+    }
+
     @Override
     public void requestFocusStart() {
         if(previousComponent != null && previousComponent.getComponentCount() > 0) {
@@ -156,14 +201,7 @@ public class SyllabificationComponentFactory implements ComponentFactory {
     @Override
     public void requestFocusAtOffset(int offset) {
         if(previousComponent != null) {
-            final IPATranscriptBuilder builder = new IPATranscriptBuilder();
-            for(int i = 0; i < previousComponent.getComponentCount(); i++) {
-                if(i > 0)
-                    builder.appendWordBoundary();
-                final SyllabificationDisplay display = (SyllabificationDisplay) previousComponent.getComponent(i);
-                builder.append(display.getTranscript());
-            }
-            final IPATranscript transcript = builder.toIPATranscript();
+            final IPATranscript transcript = buildTranscriptFromPanel(previousComponent);
             if(offset >= transcript.length()) {
                 requestFocusEnd();
                 return;
@@ -173,8 +211,9 @@ public class SyllabificationComponentFactory implements ComponentFactory {
             }
 
             IPAElement selectedElement = null;
-            while(!((selectedElement = transcript.elementAt(offset)) instanceof Phone)) {
-                offset++;
+            int ipaOffset = transcript.ipaIndexOf(offset);
+            while(!((selectedElement = transcript.elementAt(ipaOffset)) instanceof Phone)) {
+                ipaOffset++;
             }
             for(int i = 0; i < previousComponent.getComponentCount(); i++) {
                 final SyllabificationDisplay display = (SyllabificationDisplay) previousComponent.getComponent(i);
