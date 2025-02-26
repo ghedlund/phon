@@ -75,6 +75,7 @@ public class DefaultSyllabificationDisplayUI extends SyllabificationDisplayUI {
 			}
 		});
 		display.addPropertyChangeListener("showDiacritics", (e) -> display.repaint() );
+		display.addPropertyChangeListener(SyllabificationDisplay.HIATUS_CHANGE_PROP_ID, (e) -> display.repaint() );
 		display.setRequestFocusEnabled(true);
 	}
 

@@ -3,6 +3,7 @@ package ca.phon.app.session.editor.view.transcript.extensions;
 import ca.phon.app.session.editor.EditorEventManager;
 import ca.phon.app.session.editor.SessionEditor;
 import ca.phon.app.session.editor.view.syllabificationAlignment.ScTypeEdit;
+import ca.phon.app.session.editor.view.syllabificationAlignment.ToggleDiphthongEdit;
 import ca.phon.app.session.editor.view.transcript.BreakableFlowLayout;
 import ca.phon.app.session.editor.view.transcript.BreakableView;
 import ca.phon.app.session.editor.view.transcript.ComponentFactory;
@@ -106,9 +107,21 @@ public class SyllabificationComponentFactory implements ComponentFactory {
                 final int phoneIndex = currentIndex;
                 display.addPropertyChangeListener(SyllabificationDisplay.SYLLABIFICATION_PROP_ID, (e) -> {
                     final SyllabificationDisplay.SyllabificationChangeData data = (SyllabificationDisplay.SyllabificationChangeData) e.getNewValue();
-                    final ScTypeEdit edit = new ScTypeEdit(this.session, this.eventManager, tier.getValue(), phoneIndex + data.getPosition(), data.getScType());
+                    final ScTypeEdit edit = new ScTypeEdit(this.session, this.eventManager, tier.getValue(), phoneIndex + data.position(), data.scType());
                     edit.setSource(display);
                     this.undoSupport.postEdit(edit);
+                });
+
+                display.addPropertyChangeListener(SyllabificationDisplay.HIATUS_CHANGE_PROP_ID, (e) -> {
+                    final SyllabificationDisplay.HiatusChangeData data = (SyllabificationDisplay.HiatusChangeData) e.getNewValue();
+                    final int pIdx = phoneIndex + data.position();
+                    final ToggleDiphthongEdit diphthongEdit = new ToggleDiphthongEdit(this.session, this.eventManager, tier.getValue(), pIdx);
+                    diphthongEdit.setSource(display);
+                    final ToggleDiphthongEdit prevDiphthongEdit = new ToggleDiphthongEdit(this.session, this.eventManager, tier.getValue(), pIdx - 1);
+                    this.undoSupport.beginUpdate();
+                    this.undoSupport.postEdit(prevDiphthongEdit);
+                    this.undoSupport.postEdit(diphthongEdit);
+                    this.undoSupport.endUpdate();
                 });
             }
             currentIndex += word.length() + 1;

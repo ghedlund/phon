@@ -202,7 +202,7 @@ public class SyllabificationAlignmentEditorView extends EditorView {
 		public void propertyChange(PropertyChangeEvent evt) {
 			final SyllabificationChangeData newVal = (SyllabificationChangeData)evt.getNewValue();
 			final SyllabificationDisplay display = (SyllabificationDisplay)evt.getSource();
-			final ScTypeEdit edit = new ScTypeEdit(getEditor(), display.getTranscript(), newVal.getPosition(), newVal.getScType());
+			final ScTypeEdit edit = new ScTypeEdit(getEditor(), display.getTranscript(), newVal.position(), newVal.scType());
 			getEditor().getUndoSupport().postEdit(edit);
 		}
 

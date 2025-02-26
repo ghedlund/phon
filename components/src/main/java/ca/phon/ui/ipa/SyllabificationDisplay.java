@@ -17,6 +17,7 @@
 package ca.phon.ui.ipa;
 
 import ca.phon.ipa.*;
+import ca.phon.syllable.SyllabificationInfo;
 import ca.phon.syllable.SyllableConstituentType;
 import ca.phon.util.Tuple;
 
@@ -161,8 +162,18 @@ public class SyllabificationDisplay extends JComponent {
 
 	public void toggleHiatus(int pIdx) {
 		final IPAElement ele = getPhoneAtIndex(pIdx);
-		final int realIdx = getTranscript().indexOf(ele);
-		super.firePropertyChange(HIATUS_CHANGE_PROP_ID, -1, realIdx);
+		final IPAElement prevEle = getPhoneAtIndex(pIdx-1);
+		final SyllabificationInfo info = ele.getExtension(SyllabificationInfo.class);
+		final SyllabificationInfo prevInfo = prevEle.getExtension(SyllabificationInfo.class);
+		if(info != null) {
+			boolean wasHiatus = info.getConstituentType() == SyllableConstituentType.NUCLEUS && !info.isDiphthongMember();
+			final int eleIdx = getTranscript().indexOf(ele);
+			HiatusChangeData oldData = new HiatusChangeData(eleIdx, wasHiatus);
+			HiatusChangeData newData = new HiatusChangeData(eleIdx, !wasHiatus);
+			info.setDiphthongMember(wasHiatus);
+			prevInfo.setDiphthongMember(wasHiatus);
+			super.firePropertyChange(HIATUS_CHANGE_PROP_ID, oldData, newData);
+		}
 	}
 
 	@Override
@@ -177,22 +188,14 @@ public class SyllabificationDisplay extends JComponent {
 	/**
 	 * Syllabification change data.  Sent during syllabification events.
 	 */
-	public class SyllabificationChangeData
-			extends Tuple<Integer, SyllableConstituentType> {
-		
-		public SyllabificationChangeData(
-				Integer pIdx, SyllableConstituentType scType) {
-			super(pIdx, scType);
-		}
-		
-		public SyllableConstituentType getScType() {
-			return super.getObj2();
-		}
-		
-		public Integer getPosition() {
-			return super.getObj1();
-		}
+	public record SyllabificationChangeData(int position, SyllableConstituentType scType) {}
 
-	}
-	
+	/**
+	 * Hiatus change data.  Sent during hiatus change events.
+	 *
+	 * @param position
+	 * @param hiatus
+	 */
+	public record HiatusChangeData(int position, boolean hiatus) {}
+
 }

@@ -18,16 +18,21 @@ package ca.phon.app.session.editor.view.syllabificationAlignment;
 import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.undo.SessionUndoableEdit;
 import ca.phon.ipa.*;
+import ca.phon.session.Session;
 import ca.phon.syllable.SyllabificationInfo;
 
 public class ToggleDiphthongEdit extends SessionUndoableEdit {
-	
+
 	private final IPATranscript transcript;
 	
 	private final int index;
 	
 	public ToggleDiphthongEdit(SessionEditor editor, IPATranscript transcript, int index) {
-		super(editor.getSession(), editor.getEventManager());
+		this(editor.getSession(), editor.getEventManager(), transcript, index);
+	}
+
+	public ToggleDiphthongEdit(Session session, EditorEventManager editorEventManager, IPATranscript transcript, int index) {
+		super(session, editorEventManager);
 		this.transcript = transcript;
 		this.index = index;
 	}
