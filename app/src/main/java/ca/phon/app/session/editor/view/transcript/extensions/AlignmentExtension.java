@@ -70,7 +70,27 @@ public class AlignmentExtension implements TranscriptEditorExtension {
         else {
             doc.putDocumentProperty(ALIGNMENT_PARENT, ALIGNMENT_PARENT_DEFAULT);
         }
-        doc.reload();
+        int transcriptElementIndex = -1;
+        if(editor.isSingleRecordView()) {
+            transcriptElementIndex = editor.getSession().getTranscript().getRecordElementIndex(
+                    editor.getTranscriptDocument().getSingleRecordIndex()
+            );
+        } else {
+            final TranscriptElementLocation currentLocation = editor.getCurrentSessionLocation();
+            if (currentLocation == null || !currentLocation.valid() || currentLocation.transcriptElementIndex() < 0)
+                return;
+            final Transcript.Element element = editor.getSession().getTranscript().getElementAt(currentLocation.transcriptElementIndex());
+            if (!element.isRecord()) return;
+            transcriptElementIndex = currentLocation.transcriptElementIndex();
+        }
+        if(transcriptElementIndex >= 0) {
+            if((boolean)evt.getNewValue()) {
+                // insert syllabification tiers
+                addAlignmentTiersForRecord(transcriptElementIndex);
+            } else {
+                removeAlignmentTiersForRecord(transcriptElementIndex);
+            }
+        }
     }
 
     private void alignmentComponentPropertyChangeHandler(PropertyChangeEvent evt) {
