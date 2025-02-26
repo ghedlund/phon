@@ -338,6 +338,21 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             }
         }
 
+        // handle caret movements into syllabifier tiers
+        if (newLocation.tier().equals(SystemTierType.TargetSyllables.getName()) || newLocation.tier().equals(SystemTierType.ActualSyllables.getName())
+            || newLocation.tier().endsWith(" Syllables")) {
+            final TranscriptDocument.StartEnd tierStartEnd = doc.getTierContentStartEnd(
+                    editor.getSession().getTranscript().getRecordIndex(newLocation.transcriptElementIndex()), newLocation.tier());
+            if (tierStartEnd.valid()) {
+                final AttributeSet attrs = doc.getCharacterElement(tierStartEnd.start()).getAttributes();
+                final ComponentFactory componentFactory = TranscriptStyleConstants.getComponentFactory(attrs);
+                if (componentFactory instanceof SyllabificationComponentFactory) {
+                    componentFactory.requestFocusAtOffset(newLocation.charPosition());
+                }
+            }
+            return;
+        }
+
         // single record view is already handled
         if(!isSyllabificationVisible() || editor.isSingleRecordView()) return;
         if(oldLocation.transcriptElementIndex() == newLocation.transcriptElementIndex()) return;
@@ -375,6 +390,12 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                 if(parent.getComponent(i) instanceof SyllabificationDisplay wordDisplay) {
                     wordDisplay.setTranscript(words.get(i));
                 }
+            }
+
+            // reset syllabification event
+            if(event.getData().get().eleIdx() < 0) {
+                display.setFocusedPhone(0);
+                display.requestFocus();
             }
         }
     }
