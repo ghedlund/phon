@@ -19,6 +19,7 @@ import ca.phon.app.session.editor.*;
 import ca.phon.app.session.editor.undo.SessionUndoableEdit;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.session.Session;
+import ca.phon.session.Transcriber;
 import ca.phon.syllable.SyllableConstituentType;
 
 public class ScTypeEdit extends SessionUndoableEdit {
@@ -30,12 +31,14 @@ public class ScTypeEdit extends SessionUndoableEdit {
 	private final SyllableConstituentType scType;
 	
 	private SyllableConstituentType prevScType;
+
+	private Transcriber transcriber = Transcriber.VALIDATOR;
 	
 	public ScTypeEdit(SessionEditor editor, IPATranscript transcript, int index, SyllableConstituentType scType) {
-		this(editor.getSession(), editor.getEventManager(), transcript, index, scType);
+		this(editor.getSession(), editor.getEventManager(), transcript, index, scType, Transcriber.VALIDATOR);
 	}
 
-	public ScTypeEdit(Session session, EditorEventManager eventManager, IPATranscript transcript, int index, SyllableConstituentType scType) {
+	public ScTypeEdit(Session session, EditorEventManager eventManager, IPATranscript transcript, int index, SyllableConstituentType scType, Transcriber transcriber) {
 		super(session, eventManager);
 		this.transcript = transcript;
 		this.index = index;

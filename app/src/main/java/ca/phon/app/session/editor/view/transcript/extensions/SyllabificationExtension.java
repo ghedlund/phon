@@ -157,9 +157,9 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             Tier<IPATranscript> ipaTier = (Tier<IPATranscript>) tier;
 
             // Create a dummy tier for the syllabification
-            IPATranscript ipa = ipaTier.getValue();
+            IPATranscript ipa = editor.getTranscriptDocument().getTranscriber() == Transcriber.VALIDATOR ? ipaTier.getValue() : ipaTier.getBlindTranscription(editor.getTranscriptDocument().getTranscriber().getUsername());
             Tier<IPATranscript> syllableTier = doc.getSessionFactory().createTier(getSyllabifierTierNameForIPATier(tier.getName()), IPATranscript.class);
-            syllableTier.setValue(ipa);
+            syllableTier.setValue((new IPATranscriptBuilder()).append(ipa.toString(true)).toIPATranscript());
 
             // Set up the tier attributes for the dummy tier
             final TierViewItem tierViewItem = doc.getSession().getTierView().stream().filter(item -> item.getTierName().equals(tier.getName())).findFirst().orElse(null);

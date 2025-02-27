@@ -26,7 +26,9 @@ public class ToggleDiphthongEdit extends SessionUndoableEdit {
 	private final IPATranscript transcript;
 	
 	private final int index;
-	
+
+
+
 	public ToggleDiphthongEdit(SessionEditor editor, IPATranscript transcript, int index) {
 		this(editor.getSession(), editor.getEventManager(), transcript, index);
 	}

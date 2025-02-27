@@ -14,6 +14,7 @@ import ca.phon.ipa.IPATranscriptBuilder;
 import ca.phon.ipa.Phone;
 import ca.phon.session.Session;
 import ca.phon.session.Tier;
+import ca.phon.session.Transcriber;
 import ca.phon.syllable.SyllableConstituentType;
 import ca.phon.ui.action.PhonActionEvent;
 import ca.phon.ui.action.PhonUIAction;
@@ -38,6 +39,8 @@ public class SyllabificationComponentFactory implements ComponentFactory {
 
     final UndoableEditSupport undoSupport;
 
+    final Transcriber transcriber;
+
     private JPanel previousComponent;
 
     public SyllabificationComponentFactory(TranscriptEditor editor) {
@@ -45,6 +48,7 @@ public class SyllabificationComponentFactory implements ComponentFactory {
         this.session = editor.getSession();
         this.eventManager = editor.getEventManager();
         this.undoSupport = editor.getUndoSupport();
+        this.transcriber = editor.getDataModel().getTranscriber();
     }
 
     @Override
@@ -64,7 +68,8 @@ public class SyllabificationComponentFactory implements ComponentFactory {
         int currentIndex = 0;
 
         // clone transcript
-        final IPATranscript clonedTranscript = (new IPATranscriptBuilder()).append(tier.getValue().toString(true)).toIPATranscript();
+        final IPATranscript origTranscript = transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername());
+        final IPATranscript clonedTranscript = (new IPATranscriptBuilder()).append(origTranscript.toString(true)).toIPATranscript();
         for(IPATranscript word:clonedTranscript.words()) {
             final SyllabificationDisplay display = new SyllabificationDisplay();
             display.setTranscript(word);
@@ -111,7 +116,8 @@ public class SyllabificationComponentFactory implements ComponentFactory {
                 final int phoneIndex = currentIndex;
                 display.addPropertyChangeListener(SyllabificationDisplay.SYLLABIFICATION_PROP_ID, (e) -> {
                     final SyllabificationDisplay.SyllabificationChangeData data = (SyllabificationDisplay.SyllabificationChangeData) e.getNewValue();
-                    final ScTypeEdit edit = new ScTypeEdit(this.session, this.eventManager, tier.getValue(), phoneIndex + data.position(), data.scType());
+                    final IPATranscript transcript = transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername());
+                    final ScTypeEdit edit = new ScTypeEdit(this.session, this.eventManager, transcript, phoneIndex + data.position(), data.scType(), this.transcriber);
                     edit.setSource(display);
                     this.undoSupport.postEdit(edit);
                 });
@@ -120,9 +126,10 @@ public class SyllabificationComponentFactory implements ComponentFactory {
                     final SyllabificationDisplay.HiatusChangeData data = (SyllabificationDisplay.HiatusChangeData) e.getNewValue();
                     final int pIdx = phoneIndex + data.position1();
                     final int pIdx2 = phoneIndex + data.position2();
-                    final ToggleDiphthongEdit diphthongEdit1 = new ToggleDiphthongEdit(this.session, this.eventManager, tier.getValue(), pIdx);
+                    final IPATranscript transcript = transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername());
+                    final ToggleDiphthongEdit diphthongEdit1 = new ToggleDiphthongEdit(this.session, this.eventManager, transcript, pIdx);
                     diphthongEdit1.setSource(display);
-                    final ToggleDiphthongEdit diphthongEdit2 = new ToggleDiphthongEdit(this.session, this.eventManager, tier.getValue(), pIdx2);
+                    final ToggleDiphthongEdit diphthongEdit2 = new ToggleDiphthongEdit(this.session, this.eventManager, transcript, pIdx2);
                     diphthongEdit2.setSource(display);
                     this.undoSupport.beginUpdate();
                     this.undoSupport.postEdit(diphthongEdit1);

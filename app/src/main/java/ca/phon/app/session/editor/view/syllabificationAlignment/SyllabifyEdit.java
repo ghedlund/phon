@@ -60,7 +60,7 @@ public class SyllabifyEdit extends SessionUndoableEdit {
 		if(oldVal == null) return;
 		try {
 			final IPATranscript oldTranscript = IPATranscript.parseIPATranscript(oldVal);
-			final IPATranscript grp = tier.getValue();
+			final IPATranscript grp = transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername());
 			
 			if(oldTranscript.length() != grp.length()) return;
 			for(int j = 0; j < oldTranscript.length(); j++) {
