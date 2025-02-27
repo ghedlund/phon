@@ -31,6 +31,9 @@ import java.util.List;
 
 public class AlignmentComponentFactory implements ComponentFactory {
 
+    public static final String Y_AXIS_ALIGNMENT = "yAxisAlignment";
+    public static final float Y_AXIS_ALIGNMENT_VALUE = .5f;
+
     final TranscriptEditor editor;
 
     final Session session;
@@ -60,6 +63,7 @@ public class AlignmentComponentFactory implements ComponentFactory {
         layout.setBreakWidth(breakWidth);
         final JPanel retVal = new JPanel(layout);
         retVal.setBackground(UIManager.getColor("text"));
+        retVal.putClientProperty(Y_AXIS_ALIGNMENT, Y_AXIS_ALIGNMENT_VALUE);
 
         final Record record = TranscriptStyleConstants.getRecord(attrs);
         if(record == null) return retVal;

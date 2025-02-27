@@ -130,6 +130,7 @@ public class AlignmentExtension implements TranscriptEditorExtension {
             final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(batchBuilder.getTrailingAttributes());
             TranscriptStyleConstants.setTier(finalAttrs, record.getPhoneAlignmentTier());
             TranscriptStyleConstants.setNotEditable(finalAttrs, true);
+            TranscriptStyleConstants.setNotTraversable(finalAttrs, true);
             TranscriptStyleConstants.setComponentFactory(finalAttrs, new ComponentFactory() {
                 @Override
                 public JComponent createComponent(AttributeSet attrs) {

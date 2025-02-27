@@ -182,6 +182,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(builder.getTrailingAttributes());
             TranscriptStyleConstants.setTier(finalAttrs, syllableTier);
             TranscriptStyleConstants.setNotEditable(finalAttrs, true);
+            TranscriptStyleConstants.setNotTraversable(finalAttrs, true);
             TranscriptStyleConstants.setComponentFactory(finalAttrs, new ComponentFactory() {
                 @Override
                 public JComponent createComponent(AttributeSet attrs) {

@@ -27,6 +27,9 @@ import java.util.Arrays;
 
 public class SyllabificationComponentFactory implements ComponentFactory {
 
+    public static String Y_AXIS_ALIGNMENT = "yAxisAlignment";
+    public static float Y_AXIS_ALIGNMENT_VALUE = 0.75f;
+
     final TranscriptEditor editor;
 
     final Session session;
@@ -55,6 +58,7 @@ public class SyllabificationComponentFactory implements ComponentFactory {
         final BreakableFlowLayout layout = new BreakableFlowLayout();
         layout.setBreakWidth(breakWidth);
         final JPanel retVal = new JPanel(layout);
+        retVal.putClientProperty(Y_AXIS_ALIGNMENT, Y_AXIS_ALIGNMENT_VALUE);
         retVal.setBackground(UIManager.getColor("text"));
 
         int currentIndex = 0;

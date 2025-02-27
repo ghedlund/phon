@@ -228,6 +228,24 @@ public class TranscriptViewFactory implements ViewFactory {
         public View breakView(int axis, int p0, float pos, float len) {
             return super.breakView(axis, p0, pos, len);
         }
+
+        @Override
+        public float getAlignment(int axis) {
+            if(axis == View.Y_AXIS) {
+                if(getComponent() != null) {
+                    final Float clientProp = (Float)((JComponent)getComponent()).getClientProperty("yAxisAlignment");
+                    if(clientProp != null) {
+                        return clientProp;
+                    } else {
+                        return super.getAlignment(axis);
+                    }
+                } else {
+                    return super.getAlignment(axis);
+                }
+            } else {
+                return super.getAlignment(axis);
+            }
+        }
     }
 
     /**
