@@ -32,13 +32,11 @@ public class ScTypeEdit extends SessionUndoableEdit {
 	
 	private SyllableConstituentType prevScType;
 
-	private Transcriber transcriber = Transcriber.VALIDATOR;
-	
 	public ScTypeEdit(SessionEditor editor, IPATranscript transcript, int index, SyllableConstituentType scType) {
-		this(editor.getSession(), editor.getEventManager(), transcript, index, scType, Transcriber.VALIDATOR);
+		this(editor.getSession(), editor.getEventManager(), transcript, index, scType);
 	}
 
-	public ScTypeEdit(Session session, EditorEventManager eventManager, IPATranscript transcript, int index, SyllableConstituentType scType, Transcriber transcriber) {
+	public ScTypeEdit(Session session, EditorEventManager eventManager, IPATranscript transcript, int index, SyllableConstituentType scType) {
 		super(session, eventManager);
 		this.transcript = transcript;
 		this.index = index;

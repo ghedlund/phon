@@ -116,8 +116,10 @@ public class SyllabificationComponentFactory implements ComponentFactory {
                 final int phoneIndex = currentIndex;
                 display.addPropertyChangeListener(SyllabificationDisplay.SYLLABIFICATION_PROP_ID, (e) -> {
                     final SyllabificationDisplay.SyllabificationChangeData data = (SyllabificationDisplay.SyllabificationChangeData) e.getNewValue();
-                    final IPATranscript transcript = transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername());
-                    final ScTypeEdit edit = new ScTypeEdit(this.session, this.eventManager, transcript, phoneIndex + data.position(), data.scType(), this.transcriber);
+                    final IPATranscript transcript = tier.isBlind()
+                        ? transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername())
+                        : tier.getValue();
+                    final ScTypeEdit edit = new ScTypeEdit(this.session, this.eventManager, transcript, phoneIndex + data.position(), data.scType());
                     edit.setSource(display);
                     this.undoSupport.postEdit(edit);
                 });

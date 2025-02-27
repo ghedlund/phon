@@ -157,8 +157,10 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
             Tier<IPATranscript> ipaTier = (Tier<IPATranscript>) tier;
 
             // Create a dummy tier for the syllabification
-            IPATranscript ipa = editor.getTranscriptDocument().getTranscriber() == Transcriber.VALIDATOR ? ipaTier.getValue() : ipaTier.getBlindTranscription(editor.getTranscriptDocument().getTranscriber().getUsername());
-            Tier<IPATranscript> syllableTier = doc.getSessionFactory().createTier(getSyllabifierTierNameForIPATier(tier.getName()), IPATranscript.class);
+            IPATranscript ipa = ipaTier.isBlind()
+                ? editor.getTranscriptDocument().getTranscriber() == Transcriber.VALIDATOR ? ipaTier.getValue() : ipaTier.getBlindTranscription(editor.getTranscriptDocument().getTranscriber().getUsername())
+                : ipaTier.getValue();
+            Tier<IPATranscript> syllableTier = doc.getSessionFactory().createTier(getSyllabifierTierNameForIPATier(tier.getName()), IPATranscript.class, new HashMap<>(), true, ipaTier.isBlind());
             syllableTier.setValue((new IPATranscriptBuilder()).append(ipa.toString(true)).toIPATranscript());
 
             // Set up the tier attributes for the dummy tier
@@ -438,6 +440,9 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         final Tier<?> tier = event.data().tier();
         if(tier.getDeclaredType().equals(IPATranscript.class) && !event.data().valueAdjusting()) {
             if(isSyllabificationVisible()) {
+                final IPATranscript transcript = tier.isBlind()
+                    ? editor.getTranscriptDocument().getTranscriber() == Transcriber.VALIDATOR ? (IPATranscript)tier.getValue() : (IPATranscript) tier.getBlindTranscription(editor.getTranscriptDocument().getTranscriber().getUsername())
+                    : (IPATranscript)tier.getValue();
                 final TranscriptDocument.StartEnd range = doc.getTierContentStartEnd(editor.getSession().getRecordPosition(event.data().record()), getSyllabifierTierNameForIPATier(tier.getName()));
                 if(!range.valid()) return;
                 editor.getTranscriptEditorCaret().freeze();
@@ -449,9 +454,9 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
                     TranscriptBatchBuilder builder = new TranscriptBatchBuilder(editor.getTranscriptDocument());
                     if(isSyllabificationComponent()) {
                         tierAttrs.addAttributes(getSyllabificationDisplayAttributes());
-                        builder.appendBatchString(((IPATranscript)tier.getValue()).toString(true), tierAttrs);
+                        builder.appendBatchString((transcript).toString(true), tierAttrs);
                     } else {
-                        builder.appendAll(getFormattedSyllabification((IPATranscript)tier.getValue(), tierAttrs));
+                        builder.appendAll(getFormattedSyllabification(transcript, tierAttrs));
                     }
                     editor.getTranscriptDocument().processBatchUpdates(range.start(), builder.getBatch());
                 } catch (BadLocationException e) {

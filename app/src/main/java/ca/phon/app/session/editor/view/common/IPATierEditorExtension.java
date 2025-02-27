@@ -78,7 +78,7 @@ public class IPATierEditorExtension implements IPluginExtensionPoint<TierEditor<
 				final SyllabificationDisplay.SyllabificationChangeData newVal = (SyllabificationDisplay.SyllabificationChangeData)evt.getNewValue();
 				final SyllabificationDisplay display = (SyllabificationDisplay)evt.getSource();
 				final ScTypeEdit edit = new ScTypeEdit(
-						editor.getSession(), editor.getEventManager(), display.getTranscript(), newVal.position(), newVal.scType(), editor.getDataModel().getTranscriber());
+						editor.getSession(), editor.getEventManager(), display.getTranscript(), newVal.position(), newVal.scType());
 				editor.getUndoSupport().postEdit(edit);
 			}
 

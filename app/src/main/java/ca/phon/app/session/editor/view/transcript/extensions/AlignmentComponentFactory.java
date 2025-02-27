@@ -11,10 +11,8 @@ import ca.phon.ipa.IPATranscript;
 import ca.phon.ipa.IPATranscriptBuilder;
 import ca.phon.ipa.Phone;
 import ca.phon.ipa.alignment.PhoneMap;
-import ca.phon.session.PhoneAlignment;
+import ca.phon.session.*;
 import ca.phon.session.Record;
-import ca.phon.session.Session;
-import ca.phon.session.Tier;
 import ca.phon.ui.action.PhonActionEvent;
 import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.ipa.PhoneMapDisplay;
@@ -42,6 +40,8 @@ public class AlignmentComponentFactory implements ComponentFactory {
 
     final UndoableEditSupport undoSupport;
 
+    final Transcriber transcriber;
+
     private JPanel previousComponent;
 
     public AlignmentComponentFactory(TranscriptEditor editor) {
@@ -49,6 +49,7 @@ public class AlignmentComponentFactory implements ComponentFactory {
         this.session = editor.getSession();
         this.eventManager = editor.getEventManager();
         this.undoSupport = editor.getUndoSupport();
+        this.transcriber = editor.getDataModel().getTranscriber();
     }
 
     @Override
@@ -68,8 +69,11 @@ public class AlignmentComponentFactory implements ComponentFactory {
         final Record record = TranscriptStyleConstants.getRecord(attrs);
         if(record == null) return retVal;
 
+        final PhoneAlignment phoneAlignment = tier.isBlind() ?
+                transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername())
+                : tier.getValue();
         final List<PhoneMap> clonedMaps = new ArrayList<>();
-        for(PhoneMap pm:tier.getValue()) {
+        for(PhoneMap pm:phoneAlignment) {
             final PhoneMap clonedPm = PhoneMap.fromString(pm.getTargetRep(), pm.getActualRep(), pm.toString());
             clonedMaps.add(clonedPm);
         }
@@ -127,16 +131,18 @@ public class AlignmentComponentFactory implements ComponentFactory {
                     pm.setTopAlignment(newVal.alignment()[0]);
                     pm.setBottomAlignment(newVal.alignment()[1]);
 
-                    final PhoneAlignment phoneAlignment = record.getPhoneAlignment();
+                    final PhoneAlignment origAlignment = record.getPhoneAlignmentTier().isBlind()
+                            ? transcriber == Transcriber.VALIDATOR ? record.getPhoneAlignment() : record.getPhoneAlignmentTier().getBlindTranscription(transcriber.getUsername())
+                            : record.getPhoneAlignment();
                     final List<PhoneMap> modifiedAlignments = new ArrayList<>();
-                    for(int i = 0; i < phoneAlignment.getAlignments().size(); i++) {
+                    for(int i = 0; i < origAlignment.getAlignments().size(); i++) {
                         if(i == wIdx)
                             modifiedAlignments.add(pm);
                         else
-                            modifiedAlignments.add(phoneAlignment.getAlignments().get(i));
+                            modifiedAlignments.add(origAlignment.getAlignments().get(i));
                     }
 
-                    final TierEdit<PhoneAlignment> edit = new TierEdit<>(session, eventManager, record, record.getPhoneAlignmentTier(),
+                    final TierEdit<PhoneAlignment> edit = new TierEdit<>(session, eventManager, transcriber, record, record.getPhoneAlignmentTier(),
                             new PhoneAlignment(modifiedAlignments));
                     edit.setSource(display);
                     edit.setValueAdjusting(false);

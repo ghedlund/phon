@@ -60,7 +60,9 @@ public class SyllabifyEdit extends SessionUndoableEdit {
 		if(oldVal == null) return;
 		try {
 			final IPATranscript oldTranscript = IPATranscript.parseIPATranscript(oldVal);
-			final IPATranscript grp = transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername());
+			final IPATranscript grp = tier.isBlind()
+				? transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername())
+				: tier.getValue();
 			
 			if(oldTranscript.length() != grp.length()) return;
 			for(int j = 0; j < oldTranscript.length(); j++) {
@@ -79,7 +81,9 @@ public class SyllabifyEdit extends SessionUndoableEdit {
 
 	@Override
 	public void doIt() {
-		final IPATranscript ipa = transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername());
+		final IPATranscript ipa = tier.isBlind()
+			? transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername())
+			: tier.getValue();
 		oldVal = ipa.toString(true);
 		
 		final StripSyllabifcationVisitor visitor = new StripSyllabifcationVisitor();
