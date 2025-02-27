@@ -993,6 +993,9 @@ public class TranscriptEditor extends JEditorPane implements IExtendable, Clipbo
         boolean isMediaSegmentTier = changedTier.getDeclaredType().equals(MediaSegment.class);
         if (!isMediaSegmentTier && editorEvent.getData().get().valueAdjusting()) return;
 
+        boolean isAlignmentTier = SystemTierType.PhoneAlignment.getName().equals(changedTier.getName());
+        if(isAlignmentTier) return;
+
         if (errorUnderlineHighlights.containsKey(changedTier)) {
             getHighlighter().removeHighlight(errorUnderlineHighlights.get(changedTier));
             errorUnderlineHighlights.remove(changedTier);

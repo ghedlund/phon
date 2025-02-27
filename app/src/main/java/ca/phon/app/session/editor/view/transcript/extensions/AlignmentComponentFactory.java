@@ -1,15 +1,18 @@
 package ca.phon.app.session.editor.view.transcript.extensions;
 
 import ca.phon.app.session.editor.EditorEventManager;
+import ca.phon.app.session.editor.undo.TierEdit;
 import ca.phon.app.session.editor.view.transcript.BreakableFlowLayout;
 import ca.phon.app.session.editor.view.transcript.ComponentFactory;
 import ca.phon.app.session.editor.view.transcript.TranscriptEditor;
+import ca.phon.app.session.editor.view.transcript.TranscriptStyleConstants;
 import ca.phon.ipa.IPAElement;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.ipa.IPATranscriptBuilder;
 import ca.phon.ipa.Phone;
 import ca.phon.ipa.alignment.PhoneMap;
 import ca.phon.session.PhoneAlignment;
+import ca.phon.session.Record;
 import ca.phon.session.Session;
 import ca.phon.session.Tier;
 import ca.phon.ui.action.PhonActionEvent;
@@ -21,8 +24,10 @@ import javax.swing.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.undo.UndoableEditSupport;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 public class AlignmentComponentFactory implements ComponentFactory {
 
@@ -56,8 +61,15 @@ public class AlignmentComponentFactory implements ComponentFactory {
         final JPanel retVal = new JPanel(layout);
         retVal.setBackground(UIManager.getColor("text"));
 
-        for (Iterator<PhoneMap> i = tier.getValue().iterator(); i.hasNext();) {
-            var phoneMap = i.next();
+        final Record record = TranscriptStyleConstants.getRecord(attrs);
+        if(record == null) return retVal;
+
+        final List<PhoneMap> clonedMaps = new ArrayList<>();
+        for(PhoneMap pm:tier.getValue()) {
+            final PhoneMap clonedPm = PhoneMap.fromString(pm.getTargetRep(), pm.getActualRep(), pm.toString());
+            clonedMaps.add(clonedPm);
+        }
+        for (PhoneMap phoneMap:clonedMaps) {
             final PhoneMapDisplay display = new PhoneMapDisplay();
             display.setPhoneMapForWord(0, phoneMap);
             retVal.add(display);
@@ -98,6 +110,35 @@ public class AlignmentComponentFactory implements ComponentFactory {
                     }
                 }
             });
+
+            if(this.session != null && this.eventManager != null && this.undoSupport != null) {
+                final int wIdx = clonedMaps.indexOf(phoneMap);
+                display.addPropertyChangeListener(PhoneMapDisplay.ALIGNMENT_CHANGE_PROP, (e) -> {
+                    final PhoneMapDisplay.AlignmentChangeData newVal = (PhoneMapDisplay.AlignmentChangeData)e.getNewValue();
+                    final List<IPATranscript> targetWords = record.getIPATarget().words();
+                    final List<IPATranscript> actualWords = record.getIPAActual().words();
+                    final IPATranscript ipaTarget = wIdx < targetWords.size() ? targetWords.get(wIdx) : new IPATranscript();
+                    final IPATranscript ipaActual = wIdx < actualWords.size() ? actualWords.get(wIdx) : new IPATranscript();
+                    final PhoneMap pm = new PhoneMap(ipaTarget, ipaActual);
+                    pm.setTopAlignment(newVal.alignment()[0]);
+                    pm.setBottomAlignment(newVal.alignment()[1]);
+
+                    final PhoneAlignment phoneAlignment = record.getPhoneAlignment();
+                    final List<PhoneMap> modifiedAlignments = new ArrayList<>();
+                    for(int i = 0; i < phoneAlignment.getAlignments().size(); i++) {
+                        if(i == wIdx)
+                            modifiedAlignments.add(pm);
+                        else
+                            modifiedAlignments.add(phoneAlignment.getAlignments().get(i));
+                    }
+
+                    final TierEdit<PhoneAlignment> edit = new TierEdit<>(session, eventManager, record, record.getPhoneAlignmentTier(),
+                            new PhoneAlignment(modifiedAlignments));
+                    edit.setSource(display);
+                    edit.setValueAdjusting(false);
+                    undoSupport.postEdit(edit);
+                });
+            }
         }
 
         previousComponent = retVal;

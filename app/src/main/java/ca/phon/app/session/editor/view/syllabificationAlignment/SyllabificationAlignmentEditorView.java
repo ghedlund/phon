@@ -233,14 +233,14 @@ public class SyllabificationAlignmentEditorView extends EditorView {
 		public void propertyChange(PropertyChangeEvent evt) {
 			final AlignmentChangeData newVal = (AlignmentChangeData)evt.getNewValue();
 			final Record r = getEditor().currentRecord();
-			final int wIdx = newVal.getWordIndex();
+			final int wIdx = newVal.wordIndex();
 			final List<IPATranscript> targetWords = targetDisplay.getTranscript().words();
 			final List<IPATranscript> actualWords = actualDisplay.getTranscript().words();
 			final IPATranscript ipaTarget = wIdx < targetWords.size() ? targetWords.get(wIdx) : new IPATranscript();
 			final IPATranscript ipaActual = wIdx < actualWords.size() ? actualWords.get(wIdx) : new IPATranscript();
 			final PhoneMap pm = new PhoneMap(ipaTarget, ipaActual);
-			pm.setTopAlignment(newVal.getAlignment()[0]);
-			pm.setBottomAlignment(newVal.getAlignment()[1]);
+			pm.setTopAlignment(newVal.alignment()[0]);
+			pm.setBottomAlignment(newVal.alignment()[1]);
 
 			final PhoneAlignment phoneAlignment = PhoneAlignment.fromTiers(r.getIPATargetTier(), r.getIPAActualTier());
 			final List<PhoneMap> modifiedAlignments = new ArrayList<>();

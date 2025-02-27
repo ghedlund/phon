@@ -458,27 +458,6 @@ public class PhoneMapDisplay extends JComponent {
 	}
 
 	/** Class for alignment change events */
-	public static class AlignmentChangeData extends Tuple<Integer, Integer[][]> {
+	public record AlignmentChangeData(Integer wordIndex, Integer[][] alignment) { }
 
-		public AlignmentChangeData(Integer wordIndex, Integer[][] alignment) {
-			super(wordIndex, alignment);
-		}
-		
-		public int getWordIndex() {
-			return super.getObj1();
-		}
-		
-		public void setWordIndex(int wordIndex) {
-			super.setObj1(wordIndex);
-		}
-		
-		public Integer[][] getAlignment() {
-			return super.getObj2();
-		}
-
-		public void setAlignment(Integer[][] alignment) {
-			super.setObj2(alignment);
-		}
-		
-	}
 }

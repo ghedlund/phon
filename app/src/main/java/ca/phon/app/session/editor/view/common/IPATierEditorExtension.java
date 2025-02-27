@@ -97,11 +97,11 @@ public class IPATierEditorExtension implements IPluginExtensionPoint<TierEditor<
 		tooltip.addPropertyChangeListener(PhoneMapDisplay.ALIGNMENT_CHANGE_PROP, (evt) -> {
 			final PhoneMapDisplay.AlignmentChangeData newVal = (PhoneMapDisplay.AlignmentChangeData)evt.getNewValue();
 			final PhoneAlignment phoneAlignment = PhoneAlignment.fromTiers(record.getIPATargetTier(), record.getIPAActualTier());
-			final int wordIndex = newVal.getWordIndex();
+			final int wordIndex = newVal.wordIndex();
 			final PhoneMap pm = wordIndex <= phoneAlignment.getAlignments().size() ? phoneAlignment.getAlignments().get(wordIndex) : null;
 			if(pm == null) return; // should not happen
-			pm.setTopAlignment(newVal.getAlignment()[0]);
-			pm.setBottomAlignment(newVal.getAlignment()[1]);
+			pm.setTopAlignment(newVal.alignment()[0]);
+			pm.setBottomAlignment(newVal.alignment()[1]);
 
 			final TierEdit<PhoneAlignment> edit = new TierEdit<>(editor, alignmentTier, phoneAlignment);
 			edit.setFireHardChangeOnUndo(true);

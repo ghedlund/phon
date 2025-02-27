@@ -6,9 +6,11 @@ import ca.phon.app.session.editor.EditorEventManager;
 import ca.phon.app.session.editor.EditorEventType;
 import ca.phon.app.session.editor.view.transcript.*;
 import ca.phon.ipa.IPATranscript;
+import ca.phon.ipa.alignment.PhoneMap;
 import ca.phon.session.*;
 import ca.phon.session.Record;
 import ca.phon.session.position.TranscriptElementLocation;
+import ca.phon.ui.ipa.PhoneMapDisplay;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -175,17 +177,54 @@ public class AlignmentExtension implements TranscriptEditorExtension {
         final TranscriptDocument.StartEnd alignmentTierContentRange = doc.getTierContentStartEnd(recordIndex, tier.getName());
         if(!alignmentTierContentRange.valid()) return;
 
-        try {
-            editor.getTranscriptEditorCaret().freeze();
-            doc.setBypassDocumentFilter(true);
-            doc.remove(alignmentTierContentRange.start(), alignmentTierContentRange.length());
-            doc.processBatchUpdates(alignmentTierContentRange.start(), getFormattedAlignment(editorEvent.data().record(), (Tier<PhoneAlignment>) tier, editor.getDataModel().getTranscriber(), new SimpleAttributeSet()));
-        } catch (BadLocationException e) {
-            LogUtil.severe(e);
-        } finally {
-            doc.setBypassDocumentFilter(false);
-            editor.getTranscriptEditorCaret().unfreeze();
+        // update the existing alignment components
+        final AttributeSet attrs = doc.getCharacterElement(alignmentTierContentRange.start()).getAttributes();
+        final ComponentFactory componentFactory = TranscriptStyleConstants.getComponentFactory(attrs);
+        if (componentFactory instanceof AlignmentComponentFactory) {
+            final JPanel component = (JPanel) componentFactory.getComponent();
+            if(component != null) {
+                int i = 0;
+                final PhoneAlignment alignment = (PhoneAlignment) editorEvent.data().tier().getValue();
+                for(; i < component.getComponentCount() && i < alignment.getAlignments().size(); i++) {
+                    final Component comp = component.getComponent(i);
+                    if(comp instanceof PhoneMapDisplay) {
+                        final PhoneMap pm = alignment.getAlignments().get(i);
+                        final PhoneMap cloneAlignment =
+                                PhoneMap.fromString(pm.getTargetRep(), pm.getActualRep(), pm.toString());
+                        final PhoneMapDisplay phoneMapDisplay = (PhoneMapDisplay) comp;
+//                        if(!phoneMapDisplay.isFocusOwner()) {
+                            phoneMapDisplay.setPhoneMapForWord(0, cloneAlignment);
+//                        }
+                    }
+                }
+                // add new components if necessary
+                for(; i < alignment.getAlignments().size(); i++) {
+                    final PhoneMapDisplay phoneMapDisplay = new PhoneMapDisplay();
+                    final PhoneMap pm = alignment.getAlignments().get(i);
+                    final PhoneMap cloneAlignment =
+                            PhoneMap.fromString(pm.getTargetRep(), pm.getActualRep(), pm.toString());
+                    phoneMapDisplay.setPhoneMapForWord(0, cloneAlignment);
+                    component.add(phoneMapDisplay);
+                }
+
+                // remove extra components
+                for(; i < component.getComponentCount(); i++) {
+                    component.remove(i);
+                }
+            }
         }
+
+//        try {
+//            editor.getTranscriptEditorCaret().freeze();
+//            doc.setBypassDocumentFilter(true);
+//            doc.remove(alignmentTierContentRange.start(), alignmentTierContentRange.length());
+//            doc.processBatchUpdates(alignmentTierContentRange.start(), getFormattedAlignment(editorEvent.data().record(), (Tier<PhoneAlignment>) tier, editor.getDataModel().getTranscriber(), new SimpleAttributeSet()));
+//        } catch (BadLocationException e) {
+//            LogUtil.severe(e);
+//        } finally {
+//            doc.setBypassDocumentFilter(false);
+//            editor.getTranscriptEditorCaret().unfreeze();
+//        }
     }
 
     /**
