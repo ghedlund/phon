@@ -21,6 +21,7 @@ import ca.phon.app.session.editor.undo.SessionUndoableEdit;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.session.Session;
 import ca.phon.session.Tier;
+import ca.phon.session.Transcriber;
 import ca.phon.syllabifier.Syllabifier;
 import ca.phon.syllable.*;
 
@@ -36,15 +37,22 @@ public class SyllabifyEdit extends SessionUndoableEdit {
 	private final Syllabifier syllabifier;
 	
 	private String oldVal = null;
+
+	private Transcriber transcriber = Transcriber.VALIDATOR;
 	
 	public SyllabifyEdit(SessionEditor editor, Tier<IPATranscript> ipaTier, Syllabifier syllabifier) {
-		this(editor.getSession(), editor.getEventManager(), ipaTier, syllabifier);
+		this(editor.getSession(), editor.getEventManager(), ipaTier, syllabifier, Transcriber.VALIDATOR);
 	}
 
-	public SyllabifyEdit(Session session, EditorEventManager eventManager, Tier<IPATranscript> ipaTier, Syllabifier syllabifier) {
+	public SyllabifyEdit(SessionEditor editor, Tier<IPATranscript> ipaTier, Syllabifier syllabifier, Transcriber transcriber) {
+		this(editor.getSession(), editor.getEventManager(), ipaTier, syllabifier, transcriber);
+	}
+
+	public SyllabifyEdit(Session session, EditorEventManager eventManager, Tier<IPATranscript> ipaTier, Syllabifier syllabifier, Transcriber transcriber) {
 		super(session, eventManager);
 		this.tier = ipaTier;
 		this.syllabifier = syllabifier;
+		this.transcriber = transcriber;
 	}
 
 	@Override
@@ -71,7 +79,7 @@ public class SyllabifyEdit extends SessionUndoableEdit {
 
 	@Override
 	public void doIt() {
-		final IPATranscript ipa = tier.getValue();
+		final IPATranscript ipa = transcriber == Transcriber.VALIDATOR ? tier.getValue() : tier.getBlindTranscription(transcriber.getUsername());
 		oldVal = ipa.toString(true);
 		
 		final StripSyllabifcationVisitor visitor = new StripSyllabifcationVisitor();

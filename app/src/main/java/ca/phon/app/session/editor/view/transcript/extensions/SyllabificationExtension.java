@@ -275,7 +275,7 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         final Tier<IPATranscript> syllabifierTier = resetData.getData().syllabifierTier();
         final Syllabifier syllabifier = syllabifierForTier(ipaTier);
 
-        final SyllabifyEdit edit = new SyllabifyEdit(editor.getSession(), editor.getEventManager(), ipaTier, syllabifier);
+        final SyllabifyEdit edit = new SyllabifyEdit(editor.getSession(), editor.getEventManager(), ipaTier, syllabifier, editor.getDataModel().getTranscriber());
 
         // find component to use as source for edit
         final int recordIndex = editor.getSession().getRecordPosition(resetData.getData().record());

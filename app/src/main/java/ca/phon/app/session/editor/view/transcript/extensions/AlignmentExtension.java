@@ -4,19 +4,23 @@ import ca.phon.app.log.LogUtil;
 import ca.phon.app.session.editor.EditorEvent;
 import ca.phon.app.session.editor.EditorEventManager;
 import ca.phon.app.session.editor.EditorEventType;
+import ca.phon.app.session.editor.undo.TierEdit;
 import ca.phon.app.session.editor.view.transcript.*;
 import ca.phon.ipa.IPATranscript;
 import ca.phon.ipa.alignment.PhoneMap;
 import ca.phon.session.*;
 import ca.phon.session.Record;
 import ca.phon.session.position.TranscriptElementLocation;
+import ca.phon.ui.action.PhonActionEvent;
+import ca.phon.ui.action.PhonUIAction;
 import ca.phon.ui.ipa.PhoneMapDisplay;
+import ca.phon.ui.menu.MenuBuilder;
 
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -125,6 +129,7 @@ public class AlignmentExtension implements TranscriptEditorExtension {
             TranscriptStyleConstants.setRecord(tierAttrs, record);
             TranscriptStyleConstants.setParentTier(tierAttrs, tier);
             TranscriptStyleConstants.setTier(tierAttrs, record.getPhoneAlignmentTier());
+            TranscriptStyleConstants.setClickHandler(tierAttrs, AlignmentExtension.this::alignmentTierLabelClickHandler);
             batchBuilder.appendTierLabel(editor.getSession(), record, record.getPhoneAlignmentTier(), record.getPhoneAlignmentTier().getName(), null, doc.isChatTierNamesShown(), tierAttrs);
             batchBuilder.appendAll(getFormattedAlignment(record, record.getPhoneAlignmentTier(), editor.getDataModel().getTranscriber(), tierAttrs));
             final SimpleAttributeSet finalAttrs = new SimpleAttributeSet(batchBuilder.getTrailingAttributes());
@@ -161,6 +166,34 @@ public class AlignmentExtension implements TranscriptEditorExtension {
             });
             batchBuilder.appendEOL(finalAttrs);
         }
+    }
+
+    private void alignmentTierLabelClickHandler(MouseEvent e, AttributeSet attrs) {
+        // show menu for syllabification tier
+        JPopupMenu popup = new JPopupMenu();
+        final MenuBuilder builder = new MenuBuilder(popup);
+
+        final Record record = TranscriptStyleConstants.getRecord(attrs);
+        final PhonUIAction<Record> resetAlignmentAct = PhonUIAction.eventConsumer(this::resetAlignment, record);
+        resetAlignmentAct.putValue(PhonUIAction.NAME, "Reset alignment");
+        resetAlignmentAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Reset alignment");
+        builder.addItem(".", resetAlignmentAct);
+
+        popup.show(e.getComponent(), e.getX(), e.getY());
+    }
+
+    private void resetAlignment(PhonActionEvent<Record> pae) {
+        final Record record = pae.getData();
+        final Tier<IPATranscript> ipaTier = record.getIPATargetTier();
+        final Tier<IPATranscript> ipaActualTier = record.getIPAActualTier();
+        final Tier<PhoneAlignment> alignmentTier = record.getPhoneAlignmentTier();
+
+        final PhoneAlignment phoneAlignment = PhoneAlignment.fromTiers(ipaTier, ipaActualTier);
+
+        final TierEdit<PhoneAlignment> edit = new TierEdit<>(editor.getSession(), editor.getEventManager(), editor.getDataModel().getTranscriber(),
+                record, alignmentTier, phoneAlignment);
+        edit.setValueAdjusting(false);
+        editor.getUndoSupport().postEdit(edit);
     }
 
     /**
