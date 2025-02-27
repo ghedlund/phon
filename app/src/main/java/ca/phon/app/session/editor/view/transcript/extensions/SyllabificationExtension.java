@@ -229,10 +229,35 @@ public class SyllabificationExtension implements TranscriptEditorExtension {
         // reset syllabification for ipa tier
         final PhonUIAction<ResetSyllabificationData> resetSyllabificationAct = PhonUIAction.eventConsumer(this::resetSyllabification,
                 new ResetSyllabificationData(TranscriptStyleConstants.getRecord(attrs), ipaTier, syllabifierTier));
-        resetSyllabificationAct.putValue(PhonUIAction.NAME, "Reset syllabification");
+        final Syllabifier tierSyllabifier = syllabifierForTier(ipaTier);
+        resetSyllabificationAct.putValue(PhonUIAction.NAME, "Reset syllabification (" + tierSyllabifier.getName() + ")");
         builder.addItem(".", resetSyllabificationAct);
 
+        // add menu for choosing a new syllabifier for the tier
+        final JMenu changeSyllabifierMenu = new JMenu("Change syllabifier for " + ipaTier.getName());
+        for(String syllabifierName : SyllabifierLibrary.getInstance().availableSyllabifierNames()) {
+            final Language syllabifierLang = SyllabifierLibrary.getInstance().getSyllabifierByName(syllabifierName).getLanguage();
+            final PhonUIAction<SyllabifierChangeData> changeSyllabifierAct = PhonUIAction.eventConsumer(this::setSyllabifierForTier, new SyllabifierChangeData(ipaTier.getName(), syllabifierLang));
+            changeSyllabifierAct.putValue(PhonUIAction.NAME, syllabifierName);
+            changeSyllabifierAct.putValue(PhonUIAction.SHORT_DESCRIPTION, "Change syllabifier for " + ipaTier.getName() + " to " + syllabifierName);
+            if(syllabifierLang == tierSyllabifier.getLanguage()) {
+                changeSyllabifierAct.putValue(PhonUIAction.SELECTED_KEY, true);
+            }
+            changeSyllabifierMenu.add(new JCheckBoxMenuItem(changeSyllabifierAct));
+        }
+        builder.addItem(".", changeSyllabifierMenu);
+
         popup.show(e.getComponent(), e.getX(), e.getY());
+    }
+
+    private record SyllabifierChangeData(String tierName, Language language) {}
+    private void setSyllabifierForTier(PhonActionEvent<SyllabifierChangeData> event) {
+        SyllabifierInfo info = editor.getSession().getExtension(SyllabifierInfo.class);
+        if (info == null) {
+            info = new SyllabifierInfo();
+            editor.getSession().putExtension(SyllabifierInfo.class, info);
+        }
+        info.setSyllabifierLanguageForTier(event.getData().tierName(), event.getData().language());
     }
 
     private Syllabifier syllabifierForTier(Tier<IPATranscript> tier) {
